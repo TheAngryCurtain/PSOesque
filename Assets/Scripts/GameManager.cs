@@ -6,6 +6,10 @@ public class GameManager : Singleton<GameManager>
 {
     [SerializeField] private GameObject[] m_FactoryPrefabs;
 
+    // TODO
+    // build some game save class that stores a world seed, and then spawns dungeon seeds from that
+    private int dungeonSeed = 0;
+
     public override void Awake()
     {
         base.Awake();
@@ -18,6 +22,6 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
-        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent());
+        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed));
     }
 }

@@ -85,7 +85,7 @@ public class Space : MonoBehaviour
         return first;
     }
 
-    public Connector GetRandomConnector(int previousSlot)
+    public Connector GetRandomConnector(int previousSlot, System.Random rng)
     {
         List<Connector> unused = new List<Connector>(m_Connectors.Count);
         for (int i = 0; i < m_Connectors.Count; i++)
@@ -101,7 +101,7 @@ public class Space : MonoBehaviour
 
         if (unused.Count > 0)
         {
-            int random = UnityEngine.Random.Range(0, unused.Count);
+            int random = rng.Next(unused.Count);//UnityEngine.Random.Range(0, unused.Count);
             m_LastUsedConnector = unused[random];
         }
         else

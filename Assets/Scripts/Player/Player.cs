@@ -9,10 +9,14 @@ public class Player : Character
 
     private float m_Horizontal = 0f;
     private float m_Vertical = 0f;
+    private Transform m_CamTransform;
 
     protected override void Awake()
     {
         base.Awake();
+
+        // TODO do this better
+        m_CamTransform = Camera.main.transform;
 
         InputManager.Instance.AddInputEventDelegate(OnInputUpdate, UpdateLoopType.Update);
         VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerSpawnedEvent(this.gameObject));
@@ -20,7 +24,7 @@ public class Player : Character
 
     protected override void OnDestroy()
     {
-        InputManager.Instance.RemoveInputEventDelegate(OnInputUpdate);
+
     }
 
     protected virtual void OnInputUpdate(InputActionEventData data)
@@ -37,23 +41,11 @@ public class Player : Character
         }
     }
 
-    protected virtual void Update()
+    protected virtual void FixedUpdate()
     {
-        Move(m_Horizontal, m_Vertical);
-    }
+        m_Movement = m_CamTransform.forward * m_Vertical + m_CamTransform.right * m_Horizontal;
+        m_Movement.y = 0f;
 
-    protected virtual void Move(float h, float v)
-    {
-        m_Movement.x = h;
-        m_Movement.z = v;
-
-        if (m_Movement != Vector3.zero)
-        {
-            SetDestination(transform.position + m_Movement);
-        }
-        else
-        {
-            Stop();
-        }
+        Move(m_Movement);
     }
 }

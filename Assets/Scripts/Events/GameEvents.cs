@@ -4,14 +4,25 @@ using UnityEngine;
 
 public class GameEvents
 {
-    public class RequestDungeonEvent : VSGameEvent { }
+    public class RequestDungeonEvent : VSGameEvent
+    {
+        public int Seed;
+
+        public RequestDungeonEvent(int seed)
+        {
+            Seed = seed;
+        }
+    }
+
     public class DungeonBuiltEvent : VSGameEvent
     {
-        public Transform StartLocation;
+        public Vector3 StartPosition;
+        public Quaternion StartRotation;
 
-        public DungeonBuiltEvent(Transform startLoc)
+        public DungeonBuiltEvent(Vector3 startPos, Quaternion startRot)
         {
-            StartLocation = startLoc;
+            StartPosition = startPos;
+            StartRotation = startRot;
         }
     }
 

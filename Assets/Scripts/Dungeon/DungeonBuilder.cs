@@ -10,6 +10,7 @@ public class DungeonBuilder : MonoBehaviour
     [SerializeField] private GameObject[] m_HallPrefabs;
     [SerializeField] private GameObject[] m_RoomPrefabs;
 
+    private System.Random m_Rng;
     private int m_LastConnectorSlot = -1;
 
     private void Awake()
@@ -19,18 +20,21 @@ public class DungeonBuilder : MonoBehaviour
 
     private void BuildDungeon(GameEvents.RequestDungeonEvent e)
     {
+        m_Rng = new System.Random(e.Seed);
+
         Queue<eRoom> roomQueue = new Queue<eRoom>();
         Queue<eHall> hallQueue = new Queue<eHall>();
         bool dungeonComplete = false;
         int totalRoomCount = 0;
         int totalHallCount = 0;
-        int maxRoomCount = 5;
+        int maxRoomCount = 10;
 
         Room previousRoom = null;
         Hall previousHall = null;
 
         bool lastWasDeadEnd = false;
-        Transform startRoomTransform = null;
+        Vector3 startRoomPos = Vector3.zero;
+        Quaternion startRoomRot = Quaternion.identity;
 
         // queue up the first room
         roomQueue.Enqueue(eRoom.Start);
@@ -46,14 +50,9 @@ public class DungeonBuilder : MonoBehaviour
                 GameObject nextRoomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)nextRoomType], null);
                 Room next = nextRoomObj.GetComponent<Room>();
 
-                if (nextRoomType == eRoom.Start)
+                if (nextRoomType == eRoom.Sqr_Sm)
                 {
-                    // mark start room position for player spawning
-                    startRoomTransform = next.FloorCenter;
-                }
-                else if (nextRoomType == eRoom.Sqr_Sm)
-                {
-                    float deadendRoll = UnityEngine.Random.Range(0f, 1f);
+                    float deadendRoll = (float)m_Rng.NextDouble();//UnityEngine.Random.Range(0f, 1f);
                     if (deadendRoll > 0.5f && !lastWasDeadEnd && previousRoom != null)
                     {
                         Debug.Log(" <!> Dead End <!>");
@@ -83,6 +82,7 @@ public class DungeonBuilder : MonoBehaviour
                 {
                     previousHallConnector = previousHall.GetLastAvailableConnector(); // last available is used because halls only have 2 connectors on opposite ends
                     connectorPosition = previousHallConnector.Object.transform.position;
+                    next.OpenWall(NextRoomConnector.Slot);
 
                     // set used
                     previousHallConnector.SetAvailable(false);
@@ -91,6 +91,14 @@ public class DungeonBuilder : MonoBehaviour
 
                 Vector3 position = connectorPosition + next.GetConnectorToCenter(NextRoomConnector);
                 nextRoomObj.transform.position = position;
+
+                if (nextRoomType == eRoom.Start)
+                {
+                    // mark start room position for player spawning
+                    // this is just temporary for now
+                    startRoomPos = next.FloorCenter.position;
+                    startRoomRot = Quaternion.identity;
+                }
 
                 // rotate appropriately
                 if (previousHallConnector != null)
@@ -165,7 +173,8 @@ public class DungeonBuilder : MonoBehaviour
                 Connector previousRoomConnector = null;
                 if (previousRoom != null)
                 {
-                    previousRoomConnector = previousRoom.GetRandomConnector(m_LastConnectorSlot); //previousRoom.GetFirstAvailableConnector();
+                    previousRoomConnector = previousRoom.GetRandomConnector(m_LastConnectorSlot, m_Rng); //previousRoom.GetFirstAvailableConnector();
+                    previousRoom.OpenWall(previousRoomConnector.Slot);
                     m_LastConnectorSlot = previousRoomConnector.Slot;
 
                     // TODO check for too many left/right turns
@@ -225,7 +234,7 @@ public class DungeonBuilder : MonoBehaviour
         }
 
         // notify
-        VSEventManager.Instance.TriggerEvent(new GameEvents.DungeonBuiltEvent(startRoomTransform));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.DungeonBuiltEvent(startRoomPos, startRoomRot));
     }
 
     public float SignedAngle(Vector3 a, Vector3 b)

@@ -15,6 +15,6 @@ public class CharacterFactory : MonoBehaviour
     private void OnDungeonBuilt(GameEvents.DungeonBuiltEvent e)
     {
         Instantiate(m_CameraPrefab, null);
-        Instantiate(m_PlayerPrefab, e.StartLocation.position, e.StartLocation.rotation);
+        Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
     }
 }

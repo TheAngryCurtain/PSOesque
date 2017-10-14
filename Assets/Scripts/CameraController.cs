@@ -26,7 +26,6 @@ public class CameraController : MonoBehaviour
 
     private void OnDestroy()
     {
-        InputManager.Instance.RemoveInputEventDelegate(OnInputUpdate);
         VSEventManager.Instance.RemoveListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
     }
 
