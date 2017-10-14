@@ -101,7 +101,7 @@ public class Space : MonoBehaviour
 
         if (unused.Count > 0)
         {
-            int random = rng.Next(unused.Count);//UnityEngine.Random.Range(0, unused.Count);
+            int random = rng.Next(unused.Count);
             m_LastUsedConnector = unused[random];
         }
         else

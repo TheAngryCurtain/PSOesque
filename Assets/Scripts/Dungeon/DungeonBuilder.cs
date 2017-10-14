@@ -13,6 +13,8 @@ public class DungeonBuilder : MonoBehaviour
     private System.Random m_Rng;
     private int m_LastConnectorSlot = -1;
 
+    private bool TESTDOOR = false;
+
     private void Awake()
     {
         VSEventManager.Instance.AddListener<GameEvents.RequestDungeonEvent>(BuildDungeon);
@@ -50,11 +52,13 @@ public class DungeonBuilder : MonoBehaviour
                 GameObject nextRoomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)nextRoomType], null);
                 Room next = nextRoomObj.GetComponent<Room>();
 
+                bool deadEnd = false;
                 if (nextRoomType == eRoom.Sqr_Sm)
                 {
-                    float deadendRoll = (float)m_Rng.NextDouble();//UnityEngine.Random.Range(0f, 1f);
-                    if (deadendRoll > 0.5f && !lastWasDeadEnd && previousRoom != null)
+                    float deadendRoll = (float)m_Rng.NextDouble();
+                    if (deadendRoll > 0.25f && !lastWasDeadEnd && previousRoom != null)
                     {
+                        deadEnd = true;
                         Debug.Log(" <!> Dead End <!>");
                         next.MakeDeadEnd();
                         nextRoomObj.name = string.Format("{0} [{1}]", nextRoomObj.name, "Dead End?");
@@ -67,6 +71,11 @@ public class DungeonBuilder : MonoBehaviour
                         // only set this here to that dead end rooms aren't marked as previous
                         previousRoom = next;
                     }
+                }
+                else if (nextRoomType != eRoom.End)
+                {
+                    lastWasDeadEnd = false;
+                    previousRoom = next;
                 }
 
                 totalRoomCount += 1;
@@ -108,6 +117,13 @@ public class DungeonBuilder : MonoBehaviour
                     nextRoomObj.transform.RotateAround(connectorPosition, Vector3.up, angleFromForward);
                 }
 
+                // room was dead end, is now in proper position/rotation. Spawn interesting thing.
+                if (deadEnd)
+                {
+                    // spawn an object
+                    Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Chest), next.FloorCenter.position, Quaternion.identity);
+                }
+
                 // end check
                 if (nextRoomType == eRoom.End)
                 {
@@ -115,11 +131,20 @@ public class DungeonBuilder : MonoBehaviour
                     break;
                 }
 
+                if (nextRoomType == eRoom.Sqr_Md && !TESTDOOR)
+                {
+                    TESTDOOR = true;
+
+                    // set up the door/switch system... this is all going to need to change
+                    GameObject switchObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Switch), next.FloorCenter.position, Quaternion.identity);
+                    Switch s = switchObj.GetComponent<Switch>();
+
+                    // this is the previous door, not the next. we don't know about the next until the next hall is placed... so this wont' work in the current state of the dungeon builder :(
+                    s.Setup(NextRoomConnector.Object.transform);
+                }
+
                 // add hallways
                 int availableConnectors = next.GetTotalAvailableConnectors();
-
-                // TODO
-                // if the number of available connectors is zero, go back to the previous room to look for some
                 if (availableConnectors == 0)
                 {
                     // dead end room has no connectors, check the room before it
@@ -130,24 +155,22 @@ public class DungeonBuilder : MonoBehaviour
 
                 for (int i = 0; i < availableConnectors; i++)
                 {
-                    //float hallChance = UnityEngine.Random.Range(0f, 1f);
-                    //if (hallChance < 0.3f)
-                    //{
+                    float hallChance = (float)m_Rng.NextDouble();
+                    if (hallChance < 0.15f)
+                    {
+                        Debug.LogFormat("> Queueing Large Hall");
+                        hallQueue.Enqueue(eHall.Lg);
+                    }
+                    else if (hallChance < 0.4f)
+                    {
+                        Debug.LogFormat("> Queueing Medium Hall");
+                        hallQueue.Enqueue(eHall.Md);
+                    }
+                    else
+                    {
                         Debug.LogFormat("> Queueing Small Hall");
                         hallQueue.Enqueue(eHall.Sm);
-                    //}
-                    //else if (hallChance < 0.6f)
-                    //{
-                    //    // TODO md hall
-                    //    Debug.LogFormat("> Queueing Small Hall");
-                    //    hallQueue.Enqueue(eHall.Sm);
-                    //}
-                    //else
-                    //{
-                    //    // TODO lg hall
-                    //    Debug.LogFormat("> Queueing Small Hall");
-                    //    hallQueue.Enqueue(eHall.Sm);
-                    //}
+                    }
                 }
             }
 
@@ -173,7 +196,8 @@ public class DungeonBuilder : MonoBehaviour
                 Connector previousRoomConnector = null;
                 if (previousRoom != null)
                 {
-                    previousRoomConnector = previousRoom.GetRandomConnector(m_LastConnectorSlot, m_Rng); //previousRoom.GetFirstAvailableConnector();
+                    previousRoomConnector = previousRoom.GetRandomConnector(m_LastConnectorSlot, m_Rng);
+                    //previousRoomConnector = previousRoom.GetFirstAvailableConnector();
                     previousRoom.OpenWall(previousRoomConnector.Slot);
                     m_LastConnectorSlot = previousRoomConnector.Slot;
 
@@ -211,23 +235,29 @@ public class DungeonBuilder : MonoBehaviour
 
                 for (int i = 0; i < availableConnectors; i++)
                 {
-                    //float endChance = UnityEngine.Random.Range(0f, 1f);
-                    //if (endChance > 0f) // test, just put the end room in
-                    //{
-                    //    roomQueue.Enqueue(eRoom.End);
-                    //}
                     if (totalRoomCount == maxRoomCount - 1)
                     {
                         Debug.LogFormat("> Queueing End Room");
                         roomQueue.Enqueue(eRoom.End);
-
-                        // clear the hall queue so that no more halls are processed after the end room is queued
-                        //hallQueue.Clear();
                     }
                     else
                     {
-                        Debug.LogFormat("> Queuing Small Square room");
-                        roomQueue.Enqueue(eRoom.Sqr_Sm);
+                        float roomChance = (float)m_Rng.NextDouble();
+                        if (roomChance < 0.25f)
+                        {
+                            Debug.LogFormat("> Queuing Medium Square room");
+                            roomQueue.Enqueue(eRoom.Sqr_Md);
+                        }
+                        else if (roomChance < 0.5f)
+                        {
+                            Debug.LogFormat("> Queuing Small Rect room");
+                            roomQueue.Enqueue(eRoom.Rct_Sm);
+                        }
+                        else
+                        {
+                            Debug.LogFormat("> Queuing Small Square room");
+                            roomQueue.Enqueue(eRoom.Sqr_Sm);
+                        }
                     }
                 }
             }

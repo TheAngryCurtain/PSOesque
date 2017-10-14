@@ -2,7 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectFactory : MonoBehaviour
+public class ObjectFactory : Singleton<ObjectFactory>
 {
+    public enum eObject { Chest, Door, Switch };
 
+    [SerializeField] private GameObject[] m_ObjectPrefabs;
+
+    public GameObject GetObjectPrefab(eObject objType)
+    {
+        return m_ObjectPrefabs[(int)objType];
+    }
 }
