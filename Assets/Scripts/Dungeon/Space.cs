@@ -6,18 +6,31 @@ public class Connector
 {
     public int Slot;
     public bool Available;
-    public GameObject Object; 
+    public Vector3 WorldPosition;
+    public Space ConnectedSpace;
+    public Space NextSpace;
+    public bool IsOnMainPath = false;
 
-    public Connector(int slot, GameObject obj, bool available = true)
+    public Vector3 Forward { get { return m_Obj.transform.forward; } }
+
+    private GameObject m_Obj;
+
+    public Connector(int slot, GameObject obj, Space connected, bool mainPath, bool available = true)
     {
         Slot = slot;
-        Object = obj;
+        WorldPosition = obj.transform.position;
+        ConnectedSpace = connected;
+        IsOnMainPath = mainPath;
         Available = available;
+
+        // may not need this
+        m_Obj = obj;
     }
 
-    public void SetAvailable(bool available)
+    public void SetNextSpace(Space s)
     {
-        Available = available;
+        NextSpace = s;
+        Available = false;
     }
 }
 
@@ -29,6 +42,8 @@ public class Space : MonoBehaviour
     [SerializeField] private Transform[] m_ConnectorTransforms = new Transform[4];
 
     protected List<Connector> m_Connectors;
+    public List<Connector> Connectors { get { return m_Connectors; } }
+
     protected Connector m_LastUsedConnector;
 
     public int GetTotalAvailableConnectors()
@@ -52,19 +67,19 @@ public class Space : MonoBehaviour
         {
             if (m_ConnectorTransforms[i] != null)
             {
-                m_Connectors.Add(new Connector(i, m_ConnectorTransforms[i].gameObject));
+                m_Connectors.Add(new Connector(i, m_ConnectorTransforms[i].gameObject, this, false));
             }
         }
     }
 
     public Vector3 GetConnectorToCenter(Connector c)
     {
-        return m_FloorCenter.position - c.Object.transform.position;
+        return m_FloorCenter.position - c.WorldPosition;
     }
 
     public Vector3 GetCenterToConnector(Connector c)
     {
-        return c.Object.transform.position - m_FloorCenter.position;
+        return c.WorldPosition - m_FloorCenter.position;
     }
 
     public Connector GetFirstAvailableConnector()
