@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿#define DEBUG_BUILD_LOG
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -26,12 +28,11 @@ public class DungeonBuilder : MonoBehaviour
     [SerializeField] private GameObject[] m_HallPrefabs;
     [SerializeField] private GameObject[] m_RoomPrefabs;
 
-    private List<RoomDatum> m_RoomData;
     private System.Random m_Rng;
-    private int m_previousRoomDataIndex;
+    //private int m_previousRoomDataIndex;
     //private int m_LastConnectorSlot = -1;
 
-    private bool TESTDOOR = false;
+    //private bool TESTDOOR = false;
 
     private void Awake()
     {
@@ -42,21 +43,10 @@ public class DungeonBuilder : MonoBehaviour
     {
         m_Rng = new System.Random(e.Seed);
 
-        m_RoomData = new List<RoomDatum>();
-        m_RoomData.Add(new RoomDatum(eRoom.Start));
-
-        m_previousRoomDataIndex = -1;
-        ProcessRoom(m_RoomData[0]);
-
-        // ---- TEST -----
-        m_RoomData.Add(new RoomDatum(eRoom.Sqr_Sm));
-        ProcessRoom(m_RoomData[1]);
+        ProcessRoom(new RoomDatum(eRoom.Start), null);
     }
 
-	// above, try
-	// ProcessRoom(new RoomDatum(eRoom.Start), null);
-
-	private void ProcessRoom(RoomDatum roomData, Connector previous)
+	private void ProcessRoom(RoomDatum roomData, Connector prevHallConnector)
 	{
 		// NEW IDEA
 		// the idea here is that you'd pass in a room, AND the previous connector (end of a hall basically)
@@ -65,36 +55,54 @@ public class DungeonBuilder : MonoBehaviour
 		// even be needed. 
 
 		// spawn the new room
-		/*
-		 GameObject roomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)roomdata.RoomType], null);
+		 GameObject roomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)roomData.RoomType], null);
         Room room = roomObj.GetComponent<Room>();
-        roomdata.SetRoom(room);
+        roomData.SetRoom(room);
 
         Connector entryConnector = room.Connectors[0];
 
-		if (previous != null)
+		if (prevHallConnector != null)
 		{
 			// ------- since we pass in the previous, we won't need the previousRoomDataIndex to look for a room
 			// ------- we can just use the connector to handle the rotations
 
-			Vector3 position = attachedConnector.WorldPosition + room.GetConnectorToCenter(attachedConnector);
+			Vector3 position = prevHallConnector.WorldPosition + room.GetConnectorToCenter(entryConnector);
             roomObj.transform.position = position;
 
 			// update connections
-            attachedConnector.SetNextSpace(room);
-            entryConnector.IsOnMainPath = attachedConnector.IsOnMainPath;
+            prevHallConnector.SetNextSpace(room);
+            entryConnector.IsOnMainPath = prevHallConnector.IsOnMainPath;
 
 			// rotate
-            float angleFromForward = 180f + SignedAngle(Vector3.forward, attachedConnector.Forward);
-            roomObj.transform.RotateAround(attachedConnector.WorldPosition, Vector3.up, angleFromForward);
+            float angleFromForward = 180f + SignedAngle(Vector3.forward, prevHallConnector.Forward);
+            roomObj.transform.RotateAround(prevHallConnector.WorldPosition, Vector3.up, angleFromForward);
 		}
 		else
         {
             // no previous room, likely the start room
-            roomObj.transform.position = Vector3.zero;
+            roomObj.transform.position = Vector3.zero + room.GetConnectorToCenter(entryConnector);
         }
 
-		// ------- the rest shoudl be the same
+        // check for dead ends
+        if (roomData.RoomType == eRoom.Sqr_Sm && !room.Connectors[0].IsOnMainPath)
+        {
+            float deadEndChance = (float)m_Rng.NextDouble();
+            if (deadEndChance < 0.75f)
+            {
+                LogMessage("<!> DEAD END <!>");
+                
+                room.MakeDeadEnd();
+                roomObj.name = string.Format("{0} [{1}]", roomObj.name, "Dead End");
+                return;
+            }
+        }
+
+        // check end room
+        if (roomData.RoomType == eRoom.End)
+        {
+            LogMessage("> End Room Placed");
+            return;
+        }
 
 		bool mainPathChosen = false;
         int mainPathIndex = m_Rng.Next(room.Connectors.Count);
@@ -149,130 +157,54 @@ public class DungeonBuilder : MonoBehaviour
 
                 // ------- THEN right here, you have access to the (now) previous connector, so just create the new room
 
-				// TODO
-				// determine the next room type
-				// create a new RoomDatum
-				// grab the END connector from the hall (hall.Connectors[1] I believe)
-				// ProcessRoom(new RoomDatum( next room type, END connector)
+                // TODO
+                // determine the next room type
+                // create a new RoomDatum
+                // grab the END connector from the hall (hall.Connectors[1] I believe)
+                // ProcessRoom(new RoomDatum( next room type, END connector)
 
-				// --- NOTES ---
-				// make sure to add a case up top where a small room is likely to be a dead end
-				// if you reach a dead end, just return. That way the function can exit and resume the loop from the previous room
-				// should just work?
+                // --- NOTES ---
+                // make sure to add a case up top where a small room is likely to be a dead end
+                // if you reach a dead end, just return. That way the function can exit and resume the loop from the previous room
+                // should just work?
+
+                RoomDatum nextRoom = null;
+                if (currentRoomConnector.IsOnMainPath)
+                {
+                    nextRoom = new RoomDatum(eRoom.End);
+                }
+                else
+                {
+                    float nextRoomChance = (float)m_Rng.NextDouble();
+                    if (nextRoomChance < 0.5f)
+                    {
+                        nextRoom = new RoomDatum(eRoom.Sqr_Sm);
+                    }
+                    else if (nextRoomChance < 0.75f)
+                    {
+                        nextRoom = new RoomDatum(eRoom.Sqr_Md);
+                    }
+                    else
+                    {
+                        nextRoom = new RoomDatum(eRoom.Rct_Sm);
+                    }
+
+                    LogMessage(string.Format("Rolled {0}, chose {1}", nextRoomChance, nextRoom.RoomType));
+                }
+
+                ProcessRoom(nextRoom, hall.Connectors[1]);
             }
         }
-		*/
-
 	}
 
-    private void ProcessRoom(RoomDatum roomdata)
+    private void LogMessage(string message)
     {
-        GameObject roomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)roomdata.RoomType], null);
-        Room room = roomObj.GetComponent<Room>();
-        roomdata.SetRoom(room);
-
-        Connector entryConnector = room.Connectors[0];
-
-        // position room
-        if (m_previousRoomDataIndex > -1)
-        {
-            // there is a previous room, get the connector that led here
-            RoomDatum prevRoomData = m_RoomData[m_previousRoomDataIndex];
-            Room prevRoom = prevRoomData.Room;
-
-
-            // TODO
-            // The problem here is that the hall from the previous call of this function doesn't have it's NextSpace of it's last connector set
-            // that's because the next room is only created here above, on the current call of the function
-            // need to find a way to set it properly.
-
-            // if there is a better data structure used for storing a room and it's data, this can probably be avoided.
-
-            Connector attachedConnector = null;
-            for (int i = 0; i < prevRoom.Connectors.Count ; i++)
-            {
-                // previous room > connector > hall > this room (hopefully)
-                if (prevRoom.Connectors[i].NextSpace.Connectors[1].NextSpace == prevRoom)
-                {
-                    attachedConnector = prevRoom.Connectors[i];
-                    break;
-                }
-            }
-
-            Vector3 position = attachedConnector.WorldPosition + room.GetConnectorToCenter(attachedConnector);
-            roomObj.transform.position = position;
-
-            // update connections
-            attachedConnector.SetNextSpace(room);
-            entryConnector.IsOnMainPath = attachedConnector.IsOnMainPath;
-
-            // rotate
-            float angleFromForward = 180f + SignedAngle(Vector3.forward, attachedConnector.Forward);
-            roomObj.transform.RotateAround(attachedConnector.WorldPosition, Vector3.up, angleFromForward);
-        }
-        else
-        {
-            // no previous room, likely the start room
-            roomObj.transform.position = Vector3.zero;
-        }
-
-        m_previousRoomDataIndex += 1;
-
-        bool mainPathChosen = false;
-        int mainPathIndex = m_Rng.Next(room.Connectors.Count);
-        int hallsPlaced = 0;
-        // lay down the hallways
-        for (int i = 0; i < room.Connectors.Count; i++)
-        {
-            Connector currentRoomConnector = room.Connectors[i];
-
-            eHall hallType = eHall.Lg;
-            float chanceOfHall = (float)m_Rng.NextDouble();
-            bool placeHall = (hallsPlaced == 0 && room.Connectors.Count == 1) || chanceOfHall < 0.5f;
-
-            if (placeHall)
-            {
-                float hallTypeChance = (float)m_Rng.NextDouble();
-                if (hallTypeChance < 0.65f)
-                {
-                    hallType = eHall.Sm;
-                }
-                else if (hallTypeChance < 0.85f)
-                {
-                    hallType = eHall.Md;
-                }
-
-                GameObject hallObj = (GameObject)Instantiate(m_HallPrefabs[(int)hallType], null);
-                Hall hall = hallObj.GetComponent<Hall>();
-
-                Connector hallEntryConnector = hall.Connectors[0];
-
-                // position hall
-                Vector3 position = currentRoomConnector.WorldPosition + hall.GetConnectorToCenter(hallEntryConnector);
-                position.y = -0.01f; // hack to prevent clipping
-                hallObj.transform.position = position;
-
-                // open the way
-                room.OpenWall(currentRoomConnector.Slot);
-                
-                // update connections
-                currentRoomConnector.SetNextSpace(hall);
-                if (!mainPathChosen && i == mainPathIndex)
-                {
-                    currentRoomConnector.IsOnMainPath = true;
-                    mainPathChosen = true;
-                }
-
-                // rotate
-                float angleBetweenConnectors = SignedAngle(currentRoomConnector.Forward, hallEntryConnector.Forward);
-                hallObj.transform.RotateAround(currentRoomConnector.WorldPosition, Vector3.up, -angleBetweenConnectors);
-
-                hallsPlaced += 1;
-
-                // TODO add the next room data to the list
-            }
-        }
+#if DEBUG_BUILD_LOG
+        Debug.Log(message);
+#endif
     }
+
+    // >>>>>>>>>>>>> previous implementation
 
     //private void BuildDungeon(GameEvents.RequestDungeonEvent e)
     //{

@@ -6,11 +6,11 @@ public class Connector
 {
     public int Slot;
     public bool Available;
-    public Vector3 WorldPosition;
     public Space ConnectedSpace;
     public Space NextSpace;
     public bool IsOnMainPath = false;
 
+    public Vector3 WorldPosition { get { return m_Obj.transform.position; } }
     public Vector3 Forward { get { return m_Obj.transform.forward; } }
 
     private GameObject m_Obj;
@@ -18,12 +18,9 @@ public class Connector
     public Connector(int slot, GameObject obj, Space connected, bool mainPath, bool available = true)
     {
         Slot = slot;
-        WorldPosition = obj.transform.position;
         ConnectedSpace = connected;
         IsOnMainPath = mainPath;
         Available = available;
-
-        // may not need this
         m_Obj = obj;
     }
 
