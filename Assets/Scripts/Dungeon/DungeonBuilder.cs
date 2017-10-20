@@ -29,6 +29,8 @@ public class DungeonBuilder : MonoBehaviour
     [SerializeField] private GameObject[] m_RoomPrefabs;
 
     private System.Random m_Rng;
+    private int m_MaxRoomCount = 5;
+    private int m_CurrentRoomCount = 0;
     //private int m_previousRoomDataIndex;
     //private int m_LastConnectorSlot = -1;
 
@@ -60,6 +62,10 @@ public class DungeonBuilder : MonoBehaviour
         roomData.SetRoom(room);
 
         Connector entryConnector = room.Connectors[0];
+        if (roomData.RoomType == eRoom.Start)
+        {
+            entryConnector.IsOnMainPath = true;
+        }
 
 		if (prevHallConnector != null)
 		{
@@ -84,18 +90,21 @@ public class DungeonBuilder : MonoBehaviour
         }
 
         // check for dead ends
-        if (roomData.RoomType == eRoom.Sqr_Sm && !room.Connectors[0].IsOnMainPath)
+        if (roomData.RoomType == eRoom.Sqr_Sm && !entryConnector.IsOnMainPath)
         {
-            float deadEndChance = (float)m_Rng.NextDouble();
-            if (deadEndChance < 0.75f)
-            {
+            //float deadEndChance = (float)m_Rng.NextDouble();
+            //if (deadEndChance < 0.75f)
+            //{
                 LogMessage("<!> DEAD END <!>");
                 
                 room.MakeDeadEnd();
                 roomObj.name = string.Format("{0} [{1}]", roomObj.name, "Dead End");
                 return;
-            }
+            //}
         }
+
+        // don't count the dead ends
+        m_CurrentRoomCount += 1;
 
         // check end room
         if (roomData.RoomType == eRoom.End)
@@ -114,7 +123,7 @@ public class DungeonBuilder : MonoBehaviour
 
             eHall hallType = eHall.Lg;
             float chanceOfHall = (float)m_Rng.NextDouble();
-            bool placeHall = (hallsPlaced == 0 && room.Connectors.Count == 1) || chanceOfHall < 0.5f;
+            bool placeHall = (hallsPlaced == 0 && room.Connectors.Count == 1) || chanceOfHall < 0.75f;
 
             if (placeHall)
             {
@@ -143,9 +152,12 @@ public class DungeonBuilder : MonoBehaviour
                 
                 // update connections
                 currentRoomConnector.SetNextSpace(hall);
-                if (!mainPathChosen && i == mainPathIndex)
+                if (entryConnector.IsOnMainPath && !mainPathChosen && i == mainPathIndex)
                 {
+                    // must be a better way to do this
                     currentRoomConnector.IsOnMainPath = true;
+                    hallEntryConnector.IsOnMainPath = true;
+                    hall.Connectors[1].IsOnMainPath = true;
                     mainPathChosen = true;
                 }
 
@@ -169,18 +181,18 @@ public class DungeonBuilder : MonoBehaviour
                 // should just work?
 
                 RoomDatum nextRoom = null;
-                if (currentRoomConnector.IsOnMainPath)
+                if (m_CurrentRoomCount == m_MaxRoomCount - 1)
                 {
                     nextRoom = new RoomDatum(eRoom.End);
                 }
                 else
                 {
                     float nextRoomChance = (float)m_Rng.NextDouble();
-                    if (nextRoomChance < 0.5f)
+                    if (nextRoomChance < 0.75f)
                     {
                         nextRoom = new RoomDatum(eRoom.Sqr_Sm);
                     }
-                    else if (nextRoomChance < 0.75f)
+                    else if (nextRoomChance < 0.9f)
                     {
                         nextRoom = new RoomDatum(eRoom.Sqr_Md);
                     }
