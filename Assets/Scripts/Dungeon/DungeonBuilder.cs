@@ -1,36 +1,11 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+public enum eHall { Sm, Md, Lg }
+public enum eRoom { Start, End, Sqr_Sm, Sqr_Md, Sqr_Lg, Rct_Sm, Rct_Md, Rct_Lg }
+
 public class DungeonBuilder : MonoBehaviour
 {
-    public class RoomDatum
-    {
-        public eRoom RoomType;
-        public Room Room;
-        public Connector PreviousHallConnector;
-        public bool IsDeadEnd = false;
-
-        public RoomDatum(eRoom type)
-        {
-            RoomType = type;
-        }
-
-        public void SetRoom(Room r, Connector previous)
-        {
-            Room = r;
-            PreviousHallConnector = previous;
-        }
-
-        public void SetDeadEnd()
-        {
-            IsDeadEnd = true;
-            Room.MakeDeadEnd();
-        }
-    }
-
-    public enum eHall { Sm, Md, Lg }
-    public enum eRoom { Start, End, Sqr_Sm, Sqr_Md, Sqr_Lg, Rct_Sm, Rct_Md, Rct_Lg }
-
     [SerializeField] private GameObject[] m_HallPrefabs;
     [SerializeField] private GameObject[] m_RoomPrefabs;
 
@@ -96,55 +71,24 @@ public class DungeonBuilder : MonoBehaviour
             return;
         }
 
-        //bool mainPathChosen = false;
-        //int mainPathIndex = m_Rng.Next(room.Connectors.Count - 1) + 1;
-        //int hallsPlaced = 0;
-
-        //if (room.Connectors.Count == 1) mainPathIndex = 0;
-        //Connector currentRoomConnector = room.Connectors[mainPathIndex];
-
         Connector randomConnector = room.GetRandomConnector(0, m_Rng);
+        eHall hallType = eHall.Lg;
+        
+        Hall hall = BuildHall(hallType, randomConnector, entryConnector, room, maxRoomCount);
+        RoomDatum nextRoom = DetermineNextRoom(maxRoomCount);
 
-        // lay down the hallways
-        //for (int i = 0; i < room.Connectors.Count; i++)
-        //{
-        //    Connector currentRoomConnector = room.Connectors[i];
-        //    if (currentRoomConnector.Slot == 0 && room.Connectors.Count > 1)
-        //    {
-                // don't want a new hall off of the entrance to the room
-        //        continue;
-        //    }
-
-            eHall hallType = eHall.Lg;
-        //    float chanceOfHall = (float)m_Rng.NextDouble();
-        //    bool placeHall = (hallsPlaced == 0 && room.Connectors.Count == 1) || chanceOfHall < 0.75f;
-
-        //    if (placeHall)
-        //    {
-                // this can probably be refactors to not be such a mess of parameters
-                Hall hall = BuildHall(hallType, randomConnector, entryConnector, room, maxRoomCount);
-                //hallsPlaced += 1;
-
-                RoomDatum nextRoom = DetermineNextRoom(maxRoomCount);
-
-                ProcessNextRoom(nextRoom, hall.Connectors[1], maxRoomCount);
-        //    }
-        //}
+        ProcessNextRoom(nextRoom, hall.Connectors[1], maxRoomCount);
     }
 
     private bool DetermineEndOfRoute(RoomDatum roomData, Connector roomEntry)
     {
         if (roomData.RoomType == eRoom.Sqr_Sm && !roomEntry.IsOnMainPath)
         {
-            //float deadEndChance = (float)m_Rng.NextDouble();
-            //if (deadEndChance < 0.75f)
-            //{
             roomData.SetDeadEnd();
 
             GameObject roomObj = roomData.Room.gameObject;
             roomObj.name = string.Format("{0} [{1}]", roomObj.name, "Dead End");
             return true;
-            //}
         }
 
         // check end room
@@ -160,7 +104,6 @@ public class DungeonBuilder : MonoBehaviour
     {
         RoomDatum nextRoom = null;
         if (m_CurrentRoomCount == maxRoomCount - 1)
-        //if (currentRoomConnector.IsOnMainPath)
         {
             if (m_MainPath)
             {
@@ -290,13 +233,11 @@ public class DungeonBuilder : MonoBehaviour
         // update connections
         roomConnector.SetNextSpace(hall);
         if (m_MainPath)
-        //if (roomEntry.IsOnMainPath && !mainPathChosen && index == mainPathIndex)
         {
             // must be a better way to do this
             roomConnector.IsOnMainPath = true;
             hallEntryConnector.IsOnMainPath = true;
             hall.Connectors[1].IsOnMainPath = true;
-            //mainPathChosen = true;
         }
 
         // rotate

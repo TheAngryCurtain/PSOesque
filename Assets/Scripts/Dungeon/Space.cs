@@ -19,7 +19,7 @@ public class Space : MonoBehaviour
         {
             if (m_ConnectorTransforms[i] != null)
             {
-                m_Connectors.Add(new Connector(i, m_ConnectorTransforms[i].gameObject, this, false));
+                m_Connectors.Add(new Connector(i, m_ConnectorTransforms[i].gameObject, false));
             }
         }
 

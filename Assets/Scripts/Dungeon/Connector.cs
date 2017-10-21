@@ -4,7 +4,6 @@ public class Connector
 {
     public int Slot;
     public bool Available;
-    public Space ConnectedSpace;
     public Space NextSpace;
     public bool IsOnMainPath = false;
 
@@ -13,10 +12,9 @@ public class Connector
 
     private GameObject m_Obj;
 
-    public Connector(int slot, GameObject obj, Space connected, bool mainPath, bool available = true)
+    public Connector(int slot, GameObject obj, bool mainPath, bool available = true)
     {
         Slot = slot;
-        ConnectedSpace = connected;
         IsOnMainPath = mainPath;
         Available = available;
         m_Obj = obj;
