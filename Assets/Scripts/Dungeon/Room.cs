@@ -4,7 +4,18 @@ using UnityEngine;
 
 public class Room : Space
 {
+    public static int RoomCount = 0;
+
     [SerializeField] private GameObject[] m_MiddleWalls;
+
+    public int RoomID;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        RoomID = RoomCount++;
+    }
 
     public void MakeDeadEnd()
     {

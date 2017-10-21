@@ -35,4 +35,24 @@ public class GameEvents
             PlayerObj = obj;
         }
     }
+
+    public class PlayerEnteredRoomEvent : VSGameEvent
+    {
+        public int roomID;
+
+        public PlayerEnteredRoomEvent(int id)
+        {
+            roomID = id;
+        }
+    }
+
+    public class PlayerExitedRoomEvent : VSGameEvent
+    {
+        public int roomID;
+
+        public PlayerExitedRoomEvent(int id)
+        {
+            roomID = id;
+        }
+    }
 }

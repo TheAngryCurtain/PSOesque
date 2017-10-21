@@ -1,0 +1,30 @@
+﻿using UnityEngine;
+
+public class Connector
+{
+    public int Slot;
+    public bool Available;
+    public Space ConnectedSpace;
+    public Space NextSpace;
+    public bool IsOnMainPath = false;
+
+    public Vector3 WorldPosition { get { return m_Obj.transform.position; } }
+    public Vector3 Forward { get { return m_Obj.transform.forward; } }
+
+    private GameObject m_Obj;
+
+    public Connector(int slot, GameObject obj, Space connected, bool mainPath, bool available = true)
+    {
+        Slot = slot;
+        ConnectedSpace = connected;
+        IsOnMainPath = mainPath;
+        Available = available;
+        m_Obj = obj;
+    }
+
+    public void SetNextSpace(Space s)
+    {
+        NextSpace = s;
+        Available = false;
+    }
+}

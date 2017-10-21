@@ -1,7 +1,4 @@
-﻿#define DEBUG_BUILD_LOG
-
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class DungeonBuilder : MonoBehaviour
@@ -10,15 +7,24 @@ public class DungeonBuilder : MonoBehaviour
     {
         public eRoom RoomType;
         public Room Room;
+        public Connector PreviousHallConnector;
+        public bool IsDeadEnd = false;
 
         public RoomDatum(eRoom type)
         {
             RoomType = type;
         }
 
-        public void SetRoom(Room r)
+        public void SetRoom(Room r, Connector previous)
         {
             Room = r;
+            PreviousHallConnector = previous;
+        }
+
+        public void SetDeadEnd()
+        {
+            IsDeadEnd = true;
+            Room.MakeDeadEnd();
         }
     }
 
@@ -29,8 +35,9 @@ public class DungeonBuilder : MonoBehaviour
     [SerializeField] private GameObject[] m_RoomPrefabs;
 
     private System.Random m_Rng;
-    private int m_MaxRoomCount = 5;
+    private Queue<RoomDatum> m_PotentialPathRooms;
     private int m_CurrentRoomCount = 0;
+    private bool m_MainPath = true;
 
     private void Awake()
     {
@@ -39,10 +46,20 @@ public class DungeonBuilder : MonoBehaviour
 
     private void BuildDungeon(GameEvents.RequestDungeonEvent e)
     {
-        m_Rng = new System.Random(e.Seed);
+        Debug.LogFormat("Seed: {0}", e.Seed);
 
+        m_Rng = new System.Random(e.Seed);
+        m_PotentialPathRooms = new Queue<RoomDatum>();
+
+        // construct the main path
+        int maxPathLength = 5;
+        m_CurrentRoomCount = 0;
+        m_MainPath = true;
         RoomDatum startRoom = new RoomDatum(eRoom.Start);
-        ProcessNextRoom(startRoom, null);
+        ProcessNextRoom(startRoom, null, maxPathLength);
+
+        // fill out side paths
+        BuildSidePaths();
 
         // notify
         Vector3 startPosition = startRoom.Room.FloorCenter.position;
@@ -50,7 +67,23 @@ public class DungeonBuilder : MonoBehaviour
         VSEventManager.Instance.TriggerEvent(new GameEvents.DungeonBuiltEvent(startPosition, startRotation));
     }
 
-	private void ProcessNextRoom(RoomDatum roomData, Connector prevHallConnector)
+    private void BuildSidePaths()
+    {
+        int maxLength = 4;
+        int minLength = 2;
+
+        while (m_PotentialPathRooms.Count > 0)
+        {
+            RoomDatum data = m_PotentialPathRooms.Dequeue();
+            int pathLength = m_Rng.Next(maxLength) + minLength;
+
+            m_CurrentRoomCount = 0;
+            m_MainPath = false;
+            ProcessNextRoom(data, null, pathLength);
+        }
+    }
+
+	private void ProcessNextRoom(RoomDatum roomData, Connector prevHallConnector, int maxRoomCount)
 	{
         Room room = BuildRoom(roomData, prevHallConnector);
         Connector entryConnector = room.Connectors[0];
@@ -63,34 +96,40 @@ public class DungeonBuilder : MonoBehaviour
             return;
         }
 
-        bool mainPathChosen = false;
-        int mainPathIndex = m_Rng.Next(room.Connectors.Count);
-        int hallsPlaced = 0;
+        //bool mainPathChosen = false;
+        //int mainPathIndex = m_Rng.Next(room.Connectors.Count - 1) + 1;
+        //int hallsPlaced = 0;
+
+        //if (room.Connectors.Count == 1) mainPathIndex = 0;
+        //Connector currentRoomConnector = room.Connectors[mainPathIndex];
+
+        Connector randomConnector = room.GetRandomConnector(0, m_Rng);
 
         // lay down the hallways
-        for (int i = 0; i < room.Connectors.Count; i++)
-        {
-            Connector currentRoomConnector = room.Connectors[i];
-            if (currentRoomConnector.Slot == 0 && room.Connectors.Count > 1)
-            {
-                // don't want to hall off of the entrance door
-                continue;
-            }
+        //for (int i = 0; i < room.Connectors.Count; i++)
+        //{
+        //    Connector currentRoomConnector = room.Connectors[i];
+        //    if (currentRoomConnector.Slot == 0 && room.Connectors.Count > 1)
+        //    {
+                // don't want a new hall off of the entrance to the room
+        //        continue;
+        //    }
 
             eHall hallType = eHall.Lg;
-            float chanceOfHall = (float)m_Rng.NextDouble();
-            bool placeHall = (hallsPlaced == 0 && room.Connectors.Count == 1) || chanceOfHall < 0.75f;
+        //    float chanceOfHall = (float)m_Rng.NextDouble();
+        //    bool placeHall = (hallsPlaced == 0 && room.Connectors.Count == 1) || chanceOfHall < 0.75f;
 
-            if (placeHall)
-            {
-                RoomDatum nextRoom = null;
+        //    if (placeHall)
+        //    {
                 // this can probably be refactors to not be such a mess of parameters
-                Hall hall = BuildHall(hallType, currentRoomConnector, entryConnector, room, i, ref mainPathChosen, mainPathIndex, out nextRoom);
-                hallsPlaced += 1;
+                Hall hall = BuildHall(hallType, randomConnector, entryConnector, room, maxRoomCount);
+                //hallsPlaced += 1;
 
-                ProcessNextRoom(nextRoom, hall.Connectors[1]);
-            }
-        }
+                RoomDatum nextRoom = DetermineNextRoom(maxRoomCount);
+
+                ProcessNextRoom(nextRoom, hall.Connectors[1], maxRoomCount);
+        //    }
+        //}
     }
 
     private bool DetermineEndOfRoute(RoomDatum roomData, Connector roomEntry)
@@ -100,9 +139,7 @@ public class DungeonBuilder : MonoBehaviour
             //float deadEndChance = (float)m_Rng.NextDouble();
             //if (deadEndChance < 0.75f)
             //{
-            LogMessage("<!> DEAD END <!>");
-
-            roomData.Room.MakeDeadEnd();
+            roomData.SetDeadEnd();
 
             GameObject roomObj = roomData.Room.gameObject;
             roomObj.name = string.Format("{0} [{1}]", roomObj.name, "Dead End");
@@ -113,19 +150,69 @@ public class DungeonBuilder : MonoBehaviour
         // check end room
         if (roomData.RoomType == eRoom.End)
         {
-            LogMessage("> End Room Placed");
             return true;
         }
 
         return false;
     }
 
+    private RoomDatum DetermineNextRoom(int maxRoomCount)
+    {
+        RoomDatum nextRoom = null;
+        if (m_CurrentRoomCount == maxRoomCount - 1)
+        //if (currentRoomConnector.IsOnMainPath)
+        {
+            if (m_MainPath)
+            {
+                nextRoom = new RoomDatum(eRoom.End);
+            }
+            else
+            {
+                // TODO better way of marking dead end? like an eRoom type?
+                nextRoom = new RoomDatum(eRoom.Sqr_Sm);
+            }
+        }
+        else
+        {
+            float nextRoomChance = (float)m_Rng.NextDouble();
+            if (nextRoomChance < 0.45f)
+            {
+                nextRoom = new RoomDatum(eRoom.Sqr_Md);
+            }
+            else if (nextRoomChance < 0.75f)
+            {
+                nextRoom = new RoomDatum(eRoom.Rct_Sm);
+            }
+            else
+            {
+                nextRoom = new RoomDatum(eRoom.Sqr_Lg);
+            }
+        }
+
+        return nextRoom;
+    }
+
     private Room BuildRoom(RoomDatum roomData, Connector prevHallConnector)
     {
         // spawn the new room
-        GameObject roomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)roomData.RoomType], null);
-        Room room = roomObj.GetComponent<Room>();
-        roomData.SetRoom(room);
+        bool existingRoom = (roomData.Room != null);
+
+        Room room = roomData.Room;
+        GameObject roomObj = null;
+        Connector previousConnector = prevHallConnector;
+
+        if (existingRoom)
+        {
+            room = roomData.Room;
+            roomObj = room.gameObject;
+            previousConnector = roomData.PreviousHallConnector;
+        }
+        else
+        {
+            roomObj = (GameObject)Instantiate(m_RoomPrefabs[(int)roomData.RoomType], null);
+            room = roomObj.GetComponent<Room>();
+            roomData.SetRoom(room, prevHallConnector);
+        }
 
         Connector entryConnector = room.Connectors[0];
         if (roomData.RoomType == eRoom.Start)
@@ -133,19 +220,22 @@ public class DungeonBuilder : MonoBehaviour
             entryConnector.IsOnMainPath = true;
         }
 
-        if (prevHallConnector != null)
+        if (previousConnector != null)
         {
-            Vector3 position = prevHallConnector.WorldPosition + room.GetConnectorToCenter(entryConnector);
-            position.y = 0f; // all rooms at 0
+            Vector3 position = previousConnector.WorldPosition + room.GetConnectorToCenter(entryConnector);
+            position.y = 0f; // all rooms at 0 height
             roomObj.transform.position = position;
 
             // update connections
-            prevHallConnector.SetNextSpace(room);
-            entryConnector.IsOnMainPath = prevHallConnector.IsOnMainPath;
+            previousConnector.SetNextSpace(room);
+            entryConnector.IsOnMainPath = previousConnector.IsOnMainPath;
 
             // rotate
-            float angleFromForward = 180f + SignedAngle(Vector3.forward, prevHallConnector.Forward);
-            roomObj.transform.RotateAround(prevHallConnector.WorldPosition, Vector3.up, angleFromForward);
+            if (!existingRoom)
+            {
+                float angleFromForward = 180f + SignedAngle(Vector3.forward, previousConnector.Forward);
+                roomObj.transform.RotateAround(previousConnector.WorldPosition, Vector3.up, angleFromForward);
+            }
 
             // open the door
             room.OpenWall(0);
@@ -154,6 +244,12 @@ public class DungeonBuilder : MonoBehaviour
         {
             // no previous room, likely the start room
             roomObj.transform.position = Vector3.zero + room.GetConnectorToCenter(entryConnector);
+        }
+
+        // queue up potential side path rooms
+        if (m_MainPath && roomData.RoomType != eRoom.Start && roomData.RoomType != eRoom.End && !roomData.IsDeadEnd)
+        {
+            m_PotentialPathRooms.Enqueue(roomData);
         }
 
         return room;
@@ -166,7 +262,7 @@ public class DungeonBuilder : MonoBehaviour
         // this should probably be run at the end? once we know whether rooms are dead ends or not? we could store dead ends in a list and pass over them?
     }
 
-    private Hall BuildHall(eHall hallType, Connector roomConnector, Connector roomEntry, Room room, int index, ref bool mainPathChosen, int mainPathIndex, out RoomDatum nextRoomDatum)
+    private Hall BuildHall(eHall hallType, Connector roomConnector, Connector roomEntry, Room room, int maxRoomCount)
     {
         float hallTypeChance = (float)m_Rng.NextDouble();
         if (hallTypeChance < 0.65f)
@@ -193,54 +289,21 @@ public class DungeonBuilder : MonoBehaviour
 
         // update connections
         roomConnector.SetNextSpace(hall);
-        if (roomEntry.IsOnMainPath && !mainPathChosen && index == mainPathIndex)
+        if (m_MainPath)
+        //if (roomEntry.IsOnMainPath && !mainPathChosen && index == mainPathIndex)
         {
             // must be a better way to do this
             roomConnector.IsOnMainPath = true;
             hallEntryConnector.IsOnMainPath = true;
             hall.Connectors[1].IsOnMainPath = true;
-            mainPathChosen = true;
+            //mainPathChosen = true;
         }
 
         // rotate
         float angleBetweenConnectors = SignedAngle(roomConnector.Forward, hallEntryConnector.Forward);
         hallObj.transform.RotateAround(roomConnector.WorldPosition, Vector3.up, -angleBetweenConnectors);
 
-        RoomDatum nextRoom = null;
-        if (m_CurrentRoomCount == m_MaxRoomCount - 1)
-        //if (currentRoomConnector.IsOnMainPath)
-        {
-            nextRoom = new RoomDatum(eRoom.End);
-        }
-        else
-        {
-            float nextRoomChance = (float)m_Rng.NextDouble();
-            if (nextRoomChance < 0.65f)
-            {
-                nextRoom = new RoomDatum(eRoom.Sqr_Sm);
-            }
-            else if (nextRoomChance < 0.75f)
-            {
-                nextRoom = new RoomDatum(eRoom.Sqr_Md);
-            }
-            else
-            {
-                nextRoom = new RoomDatum(eRoom.Rct_Sm);
-            }
-
-            LogMessage(string.Format("Rolled {0}, chose {1}", nextRoomChance, nextRoom.RoomType));
-        }
-
-        nextRoomDatum = nextRoom;
-
         return hall;
-    }
-
-    private void LogMessage(string message)
-    {
-#if DEBUG_BUILD_LOG
-        Debug.Log(message);
-#endif
     }
 
     // >>>>>>>>>>>>> previous implementation

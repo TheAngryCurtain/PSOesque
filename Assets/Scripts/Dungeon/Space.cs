@@ -2,35 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Connector
-{
-    public int Slot;
-    public bool Available;
-    public Space ConnectedSpace;
-    public Space NextSpace;
-    public bool IsOnMainPath = false;
-
-    public Vector3 WorldPosition { get { return m_Obj.transform.position; } }
-    public Vector3 Forward { get { return m_Obj.transform.forward; } }
-
-    private GameObject m_Obj;
-
-    public Connector(int slot, GameObject obj, Space connected, bool mainPath, bool available = true)
-    {
-        Slot = slot;
-        ConnectedSpace = connected;
-        IsOnMainPath = mainPath;
-        Available = available;
-        m_Obj = obj;
-    }
-
-    public void SetNextSpace(Space s)
-    {
-        NextSpace = s;
-        Available = false;
-    }
-}
-
 public class Space : MonoBehaviour
 {
     [SerializeField] private Transform m_FloorCenter;
@@ -41,23 +12,7 @@ public class Space : MonoBehaviour
     protected List<Connector> m_Connectors;
     public List<Connector> Connectors { get { return m_Connectors; } }
 
-    protected Connector m_LastUsedConnector;
-
-    public int GetTotalAvailableConnectors()
-    {
-        int count = 0;
-        for (int i = 0; i < m_Connectors.Count; i++)
-        {
-            if (m_Connectors[i].Available)
-            {
-                count += 1;
-            }
-        }
-
-        return count;
-    }
-
-    private void Awake()
+    protected virtual void Awake()
     {
         m_Connectors = new List<Connector>();
         for (int i = 0; i < m_ConnectorTransforms.Length; i++)
@@ -67,16 +22,25 @@ public class Space : MonoBehaviour
                 m_Connectors.Add(new Connector(i, m_ConnectorTransforms[i].gameObject, this, false));
             }
         }
+
+        Show(false);
+    }
+
+    public virtual void Show(bool show)
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            for (int j = 0; j < renderers[i].materials.Length; j++)
+            {
+                renderers[i].materials[j].color = (show ? Color.white : Color.black);
+            }
+        }
     }
 
     public Vector3 GetConnectorToCenter(Connector c)
     {
         return m_FloorCenter.position - c.WorldPosition;
-    }
-
-    public Vector3 GetCenterToConnector(Connector c)
-    {
-        return c.WorldPosition - m_FloorCenter.position;
     }
 
     public Connector GetFirstAvailableConnector()
@@ -93,18 +57,18 @@ public class Space : MonoBehaviour
             }
         }
 
-        m_LastUsedConnector = first;
         return first;
     }
 
     public Connector GetRandomConnector(int previousSlot, System.Random rng)
     {
+        Connector c = null;
         List<Connector> unused = new List<Connector>(m_Connectors.Count);
         for (int i = 0; i < m_Connectors.Count; i++)
         {
             if (m_Connectors[i].Available)
             {
-                if (i != previousSlot)
+                if (i != previousSlot || m_Connectors.Count == 1) // starting room has only one connector
                 {
                     unused.Add(m_Connectors[i]);
                 }
@@ -114,59 +78,29 @@ public class Space : MonoBehaviour
         if (unused.Count > 0)
         {
             int random = rng.Next(unused.Count);
-            m_LastUsedConnector = unused[random];
-        }
-        else
-        {
-            m_LastUsedConnector = null;
+            c = unused[random];
         }
 
-        return m_LastUsedConnector;
+        return c;
     }
 
-    public Connector GetLastUsedOrFirstConnector()
+    public void OnFloorCollsionEnter(Collision collision)
     {
-        if (m_LastUsedConnector == null)
-        {
-            return GetFirstAvailableConnector();
-        }
+        Show(true);
 
-        return m_LastUsedConnector;
+        Room r = this.gameObject.GetComponent<Room>();
+        if (r != null)
+        {
+            VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerEnteredRoomEvent(r.RoomID));
+        }
     }
 
-    public Connector GetLastAvailableConnector()
+    public void OnFloorCollisionExit(Collision collision)
     {
-        int totalConnectors = m_Connectors.Count;
-        Connector last = m_Connectors[totalConnectors - 1];
-
-        for (int i = totalConnectors - 1; i > 0; i--)
+        Room r = this.gameObject.GetComponent<Room>();
+        if (r != null)
         {
-            if (m_Connectors[i].Available)
-            {
-                last = m_Connectors[i];
-                break;
-            }
+            VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerExitedRoomEvent(r.RoomID));
         }
-
-        m_LastUsedConnector = last;
-        return last;
-    }
-
-    // for debug
-    public Connector GetSecondLastConnector()
-    {
-        int totalConnectors = m_Connectors.Count;
-        Connector last;
-        if (totalConnectors > 1)
-        {
-            last = m_Connectors[totalConnectors - 2];
-        }
-        else
-        {
-            last = m_Connectors[0];
-        }
-
-        m_LastUsedConnector = last;
-        return last;
     }
 }
