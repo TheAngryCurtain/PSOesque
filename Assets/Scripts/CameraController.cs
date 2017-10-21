@@ -16,7 +16,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float m_MinCameraY = 0.3f;
     [SerializeField] private float m_CurrentYaw = 0f;
 
-    private eCameraMode m_CameraMode = eCameraMode.Static;
+    private eCameraMode m_CameraMode = eCameraMode.Free;
 
     private void Awake()
     {
@@ -47,7 +47,7 @@ public class CameraController : MonoBehaviour
 
             switch (data.actionId)
             {
-                case RewiredConsts.Action.Move_Horizontal:
+                case RewiredConsts.Action.Camera_Horizontal:
                     horizontal = data.GetAxis();
                     break;
             }
