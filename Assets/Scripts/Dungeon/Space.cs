@@ -7,7 +7,7 @@ public class Space : MonoBehaviour
     [SerializeField] private Transform m_FloorCenter;
     public Transform FloorCenter { get { return m_FloorCenter; } }
 
-    [SerializeField] private Transform[] m_ConnectorTransforms = new Transform[4];
+    [SerializeField] protected Transform[] m_ConnectorTransforms = new Transform[4];
 
     protected List<Connector> m_Connectors;
     public List<Connector> Connectors { get { return m_Connectors; } }
@@ -89,7 +89,7 @@ public class Space : MonoBehaviour
         Show(true);
 
         Room r = this.gameObject.GetComponent<Room>();
-        if (r != null)
+        if (r != null && collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerEnteredRoomEvent(r.RoomID));
         }
@@ -98,7 +98,7 @@ public class Space : MonoBehaviour
     public void OnFloorCollisionExit(Collision collision)
     {
         Room r = this.gameObject.GetComponent<Room>();
-        if (r != null)
+        if (r != null && collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerExitedRoomEvent(r.RoomID));
         }

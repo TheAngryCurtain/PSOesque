@@ -9,6 +9,8 @@ public class RoomDatum
     public Connector PreviousHallConnector;
     public bool IsDeadEnd = false;
 
+    public eHall PreviousHallType;
+
     public RoomDatum(eRoom type)
     {
         RoomType = type;

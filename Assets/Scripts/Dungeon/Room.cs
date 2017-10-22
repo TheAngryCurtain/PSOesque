@@ -33,4 +33,12 @@ public class Room : Space
             m_MiddleWalls[index].SetActive(false);
         }
     }
+
+    public Vector2 GetBoundaries()
+    {
+        float width = (m_ConnectorTransforms[1].position - m_ConnectorTransforms[2].position).magnitude;
+        float length = (m_ConnectorTransforms[0].position - m_ConnectorTransforms[3].position).magnitude;
+
+        return new Vector2(width, length);
+    }
 }

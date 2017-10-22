@@ -14,6 +14,10 @@ public class DungeonBuilder : MonoBehaviour
     private int m_CurrentRoomCount = 0;
     private bool m_MainPath = true;
 
+    // used to place objects
+    private List<RoomDatum> m_MainPathRooms;
+    private List<RoomDatum> m_DeadEndRooms;
+
     private void Awake()
     {
         VSEventManager.Instance.AddListener<GameEvents.RequestDungeonEvent>(BuildDungeon);
@@ -24,7 +28,10 @@ public class DungeonBuilder : MonoBehaviour
         Debug.LogFormat("Seed: {0}", e.Seed);
 
         m_Rng = new System.Random(e.Seed);
+
         m_PotentialPathRooms = new Queue<RoomDatum>();
+        m_MainPathRooms = new List<RoomDatum>();
+        m_DeadEndRooms = new List<RoomDatum>();
 
         // construct the main path
         int maxPathLength = 5;
@@ -35,6 +42,9 @@ public class DungeonBuilder : MonoBehaviour
 
         // fill out side paths
         BuildSidePaths();
+
+        // place interesting things
+        PlaceObjects();
 
         // notify
         Vector3 startPosition = startRoom.Room.FloorCenter.position;
@@ -71,12 +81,12 @@ public class DungeonBuilder : MonoBehaviour
             return;
         }
 
-        Connector randomConnector = room.GetRandomConnector(0, m_Rng);
-        eHall hallType = eHall.Lg;
+        int previousSlot = 0; // should probably track the actual last slot to help avoid overlapping
+        Connector randomConnector = room.GetRandomConnector(previousSlot, m_Rng);
         
-        Hall hall = BuildHall(hallType, randomConnector, entryConnector, room, maxRoomCount);
-        RoomDatum nextRoom = DetermineNextRoom(maxRoomCount);
+        Hall hall = BuildHall(randomConnector, entryConnector, room, maxRoomCount);
 
+        RoomDatum nextRoom = DetermineNextRoom(maxRoomCount);
         ProcessNextRoom(nextRoom, hall.Connectors[1], maxRoomCount);
     }
 
@@ -85,6 +95,7 @@ public class DungeonBuilder : MonoBehaviour
         if (roomData.RoomType == eRoom.Sqr_Sm && !roomEntry.IsOnMainPath)
         {
             roomData.SetDeadEnd();
+            m_DeadEndRooms.Add(roomData);
 
             GameObject roomObj = roomData.Room.gameObject;
             roomObj.name = string.Format("{0} [{1}]", roomObj.name, "Dead End");
@@ -193,21 +204,49 @@ public class DungeonBuilder : MonoBehaviour
         if (m_MainPath && roomData.RoomType != eRoom.Start && roomData.RoomType != eRoom.End && !roomData.IsDeadEnd)
         {
             m_PotentialPathRooms.Enqueue(roomData);
+            m_MainPathRooms.Add(roomData);
         }
 
         return room;
     }
 
-    private void PlaceObjects(RoomDatum roomData)
+    private void PlaceObjects()
     {
         // TODO
         // pick whether a chest, switch & door pair, etc
         // this should probably be run at the end? once we know whether rooms are dead ends or not? we could store dead ends in a list and pass over them?
+
+        // place any locked doors and/or switches, enemy spawners (TODO)
+        for (int i = 0; i < m_MainPathRooms.Count; i++)
+        {
+            if (m_MainPathRooms[i].RoomType == eRoom.Sqr_Lg)
+            {
+                Room r = m_MainPathRooms[i].Room;
+                GameObject spawnObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Spawner), null);
+                spawnObj.transform.position = r.FloorCenter.position;
+
+                EnemySpawner spawner = spawnObj.GetComponent<EnemySpawner>();
+                if (spawner != null)
+                {
+                    spawner.SetRoomID(r.RoomID);
+                    
+                    Vector2 boundaries = r.GetBoundaries();
+                    spawner.SetRoomBoundaries(boundaries.x, boundaries.y);
+                }
+            }
+        }
+
+        // place any item boxes
+        for (int i = 0; i < m_DeadEndRooms.Count; i++)
+        {
+
+        }
     }
 
-    private Hall BuildHall(eHall hallType, Connector roomConnector, Connector roomEntry, Room room, int maxRoomCount)
+    private Hall BuildHall(Connector roomConnector, Connector roomEntry, Room room, int maxRoomCount)
     {
         float hallTypeChance = (float)m_Rng.NextDouble();
+        eHall hallType = eHall.Lg;
         if (hallTypeChance < 0.65f)
         {
             hallType = eHall.Sm;
