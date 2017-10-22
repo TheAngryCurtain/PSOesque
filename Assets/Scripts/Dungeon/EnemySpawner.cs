@@ -8,6 +8,7 @@ public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] m_EnemyPrefabs;
 
+    private bool m_Spawned = false;
     private int m_RoomID;
     private float m_RoomWidth;
     private float m_RoomLength;
@@ -30,16 +31,18 @@ public class EnemySpawner : MonoBehaviour
 
     private void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
     {
-        if (m_RoomID == e.roomID)
+        if (m_RoomID == e.RoomID)
         {
-            SpawnEnemies();
+            if (!m_Spawned)
+            {
+                SpawnEnemies(e.Player);
+                m_Spawned = true;
+            }
         }
     }
 
-    private void SpawnEnemies()
+    private void SpawnEnemies(Transform playerTransform)
     {
-        Debug.Log("Spawing enemies...");
-
         Vector3 spawnPos = transform.position;
         float roomHalfWidth = m_RoomWidth / 2f;
         float roomHalfLength = m_RoomLength / 2f;
@@ -62,19 +65,26 @@ public class EnemySpawner : MonoBehaviour
             float randZ = UnityEngine.Random.Range(roomMinZ, roomMaxZ);
 
             Vector3 randPos = new Vector3(randX, 1f, randZ);
+            GameObject enemyObj = null;
 
             if (i < numLow)
             {
-                Instantiate(m_EnemyPrefabs[(int)eEnemyType.Low], randPos, Quaternion.identity);
+                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Low], randPos, Quaternion.identity);
             }
             else if (i < numLow + numMed)
             {
-                Instantiate(m_EnemyPrefabs[(int)eEnemyType.Medium], randPos, Quaternion.identity);
+                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Medium], randPos, Quaternion.identity);
             }
             else
             {
-                Instantiate(m_EnemyPrefabs[(int)eEnemyType.High], randPos, Quaternion.identity);
+                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.High], randPos, Quaternion.identity);
             }
+
+            // UGH. find a better way to do this
+            // perhaps create a new event (on enemy spawned event) and pass the room id and player transform
+            Enemy enemy = enemyObj.GetComponent<Enemy>();
+            enemy.SetHomeRoom(m_RoomID);
+            enemy.SetTarget(playerTransform);
         }
     }
 }

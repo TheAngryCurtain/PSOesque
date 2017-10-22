@@ -91,7 +91,7 @@ public class Space : MonoBehaviour
         Room r = this.gameObject.GetComponent<Room>();
         if (r != null && collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
-            VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerEnteredRoomEvent(r.RoomID));
+            VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerEnteredRoomEvent(r.RoomID, collision.transform));
         }
     }
 

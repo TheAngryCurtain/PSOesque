@@ -4,10 +4,10 @@ using UnityEngine.AI;
 public class Character : MonoBehaviour
 {
     //[SerializeField] private NavMeshAgent m_Agent;
-    [SerializeField] private Transform m_Transform;
-    [SerializeField] private Rigidbody m_Rigidbody;
+    [SerializeField] protected Transform m_Transform;
+    [SerializeField] protected Rigidbody m_Rigidbody;
 
-    [SerializeField] private float m_MoveSpeed = 3f;
+    [SerializeField] protected float m_MoveSpeed = 3f;
 
 
     protected virtual void Awake()

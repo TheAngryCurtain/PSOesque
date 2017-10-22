@@ -38,21 +38,25 @@ public class GameEvents
 
     public class PlayerEnteredRoomEvent : VSGameEvent
     {
-        public int roomID;
+        public int RoomID;
+        public Transform Player;
 
-        public PlayerEnteredRoomEvent(int id)
+        public PlayerEnteredRoomEvent(int id, Transform p)
         {
-            roomID = id;
+            RoomID = id;
+            Player = p;
         }
     }
 
     public class PlayerExitedRoomEvent : VSGameEvent
     {
-        public int roomID;
+        public int RoomID;
 
         public PlayerExitedRoomEvent(int id)
         {
-            roomID = id;
+            RoomID = id;
         }
     }
+
+    public class EnemyDefeatedEvent : VSGameEvent { }
 }
