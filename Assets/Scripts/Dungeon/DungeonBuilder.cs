@@ -216,22 +216,25 @@ public class DungeonBuilder : MonoBehaviour
         // pick whether a chest, switch & door pair, etc
         // this should probably be run at the end? once we know whether rooms are dead ends or not? we could store dead ends in a list and pass over them?
 
-        // place any locked doors and/or switches, enemy spawners (TODO)
+        // place any locked doors and/or switches, enemy spawners
         for (int i = 0; i < m_MainPathRooms.Count; i++)
         {
-            if (m_MainPathRooms[i].RoomType == eRoom.Sqr_Lg)
+            Room r = m_MainPathRooms[i].Room;
+            if (m_MainPathRooms[i].RoomType == eRoom.Sqr_Lg ||
+                m_MainPathRooms[i].RoomType == eRoom.Sqr_Md)
             {
-                Room r = m_MainPathRooms[i].Room;
-                GameObject spawnObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Spawner), null);
-                spawnObj.transform.position = r.FloorCenter.position;
-
-                EnemySpawner spawner = spawnObj.GetComponent<EnemySpawner>();
-                if (spawner != null)
+                float chance = (float)m_Rng.NextDouble();
+                if (chance < 0.75f)
                 {
-                    spawner.SetRoomID(r.RoomID);
-                    
-                    Vector2 boundaries = r.GetBoundaries();
-                    spawner.SetRoomBoundaries(boundaries.x, boundaries.y);
+                    Room switchRoom = CheckForSwitchConfiguration(r);
+                    SetupSwitchRoom(r, switchRoom);
+
+                    // put enemies in, but with no doors
+                    SetupEnemyRoom(r, false);
+                }
+                else
+                {
+                    SetupEnemyRoom(r);
                 }
             }
         }
@@ -240,6 +243,110 @@ public class DungeonBuilder : MonoBehaviour
         for (int i = 0; i < m_DeadEndRooms.Count; i++)
         {
 
+        }
+    }
+
+    private Room CheckForSwitchConfiguration(Room r)
+    {
+        List<Room> closestRooms = new List<Room>();
+        List<float> minSqrDists = new List<float>();
+
+        // check non-main path rooms for nearby deadends
+        for (int i = 0; i < r.Connectors.Count; i++)
+        {
+            if (!r.Connectors[i].IsOnMainPath)
+            {
+                float minSqrDist = float.MaxValue;
+                Room closest = null;
+
+                // for now, just do a distance check... not robust, but a better method is needed eventually anyway
+                for (int j = 0; j < m_DeadEndRooms.Count; j++)
+                {
+                    float sqrDist = (r.Connectors[i].ObjTransform.position - m_DeadEndRooms[j].Room.Connectors[0].ObjTransform.position).sqrMagnitude;
+                    if (sqrDist < minSqrDist)
+                    {
+                        minSqrDist = sqrDist;
+                        closest = m_DeadEndRooms[j].Room;
+                    }
+                }
+
+                closestRooms.Add(closest);
+                minSqrDists.Add(minSqrDist);
+            }
+        }
+
+        // get the closest possible room from each connector above
+        Room absClosest = null;
+        if (closestRooms.Count > 1)
+        {
+            float absMinSqrDist = float.MaxValue;
+            for (int i = 0; i < closestRooms.Count; i++)
+            {
+                if (minSqrDists[i] < absMinSqrDist)
+                {
+                    absMinSqrDist = minSqrDists[i];
+                    absClosest = closestRooms[i];
+                }
+            }
+        }
+        else
+        {
+            absClosest = closestRooms[0];
+        }
+
+        return absClosest;
+    }
+
+    private void SetupSwitchRoom(Room mainRoom, Room switchRoom)
+    {
+        // door
+        for (int i = 1; i < mainRoom.Connectors.Count; i++)
+        {
+            // need to block main path door
+            Connector c = mainRoom.Connectors[i];
+            if (c.IsOnMainPath)
+            {
+                GameObject doorObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.SwitchDoor), c.ObjTransform.position, c.ObjTransform.rotation);
+                SwitchDoor door = doorObj.GetComponent<SwitchDoor>();
+                door.SetRoomID(mainRoom.RoomID);
+            }
+        }
+
+        // switch
+        GameObject switchObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Switch), switchRoom.FloorCenter.position, Quaternion.identity);
+        Switch s = switchObj.GetComponent<Switch>();
+        s.SetRoomID(mainRoom.RoomID);
+    }
+
+    private void SetupEnemyRoom(Room r, bool withDoors = true)
+    {
+        // door(s)
+        if (withDoors)
+        {
+            for (int i = 1; i < r.Connectors.Count; i++)
+            {
+                // need to block off each exit with a hallway (except the entry door)
+                Connector c = r.Connectors[i];
+                if (!c.Available)
+                {
+                    GameObject doorObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.EnemyDoor), c.ObjTransform.position, c.ObjTransform.rotation);
+                    EnemyDoor door = doorObj.GetComponent<EnemyDoor>();
+                    door.SetRoomID(r.RoomID);
+                }
+            }
+        }
+
+        // enemy spawner
+        GameObject spawnObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Spawner), null);
+        spawnObj.transform.position = r.FloorCenter.position;
+
+        EnemySpawner spawner = spawnObj.GetComponent<EnemySpawner>();
+        if (spawner != null)
+        {
+            spawner.SetRoomID(r.RoomID);
+
+            Vector2 boundaries = r.GetBoundaries();
+            spawner.SetRoomBoundaries(boundaries.x, boundaries.y);
         }
     }
 

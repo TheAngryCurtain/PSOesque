@@ -11,6 +11,7 @@ public class Connector
     public Vector3 Forward { get { return m_Obj.transform.forward; } }
 
     private GameObject m_Obj;
+    public Transform ObjTransform { get { return m_Obj.transform; } }
 
     public Connector(int slot, GameObject obj, bool mainPath, bool available = true)
     {

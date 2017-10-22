@@ -86,5 +86,7 @@ public class EnemySpawner : MonoBehaviour
             enemy.SetHomeRoom(m_RoomID);
             enemy.SetTarget(playerTransform);
         }
+
+        VSEventManager.Instance.TriggerEvent(new GameEvents.SetupRoomDoorEvent(m_RoomID, total));
     }
 }

@@ -1,11 +1,35 @@
 ﻿using UnityEngine;
 
-public class Door : MonoBehaviour, ISwitchable
+public class Door : MonoBehaviour
 {
-    [SerializeField] private GameObject m_DoorObj;
+    [SerializeField] protected GameObject m_DoorObj;
+    [SerializeField] private Transform m_EndLocation;
 
-    public void OnSwitchPressed()
+    protected int m_RoomID;
+    private bool m_MoveDoor = false;
+
+    public virtual void SetRoomID(int id)
     {
-        m_DoorObj.transform.localPosition -= Vector3.up;
+        m_RoomID = id;
+    }
+
+    protected virtual void UnlockDoor()
+    {
+        // TODO make this less lame
+        m_MoveDoor = true;
+    }
+
+    protected virtual void Update()
+    {
+        if (m_MoveDoor)
+        {
+            Vector3 pos = Vector3.Lerp(m_DoorObj.transform.localPosition, m_EndLocation.localPosition, Time.deltaTime);
+            m_DoorObj.transform.localPosition = pos;
+
+            if (pos == m_EndLocation.localPosition)
+            {
+                m_MoveDoor = false;
+            }
+        }
     }
 }

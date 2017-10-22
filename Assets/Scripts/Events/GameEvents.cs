@@ -58,5 +58,35 @@ public class GameEvents
         }
     }
 
-    public class EnemyDefeatedEvent : VSGameEvent { }
+    public class SetupRoomDoorEvent : VSGameEvent
+    {
+        public int EnemyCount;
+        public int RoomID;
+
+        public SetupRoomDoorEvent(int roomId, int enemyCount)
+        {
+            RoomID = roomId;
+            EnemyCount = enemyCount;
+        }
+    }
+
+    public class EnemyDefeatedEvent : VSGameEvent
+    {
+        public int RoomID;
+
+        public EnemyDefeatedEvent(int roomID)
+        {
+            RoomID = roomID;
+        }
+    }
+
+    public class DoorSwitchPressedEvent : VSGameEvent
+    {
+        public int RoomID;
+
+        public DoorSwitchPressedEvent(int roomID)
+        {
+            RoomID = roomID;
+        }
+    }
 }

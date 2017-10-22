@@ -12,6 +12,7 @@ public class Enemy : Character
     private float m_CurrentAttackTime = 0;
     private int m_HomeRoomID;
     private Vector3 m_SpawnPos;
+    private bool m_Dead = false;
 
     protected override void Awake()
     {
@@ -23,12 +24,6 @@ public class Enemy : Character
         VSEventManager.Instance.AddListener<GameEvents.PlayerExitedRoomEvent>(OnPlayerExitedRoom);
 
         m_AttackRangeSqr = m_AttackRange * m_AttackRange;
-    }
-
-    protected override void OnDestroy()
-    {
-        VSEventManager.Instance.RemoveListener<GameEvents.PlayerEnteredRoomEvent>(OnPlayerEnteredRoom);
-        VSEventManager.Instance.RemoveListener<GameEvents.PlayerExitedRoomEvent>(OnPlayerExitedRoom);
     }
 
     private void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
@@ -59,6 +54,8 @@ public class Enemy : Character
 
     protected virtual void FixedUpdate()
     {
+        if (m_Dead) return;
+
         if (m_Target != null)
         {
             bool inRange = MoveWithinRange();
@@ -108,10 +105,38 @@ public class Enemy : Character
         }
     }
 
+    protected virtual void Kill()
+    {
+        if (m_Dead) return;
+        
+        VSEventManager.Instance.RemoveListener<GameEvents.PlayerEnteredRoomEvent>(OnPlayerEnteredRoom);
+        VSEventManager.Instance.RemoveListener<GameEvents.PlayerExitedRoomEvent>(OnPlayerExitedRoom);
+
+        m_Dead = true;
+
+        // make them fall, for now
+        m_Rigidbody.constraints = RigidbodyConstraints.None;
+
+        // for fun, push them away and watch them roll!
+        if (m_Target != null)
+        {
+            Vector3 forceDirection = m_Transform.position - m_Target.position;
+            m_Rigidbody.AddForce(forceDirection * 25f, ForceMode.Impulse);
+        }
+
+        VSEventManager.Instance.TriggerEvent(new GameEvents.EnemyDefeatedEvent(m_HomeRoomID));
+    }
+
     // TODO
     // figure out how to handle attacking/damaging. Perhaps an IDamagable interface
     // when an enemy is destory, fire the enemydefeated event
-    // create another type of door that listens to that event and can unlock when they are all defeated
-    // will likely need to fire a setup event to let that door know how many enemies were spawned
-    // will likey need to spawn that door along with the spawner
+
+    // FOR TESTING
+    protected virtual void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
+        {
+            Kill();
+        }
+    }
 }

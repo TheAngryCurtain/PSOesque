@@ -1,5 +1,5 @@
 /* Rewired Constants
-   This list was generated on 10/20/2017 1:49:19 PM
+   This list was generated on 10/22/2017 7:33:01 PM
    The list applies to only the Rewired Input Manager from which it was generated.
    If you use a different Rewired Input Manager, you will have to generate a new list.
    If you make changes to the exported items in the Rewired Input Manager, you will need to regenerate this list.
@@ -16,6 +16,8 @@ namespace RewiredConsts {
         public const int Camera_Horizontal = 2;
         [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Camera Vertical")]
         public const int Camera_Vertical = 3;
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Interact")]
+        public const int Interact = 4;
     }
     public static class Category {
         public const int Default = 0;

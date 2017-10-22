@@ -7,7 +7,8 @@ public class RoomDatum
     public eRoom RoomType;
     public Room Room;
     public Connector PreviousHallConnector;
-    public bool IsDeadEnd = false;
+
+    public bool IsDeadEnd { get { return Room.DeadEnd; } }
 
     public eHall PreviousHallType;
 
@@ -24,7 +25,6 @@ public class RoomDatum
 
     public void SetDeadEnd()
     {
-        IsDeadEnd = true;
         Room.MakeDeadEnd();
     }
 }

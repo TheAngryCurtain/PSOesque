@@ -9,6 +9,7 @@ public class Room : Space
     [SerializeField] private GameObject[] m_MiddleWalls;
 
     public int RoomID;
+    public bool DeadEnd = false;
 
     protected override void Awake()
     {
@@ -24,6 +25,8 @@ public class Room : Space
         {
             m_Connectors.RemoveAt(i);
         }
+
+        DeadEnd = true;
     }
 
     public void OpenWall(int index)

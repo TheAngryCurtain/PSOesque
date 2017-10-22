@@ -11,6 +11,8 @@ public class Player : Character
     private float m_Vertical = 0f;
     private Transform m_CamTransform;
 
+    private IInteractable m_CurrentInteractable = null;
+
     protected override void Awake()
     {
         base.Awake();
@@ -38,6 +40,16 @@ public class Player : Character
             case RewiredConsts.Action.Move_Vertical:
                 m_Vertical = data.GetAxis();
                 break;
+
+            case RewiredConsts.Action.Interact:
+                if (data.GetButtonDown())
+                {
+                    if (m_CurrentInteractable != null)
+                    {
+                        m_CurrentInteractable.Interact();
+                    }
+                }
+                break;
         }
     }
 
@@ -47,5 +59,28 @@ public class Player : Character
         m_Movement.y = 0f;
 
         Move(m_Movement);
+    }
+
+    // TODO set up a better way of interactions?
+    protected virtual void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Interactable"))
+        {
+            IInteractable interactObj = other.gameObject.GetComponent<IInteractable>();
+            if (interactObj != null && interactObj != m_CurrentInteractable)
+            {
+                m_CurrentInteractable = interactObj;
+                m_CurrentInteractable.Highlight();
+            }
+        }
+    }
+
+    protected virtual void OnTriggerExit(Collider other)
+    {
+        if (m_CurrentInteractable != null)
+        {
+            m_CurrentInteractable.Unhighlight();
+            m_CurrentInteractable = null;
+        }
     }
 }
