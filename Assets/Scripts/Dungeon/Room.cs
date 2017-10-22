@@ -10,6 +10,7 @@ public class Room : Space
 
     public int RoomID;
     public bool DeadEnd = false;
+    public bool ContainsImportantObject = false;
 
     protected override void Awake()
     {
