@@ -6,6 +6,7 @@ public class Enemy : Character
 {
     [SerializeField] private float m_AttackRange = 1f;
     [SerializeField] private float m_AttackCooldownDelay = 2f;
+    [SerializeField] private eEnemyType m_Type;
 
     private Transform m_Target;
     private float m_AttackRangeSqr;

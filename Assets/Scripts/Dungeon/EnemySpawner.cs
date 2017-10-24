@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum eEnemyType { Low, Medium, High, Boss };
+public enum eEnemyType { Weak, Regular, Tough, ExtraTough, Boss };
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -53,12 +53,13 @@ public class EnemySpawner : MonoBehaviour
         float roomMaxZ = spawnPos.z + roomHalfLength;
 
         // TODO check difficulty or something to determine how many of each we need to spawn
+        // TODO add in a chance of 2-3 very tough instead of so many smaller ones
 
-        int numLow = 3;
-        int numMed = 2;
-        int numHigh = 1;
+        int numWeak = 4;
+        int numRegular = 2;
+        int numTough = 1;
 
-        int total = numLow + numMed + numHigh;
+        int total = numWeak + numRegular + numTough;
         for (int i = 0; i < total; i++)
         {
             float randX = UnityEngine.Random.Range(roomMinX, roomMaxX);
@@ -67,17 +68,17 @@ public class EnemySpawner : MonoBehaviour
             Vector3 randPos = new Vector3(randX, 1f, randZ);
             GameObject enemyObj = null;
 
-            if (i < numLow)
+            if (i < numWeak)
             {
-                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Low], randPos, Quaternion.identity);
+                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Weak], randPos, Quaternion.identity);
             }
-            else if (i < numLow + numMed)
+            else if (i < numWeak + numRegular)
             {
-                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Medium], randPos, Quaternion.identity);
+                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Regular], randPos, Quaternion.identity);
             }
             else
             {
-                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.High], randPos, Quaternion.identity);
+                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Tough], randPos, Quaternion.identity);
             }
 
             // UGH. find a better way to do this

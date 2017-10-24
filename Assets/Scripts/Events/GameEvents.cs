@@ -7,10 +7,12 @@ public class GameEvents
     public class RequestDungeonEvent : VSGameEvent
     {
         public int Seed;
+        public eLevelTheme Theme;
 
-        public RequestDungeonEvent(int seed)
+        public RequestDungeonEvent(int seed, eLevelTheme theme)
         {
             Seed = seed;
+            Theme = theme;
         }
     }
 
@@ -87,6 +89,22 @@ public class GameEvents
         public DoorSwitchPressedEvent(int roomID)
         {
             RoomID = roomID;
+        }
+    }
+
+    public class RequestItemSpawnEvent : VSGameEvent
+    {
+        public Vector3 SpawnPosition;
+        public eItemSource ItemSource;
+        public eEnemyType EnemyType;
+        public eCrateType CrateType;
+
+        public RequestItemSpawnEvent(Vector3 position, eItemSource source, eEnemyType eType, eCrateType cType)
+        {
+            SpawnPosition = position;
+            ItemSource = source;
+            EnemyType = eType;
+            CrateType = cType;
         }
     }
 }

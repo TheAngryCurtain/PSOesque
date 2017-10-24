@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ObjectFactory : Singleton<ObjectFactory>
 {
-    public enum eObject { Crate, SwitchDoor, Switch, Spawner, EnemyDoor, ItemBox };
+    public enum eObject { CrateSpawner, SwitchDoor, Switch, EnemySpawner, EnemyDoor, ItemBox };
 
     [SerializeField] private GameObject[] m_ObjectPrefabs;
 

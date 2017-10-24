@@ -25,7 +25,10 @@ public class DungeonBuilder : MonoBehaviour
 
     private void BuildDungeon(GameEvents.RequestDungeonEvent e)
     {
-        Debug.LogFormat("Seed: {0}", e.Seed);
+        Debug.LogFormat("Seed: {0}, Theme: {1}", e.Seed, e.Theme);
+
+        // TODO
+        // will need to load prefabs based on level theme!
 
         m_Rng = new System.Random(e.Seed);
 
@@ -242,7 +245,10 @@ public class DungeonBuilder : MonoBehaviour
         // place any item boxes
         for (int i = 0; i < m_DeadEndRooms.Count; i++)
         {
-
+            if (!m_DeadEndRooms[i].Room.ContainsImportantObject)
+            {
+                SetupItemRoom(m_DeadEndRooms[i].Room);
+            }
         }
     }
 
@@ -340,10 +346,25 @@ public class DungeonBuilder : MonoBehaviour
         }
 
         // enemy spawner
-        GameObject spawnObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Spawner), null);
+        GameObject spawnObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.EnemySpawner), null);
         spawnObj.transform.position = r.FloorCenter.position;
 
         EnemySpawner spawner = spawnObj.GetComponent<EnemySpawner>();
+        if (spawner != null)
+        {
+            spawner.SetRoomID(r.RoomID);
+
+            Vector2 boundaries = r.GetBoundaries();
+            spawner.SetRoomBoundaries(boundaries.x, boundaries.y);
+        }
+    }
+
+    private void SetupItemRoom(Room r)
+    {
+        GameObject spawnerObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.CrateSpawner), null);
+        spawnerObj.transform.position = r.FloorCenter.position;
+
+        CrateSpawner spawner = spawnerObj.GetComponent<CrateSpawner>();
         if (spawner != null)
         {
             spawner.SetRoomID(r.RoomID);

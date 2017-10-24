@@ -22,6 +22,6 @@ public class GameManager : Singleton<GameManager>
 
     private void Start()
     {
-        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed, eLevelTheme.Forest)); // TEST for now, until other prefabs are finished
     }
 }
