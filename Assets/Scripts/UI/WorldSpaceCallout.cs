@@ -15,15 +15,13 @@ public class WorldSpaceCallout : MonoBehaviour
     private void Awake()
     {
         m_CameraTransform = Camera.main.transform;
+        Show(false);
     }
 
     public void Setup(Sprite icon, string text)
     {
         m_CalloutIcon.sprite = icon;
         m_TextLabel.text = text;
-
-        // hide it initially
-        Show(false);
     }
 
     public void Show(bool show)

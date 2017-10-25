@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum eItemType { Consumable, Armour, Weapon };
+public enum eItemType { Consumable, StatBoost, Armour, Weapon, Rare };
 
 public class ItemFactory : MonoBehaviour
 {
     [SerializeField] private GameObject[] m_ItemPrefabs;
-    [SerializeField] private ItemData[] m_ItemData;
+
+    [SerializeField] private ItemData[] m_ConsumableData;
+    [SerializeField] private ItemData[] m_StatBoostData;
+    [SerializeField] private ItemData[] m_ArmourData;
+    [SerializeField] private ItemData[] m_WeaponData;
 
     private void Awake()
     {
@@ -84,6 +88,11 @@ public class ItemFactory : MonoBehaviour
             GameObject itemObj = (GameObject)Instantiate(m_ItemPrefabs[(int)randType], spawnPos, Quaternion.identity);
             Item item = itemObj.GetComponent<Item>();
             item.SetData(data);
+
+            // for fun!
+            Rigidbody rb = itemObj.GetComponent<Rigidbody>();
+            rb.AddForce(Vector3.up * 7f, ForceMode.Impulse);
+            rb.AddTorque(itemObj.transform.right * 2f, ForceMode.Impulse);
         }
         else
         {
@@ -94,7 +103,7 @@ public class ItemFactory : MonoBehaviour
     private List<ItemData> GetItemsForTheme(eLevelTheme theme)
     {
         List<ItemData> subset = new List<ItemData>();
-        subset.AddRange(m_ItemData);
+        //subset.AddRange(m_ItemData);
         subset.RemoveAll(x => !x.m_Themes.Contains(theme));
 
         return subset;

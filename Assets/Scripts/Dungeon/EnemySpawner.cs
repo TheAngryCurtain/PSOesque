@@ -7,6 +7,7 @@ public enum eEnemyType { Weak, Regular, Tough, ExtraTough, Boss };
 public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] m_EnemyPrefabs;
+    [SerializeField] private int[] m_EnemyProbabilities = new int[4];
 
     private bool m_Spawned = false;
     private int m_RoomID;
@@ -53,33 +54,20 @@ public class EnemySpawner : MonoBehaviour
         float roomMaxZ = spawnPos.z + roomHalfLength;
 
         // TODO check difficulty or something to determine how many of each we need to spawn
-        // TODO add in a chance of 2-3 very tough instead of so many smaller ones
 
-        int numWeak = 4;
-        int numRegular = 2;
-        int numTough = 1;
-
-        int total = numWeak + numRegular + numTough;
-        for (int i = 0; i < total; i++)
+        int numEnemies = 6;
+        for (int i = 0; i < numEnemies; i++)
         {
             float randX = UnityEngine.Random.Range(roomMinX, roomMaxX);
             float randZ = UnityEngine.Random.Range(roomMinZ, roomMaxZ);
 
             Vector3 randPos = new Vector3(randX, 1f, randZ);
+            Quaternion randRot = Quaternion.AngleAxis(UnityEngine.Random.Range(0f, 360f), Vector3.up);
             GameObject enemyObj = null;
 
-            if (i < numWeak)
-            {
-                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Weak], randPos, Quaternion.identity);
-            }
-            else if (i < numWeak + numRegular)
-            {
-                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Regular], randPos, Quaternion.identity);
-            }
-            else
-            {
-                enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[(int)eEnemyType.Tough], randPos, Quaternion.identity);
-            }
+            int enemyTypeIndex = Utils.WeightedRandom(m_EnemyProbabilities);
+            Debug.LogFormat(">> Enemy is {0}", (eEnemyType)enemyTypeIndex);
+            enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[enemyTypeIndex], randPos, randRot);
 
             // UGH. find a better way to do this
             // perhaps create a new event (on enemy spawned event) and pass the room id and player transform
@@ -88,6 +76,6 @@ public class EnemySpawner : MonoBehaviour
             enemy.SetTarget(playerTransform);
         }
 
-        VSEventManager.Instance.TriggerEvent(new GameEvents.SetupRoomDoorEvent(m_RoomID, total));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.SetupRoomDoorEvent(m_RoomID, numEnemies));
     }
 }

@@ -126,6 +126,7 @@ public class Enemy : Character
         }
 
         VSEventManager.Instance.TriggerEvent(new GameEvents.EnemyDefeatedEvent(m_HomeRoomID));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestItemSpawnEvent(m_Transform.position, eItemSource.Enemy, m_Type, (eCrateType)(-1)));
     }
 
     // TODO

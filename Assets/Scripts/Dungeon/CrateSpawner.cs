@@ -74,22 +74,8 @@ public class CrateSpawner : MonoBehaviour
             Quaternion randRot = Quaternion.AngleAxis(UnityEngine.Random.Range(0f, 360f), Vector3.up);
             GameObject crateObj = null;
 
-            int crateTypeIndex = 0;
-            int rareChance = UnityEngine.Random.Range(1, m_ProbabilitySum);
-            Debug.LogFormat("Sum: {0}, Chance: {1}", m_ProbabilitySum, rareChance);
-
-            int top = 0;
-            for (int j = 0; j < m_CrateProbabilities.Length; j++)
-            {
-                top += m_CrateProbabilities[j];
-                Debug.LogFormat("> Top: {0}", top);
-                if (rareChance < top)
-                {
-                    crateTypeIndex = j;
-                    Debug.LogFormat("Crate is {0}", (eCrateType)j);
-                    break;
-                }
-            }
+            int crateTypeIndex = Utils.WeightedRandom(m_CrateProbabilities);
+            Debug.LogFormat(">> Crate is {0}", (eCrateType)crateTypeIndex);
 
             crateObj = (GameObject)Instantiate(m_CratePrefabs[crateTypeIndex], randPos, randRot);
         }

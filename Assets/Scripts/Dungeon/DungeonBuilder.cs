@@ -190,7 +190,7 @@ public class DungeonBuilder : MonoBehaviour
             // rotate
             if (!existingRoom)
             {
-                float angleFromForward = 180f + SignedAngle(Vector3.forward, previousConnector.Forward);
+                float angleFromForward = 180f + Utils.SignedAngle(Vector3.forward, previousConnector.Forward);
                 roomObj.transform.RotateAround(previousConnector.WorldPosition, Vector3.up, angleFromForward);
             }
 
@@ -411,7 +411,7 @@ public class DungeonBuilder : MonoBehaviour
         }
 
         // rotate
-        float angleBetweenConnectors = SignedAngle(roomConnector.Forward, hallEntryConnector.Forward);
+        float angleBetweenConnectors = Utils.SignedAngle(roomConnector.Forward, hallEntryConnector.Forward);
         hallObj.transform.RotateAround(roomConnector.WorldPosition, Vector3.up, -angleBetweenConnectors);
 
         return hall;
@@ -666,13 +666,4 @@ public class DungeonBuilder : MonoBehaviour
     //    // notify
     //    VSEventManager.Instance.TriggerEvent(new GameEvents.DungeonBuiltEvent(startRoomPos, startRoomRot));
     //}
-
-    public float SignedAngle(Vector3 a, Vector3 b)
-    {
-        float angle = Vector3.Angle(a, b);
-        Vector3 cross = Vector3.Cross(a, b);
-        if (cross.y < 0) angle = -angle;
-
-        return angle;
-    }
 }

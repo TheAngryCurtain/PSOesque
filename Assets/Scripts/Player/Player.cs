@@ -5,6 +5,8 @@ using Rewired;
 
 public class Player : Character
 {
+    [SerializeField] private WorldSpaceCallout m_Callout;
+
     protected Vector3 m_Movement = Vector3.zero;
 
     private float m_Horizontal = 0f;
@@ -46,7 +48,7 @@ public class Player : Character
                 {
                     if (m_CurrentInteractable != null)
                     {
-                        m_CurrentInteractable.Interact();
+                        m_CurrentInteractable.Interact(m_Callout);
                     }
                 }
                 break;
@@ -70,7 +72,7 @@ public class Player : Character
             if (interactObj != null && interactObj != m_CurrentInteractable)
             {
                 m_CurrentInteractable = interactObj;
-                m_CurrentInteractable.Highlight();
+                m_CurrentInteractable.Highlight(m_Callout);
             }
         }
     }
@@ -79,7 +81,7 @@ public class Player : Character
     {
         if (m_CurrentInteractable != null)
         {
-            m_CurrentInteractable.Unhighlight();
+            m_CurrentInteractable.Unhighlight(m_Callout);
             m_CurrentInteractable = null;
         }
     }

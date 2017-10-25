@@ -7,52 +7,46 @@ using UnityEngine;
 
 public interface IInteractable
 {
-    void Highlight();
-    void Unhighlight();
-    void Interact();
+    void Highlight(WorldSpaceCallout callout);
+    void Unhighlight(WorldSpaceCallout callout);
+    void Interact(WorldSpaceCallout callout);
 }
 
 public class Switch : MonoBehaviour, IInteractable
 {
-    [SerializeField] private WorldSpaceCallout m_InteractCallout;
     [SerializeField] private Sprite m_CalloutSprite;
     [SerializeField] private string m_CalloutText;
 
     private int m_RoomID;
     private bool m_Used = false;
 
-    private void Awake()
-    {
-        // TODO this should be done a better way
-        m_InteractCallout.Setup(m_CalloutSprite, m_CalloutText);
-    }
-
     public void SetRoomID(int id)
     {
         m_RoomID = id;
     }
 
-    public void Highlight()
+    public void Highlight(WorldSpaceCallout callout)
     {
         if (!m_Used)
         {
-            m_InteractCallout.Show(true);
+            callout.Setup(m_CalloutSprite, m_CalloutText);
+            callout.Show(true);
         }
     }
 
-    public void Unhighlight()
+    public void Unhighlight(WorldSpaceCallout callout)
     {
-        m_InteractCallout.Show(false);
+        callout.Show(false);
     }
 
-    public void Interact()
+    public void Interact(WorldSpaceCallout callout)
     {
         if (!m_Used)
         {
             VSEventManager.Instance.TriggerEvent(new GameEvents.DoorSwitchPressedEvent(m_RoomID));
             m_Used = true;
 
-            Unhighlight();
+            Unhighlight(callout);
         }
     }
 }
