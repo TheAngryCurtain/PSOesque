@@ -18,12 +18,15 @@ public class ItemData : ScriptableObject
 
     // Find related
     public List<eLevelTheme> m_Themes;
+    public List<eDifficulty> m_Difficulties;
     public List<eItemSource> m_Sources;
     public List<eCrateType> m_CrateTypes;
     public List<eEnemyType> m_EnemyTypes;
 
     public eItemType m_ItemType;
     public eRarity m_ItemRarity;
+
+    public int[] m_ProababilityByDifficulty = new int[5];
 
     // Details
     public string m_ItemName;

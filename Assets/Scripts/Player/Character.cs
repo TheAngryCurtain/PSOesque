@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
+public enum eEquipmentLocation { BackPrimary, BackSecondary, HandRight, WristRight, HandLeft, WristLeft };
+
 public class Character : MonoBehaviour
 {
     //[SerializeField] private NavMeshAgent m_Agent;
@@ -9,6 +11,7 @@ public class Character : MonoBehaviour
 
     [SerializeField] protected float m_MoveSpeed = 3f;
 
+    [SerializeField] protected Transform[] m_EquipTransforms = new Transform[6];
 
     protected virtual void Awake()
     {
