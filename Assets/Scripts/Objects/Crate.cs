@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Crate : MonoBehaviour
 {
-    [SerializeField] private eCrateType m_Type;
+    [SerializeField] private Enums.eCrateType m_Type;
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -18,7 +18,7 @@ public class Crate : MonoBehaviour
     {
         // TODO play some sort of particle fanfare!
 
-        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestItemSpawnEvent(transform.position, eItemSource.Crate, (eEnemyType)(-1), m_Type));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestItemSpawnEvent(transform.position, Enums.eItemSource.Crate, (Enums.eEnemyType)(-1), m_Type));
 
         // TODO once there are particles in here, put their duration/playtime as the delay
 

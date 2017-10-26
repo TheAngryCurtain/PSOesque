@@ -7,9 +7,9 @@ public class GameEvents
     public class RequestDungeonEvent : VSGameEvent
     {
         public int Seed;
-        public eLevelTheme Theme;
+        public Enums.eLevelTheme Theme;
 
-        public RequestDungeonEvent(int seed, eLevelTheme theme)
+        public RequestDungeonEvent(int seed, Enums.eLevelTheme theme)
         {
             Seed = seed;
             Theme = theme;
@@ -95,11 +95,11 @@ public class GameEvents
     public class RequestItemSpawnEvent : VSGameEvent
     {
         public Vector3 SpawnPosition;
-        public eItemSource ItemSource;
-        public eEnemyType EnemyType;
-        public eCrateType CrateType;
+        public Enums.eItemSource ItemSource;
+        public Enums.eEnemyType EnemyType;
+        public Enums.eCrateType CrateType;
 
-        public RequestItemSpawnEvent(Vector3 position, eItemSource source, eEnemyType eType, eCrateType cType)
+        public RequestItemSpawnEvent(Vector3 position, Enums.eItemSource source, Enums.eEnemyType eType, Enums.eCrateType cType)
         {
             SpawnPosition = position;
             ItemSource = source;

@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
-public enum eEquipmentLocation { BackPrimary, BackSecondary, HandRight, WristRight, HandLeft, WristLeft };
-
 public class Character : MonoBehaviour
 {
     //[SerializeField] private NavMeshAgent m_Agent;

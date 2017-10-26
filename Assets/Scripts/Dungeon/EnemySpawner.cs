@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum eEnemyType { Weak, Regular, Tough, ExtraTough, Boss };
-
 public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] m_EnemyPrefabs;
@@ -66,7 +64,7 @@ public class EnemySpawner : MonoBehaviour
             GameObject enemyObj = null;
 
             int enemyTypeIndex = Utils.WeightedRandom(m_EnemyProbabilities);
-            Debug.LogFormat(">> Enemy is {0}", (eEnemyType)enemyTypeIndex);
+            Debug.LogFormat(">> Enemy is {0}", (Enums.eEnemyType)enemyTypeIndex);
             enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[enemyTypeIndex], randPos, randRot);
 
             // UGH. find a better way to do this

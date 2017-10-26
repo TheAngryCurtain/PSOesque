@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum eItemType { Consumable, StatBoost, Armour, Weapon, Rare, Money };
-public enum eDifficulty { Easy, Medium, Hard, VeryHard, Hardest }
+[System.Serializable]
+public class ItemProbability
+{
+    public ItemData Data;
+    public int Probability;
+}
 
 public class ItemFactory : MonoBehaviour
 {
@@ -12,19 +16,38 @@ public class ItemFactory : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject[] m_ItemPrefabs;
 
-    [Header("Item Data")]
-    [SerializeField] private ItemData[] m_ConsumableData;
-    [SerializeField] private ItemData[] m_StatBoostData;
-    [SerializeField] private ItemData[] m_ArmourData;
-    [SerializeField] private ItemData[] m_WeaponData;
+    [Header("Source Probabilities")]
+    [SerializeField] private int[][] m_ItemTypeCrateProbabilities = new int[3][] // chance of opening common, rare, and very rare crates and getting money, item, or nothing
+    {
+        new int[3],
+        new int[3],
+        new int[3]
+    };
 
-    [Header("Probabilities")]
-    [SerializeField] private int[] m_ItemTypeProbabilities = new int[4]; // only consumable, stat boost, armour, and weapon
-    [SerializeField] private int[] m_ItemTypeFromCrateProbabilities = new int[3]; // the chance of money, item, or nothing from crates
-    [SerializeField] private int[] m_ItemTypeFromEnemyProbabilities = new int[3]; // the chance of money, item, or nothing from enemies
+    [SerializeField] private int[][] m_ItemTypeEnemyProbabilities = new int[5][] // chance of defeating weak, reg, tough, vTough, boss enemies and getting money, item, or nothing
+    {
+        new int[3],
+        new int[3],
+        new int[3],
+        new int[3],
+        new int[3]
+    };
 
-    [Header("Other")]
+    [Header("Money")]
     [SerializeField] private float[] m_BaseMoneyAmountByDiff = new float[5];
+
+    [Header("Item Data by Source")]
+    [Header("Crate")]
+    [SerializeField] private ItemProbability[] m_CommonCrateItems;
+    [SerializeField] private ItemProbability[] m_RareCrateItems;
+    [SerializeField] private ItemProbability[] m_VeryRareCrateItems;
+
+    [Header("Enemy")]
+    [SerializeField] private ItemProbability[] m_WeakEnemyItems;
+    [SerializeField] private ItemProbability[] m_RegularEnemyItems;
+    [SerializeField] private ItemProbability[] m_ToughEnemyItems;
+    [SerializeField] private ItemProbability[] m_VeryToughEnemyItems;
+    [SerializeField] private ItemProbability[] m_BossEnemyItems;
 
     private void Awake()
     {
@@ -34,20 +57,30 @@ public class ItemFactory : MonoBehaviour
     private void OnItemRequested(GameEvents.RequestItemSpawnEvent e)
     {
         // TODO get these from somewhere global
-        eLevelTheme currentTheme = eLevelTheme.Forest;
-        eDifficulty difficulty = eDifficulty.Easy;
+        Enums.eLevelTheme currentTheme = Enums.eLevelTheme.Forest;
+        Enums.eDifficulty difficulty = Enums.eDifficulty.Easy;
 
-        eRewardType reward = eRewardType.Nothing;
+        int[] sourceProbabilities = null;
         switch (e.ItemSource)
         {
-            case eItemSource.Crate:
-                reward = (eRewardType)Utils.WeightedRandom(m_ItemTypeFromCrateProbabilities);
+            case Enums.eItemSource.Crate:
+                sourceProbabilities = m_ItemTypeCrateProbabilities[(int)e.CrateType];
                 break;
 
-            case eItemSource.Enemy:
-                reward = (eRewardType)Utils.WeightedRandom(m_ItemTypeFromEnemyProbabilities);
+            case Enums.eItemSource.Enemy:
+                sourceProbabilities = m_ItemTypeEnemyProbabilities[(int)e.EnemyType];
                 break;
         }
+
+        // determine reward
+        eRewardType reward = eRewardType.Nothing;
+
+        int[] probabilities = new int[sourceProbabilities.Length];
+        for (int i = 0; i < sourceProbabilities.Length; i++)
+        {
+            probabilities[i] = sourceProbabilities[i];
+        }
+        reward = (eRewardType)Utils.WeightedRandom(probabilities);
 
         switch (reward)
         {
@@ -65,7 +98,7 @@ public class ItemFactory : MonoBehaviour
         }
     }
 
-    private void RewardMoney(eDifficulty diff, eItemSource source, eCrateType cType, eEnemyType eType, Vector3 spawnPos)
+    private void RewardMoney(Enums.eDifficulty diff, Enums.eItemSource source, Enums.eCrateType cType, Enums.eEnemyType eType, Vector3 spawnPos)
     {
         int difficulty = (int)diff;
         float baseAmount = m_BaseMoneyAmountByDiff[difficulty];
@@ -74,49 +107,110 @@ public class ItemFactory : MonoBehaviour
         float variableAmount = UnityEngine.Random.Range(-5f, 5f) * diffVariableModifier;
 
         ItemData data = new ItemData();
-        data.m_ItemType = eItemType.Money;
+        data.m_ItemType = Enums.eItemType.Money;
         data.m_ItemValue = baseAmount + variableAmount;
 
-        SpawnItemObject(eItemType.Money, data, spawnPos);
+        SpawnItemObject(Enums.eItemType.Money, data, spawnPos);
     }
 
-    private void RewardItem(eLevelTheme theme, eDifficulty diff, eItemSource source, eCrateType cType, eEnemyType eType, Vector3 spawnPos)
+    private void RewardItem(Enums.eLevelTheme theme, Enums.eDifficulty diff, Enums.eItemSource source, Enums.eCrateType cType, Enums.eEnemyType eType, Vector3 spawnPos)
     {
-        ItemData[] currentItems = null;
-        eItemType itemType = (eItemType)Utils.WeightedRandom(m_ItemTypeProbabilities);
-        switch (itemType)
+        ItemProbability[] itemProbs = null;
+        if (source == Enums.eItemSource.Crate)
         {
-            case eItemType.Consumable:
-                currentItems = m_ConsumableData;
-                break;
+            switch (cType)
+            {
+                case Enums.eCrateType.Common:
+                    itemProbs = m_CommonCrateItems;
+                    break;
 
-            case eItemType.StatBoost:
-                currentItems = m_StatBoostData;
-                break;
+                case Enums.eCrateType.Rare:
+                    itemProbs = m_RareCrateItems;
+                    break;
 
-            case eItemType.Armour:
-                currentItems = m_ArmourData;
-                break;
+                case Enums.eCrateType.VeryRare:
+                    itemProbs = m_VeryRareCrateItems;
+                    break;
+            }
+        }
+        else if (source == Enums.eItemSource.Enemy)
+        {
+            switch (eType)
+            {
+                case Enums.eEnemyType.Weak:
+                    itemProbs = m_WeakEnemyItems;
+                    break;
 
-            case eItemType.Weapon:
-                currentItems = m_WeaponData;
-                break;
+                case Enums.eEnemyType.Regular:
+                    itemProbs = m_RegularEnemyItems;
+                    break;
+
+                case Enums.eEnemyType.Tough:
+                    itemProbs = m_ToughEnemyItems;
+                    break;
+
+                case Enums.eEnemyType.ExtraTough:
+                    itemProbs = m_VeryToughEnemyItems;
+                    break;
+
+                case Enums.eEnemyType.Boss:
+                    itemProbs = m_BossEnemyItems;
+                    break;
+            }
         }
 
-        // gather the probabilties of all items
-        int[] itemProbabilities = new int[currentItems.Length];
-        for (int i = 0; i < currentItems.Length; i++)
+        int[] probabilities = new int[itemProbs.Length];
+        for (int i = 0; i < itemProbs.Length; i++)
         {
-            itemProbabilities[i] = currentItems[i].m_ProababilityByDifficulty[(int)diff];
+            // theme/difficulty check
+            if ((itemProbs[i].Data.m_Themes[0] != Enums.eLevelTheme.All && !itemProbs[i].Data.m_Themes.Contains(theme)) ||
+                (itemProbs[i].Data.m_Difficulties[0] != Enums.eDifficulty.All && !itemProbs[i].Data.m_Difficulties.Contains(diff)))
+            {
+                itemProbs[i].Probability = 0;
+            }
+
+            probabilities[i] = itemProbs[i].Probability;
         }
 
-        int itemDataIndex = Utils.WeightedRandom(itemProbabilities);
-        ItemData data = currentItems[itemDataIndex];
+        int dataIndex = Utils.WeightedRandom(probabilities);
+        ItemData data = itemProbs[dataIndex].Data;
 
-        SpawnItemObject(itemType, data, spawnPos);
+        SpawnItemObject(data.m_ItemType, data, spawnPos);
+
+        //Enums.eItemType itemType = (Enums.eItemType)Utils.WeightedRandom(m_ItemTypeProbabilities);
+        //switch (itemType)
+        //{
+        //    case Enums.eItemType.Consumable:
+        //        currentItems = m_ConsumableData;
+        //        break;
+
+        //    case Enums.eItemType.StatBoost:
+        //        currentItems = m_StatBoostData;
+        //        break;
+
+        //    case Enums.eItemType.Armour:
+        //        currentItems = m_ArmourData;
+        //        break;
+
+        //    case Enums.eItemType.Weapon:
+        //        currentItems = m_WeaponData;
+        //        break;
+        //}
+
+        //// gather the probabilties of all items
+        //int[] itemProbabilities = new int[currentItems.Length];
+        //for (int i = 0; i < currentItems.Length; i++)
+        //{
+        //    itemProbabilities[i] = currentItems[i].m_ProababilityByDifficulty[(int)diff];
+        //}
+
+        //int itemDataIndex = Utils.WeightedRandom(itemProbabilities);
+        //ItemData data = currentItems[itemDataIndex];
+
+        //SpawnItemObject(itemType, data, spawnPos);
     }
 
-    private void SpawnItemObject(eItemType type, ItemData data, Vector3 spawnPos)
+    private void SpawnItemObject(Enums.eItemType type, ItemData data, Vector3 spawnPos)
     {
         GameObject itemObj = (GameObject)Instantiate(m_ItemPrefabs[(int)type], spawnPos, Quaternion.identity);
         Item item = itemObj.GetComponent<Item>();
@@ -128,25 +222,25 @@ public class ItemFactory : MonoBehaviour
         rb.AddTorque(itemObj.transform.right * 2f, ForceMode.Impulse);
     }
 
-    //private void RetrieveCrateItem(eDifficulty diff, eLevelTheme theme, eCrateType type, Vector3 spawnPos)
+    //private void RetrieveCrateItem(Enums.eDifficulty diff, Enums.eLevelTheme theme, Enums.eCrateType type, Vector3 spawnPos)
     //{
     //    List<ItemData> themedItems = GetItemsForTheme(theme);
-    //    themedItems.RemoveAll(x => !x.m_Sources.Contains(eItemSource.Crate) && !x.m_CrateTypes.Contains(type));
+    //    themedItems.RemoveAll(x => !x.m_Sources.Contains(Enums.eItemSource.Crate) && !x.m_CrateTypes.Contains(type));
 
     //    SelectItemToSpawn(themedItems, spawnPos);
     //}
 
-    //private void RetrieveEnemyItem(eDifficulty diff, eLevelTheme theme, eEnemyType type, Vector3 spawnPos)
+    //private void RetrieveEnemyItem(Enums.eDifficulty diff, Enums.eLevelTheme theme, Enums.eEnemyType type, Vector3 spawnPos)
     //{
     //    List<ItemData> themedItems = GetItemsForTheme(theme);
-    //    themedItems.RemoveAll(x => !x.m_Sources.Contains(eItemSource.Enemy) && !x.m_EnemyTypes.Contains(type));
+    //    themedItems.RemoveAll(x => !x.m_Sources.Contains(Enums.eItemSource.Enemy) && !x.m_EnemyTypes.Contains(type));
 
     //    SelectItemToSpawn(themedItems, spawnPos);
     //}
 
     //private void SelectItemToSpawn(List<ItemData> candidates, Vector3 spawnPos)
     //{
-    //    eItemType randType = (eItemType)(UnityEngine.Random.Range(0, 3));
+    //    Enums.eItemType randType = (Enums.eItemType)(UnityEngine.Random.Range(0, 3));
 
     //    eRarity randRarity;
     //    float rarityChance = UnityEngine.Random.Range(0f, 1f);
@@ -193,7 +287,7 @@ public class ItemFactory : MonoBehaviour
     //    }
     //}
 
-    //private List<ItemData> GetItemsForTheme(eLevelTheme theme)
+    //private List<ItemData> GetItemsForTheme(Enums.eLevelTheme theme)
     //{
     //    List<ItemData> subset = new List<ItemData>();
     //    //subset.AddRange(m_ItemData);

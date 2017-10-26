@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum eCrateType { Common, Rare, VeryRare };
-
 public class CrateSpawner : MonoBehaviour
 {
     [SerializeField] private GameObject[] m_CratePrefabs;
@@ -74,7 +72,7 @@ public class CrateSpawner : MonoBehaviour
             Quaternion randRot = Quaternion.AngleAxis(UnityEngine.Random.Range(0f, 360f), Vector3.up);
 
             int crateTypeIndex = Utils.WeightedRandom(m_CrateProbabilities);
-            Debug.LogFormat(">> Crate is {0}", (eCrateType)crateTypeIndex);
+            Debug.LogFormat(">> Crate is {0}", (Enums.eCrateType)crateTypeIndex);
 
             Instantiate(m_CratePrefabs[crateTypeIndex], randPos, randRot);
         }

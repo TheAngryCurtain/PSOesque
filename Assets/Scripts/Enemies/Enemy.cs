@@ -6,7 +6,7 @@ public class Enemy : Character
 {
     [SerializeField] private float m_AttackRange = 1f;
     [SerializeField] private float m_AttackCooldownDelay = 2f;
-    [SerializeField] private eEnemyType m_Type;
+    [SerializeField] private Enums.eEnemyType m_Type;
 
     private Transform m_Target;
     private float m_AttackRangeSqr;
@@ -126,7 +126,7 @@ public class Enemy : Character
         }
 
         VSEventManager.Instance.TriggerEvent(new GameEvents.EnemyDefeatedEvent(m_HomeRoomID));
-        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestItemSpawnEvent(m_Transform.position, eItemSource.Enemy, m_Type, (eCrateType)(-1)));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.RequestItemSpawnEvent(m_Transform.position, Enums.eItemSource.Enemy, m_Type, (Enums.eCrateType)(-1)));
     }
 
     // TODO
