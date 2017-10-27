@@ -107,4 +107,14 @@ public class GameEvents
             CrateType = cType;
         }
     }
+
+    public class DoorOpenedEvent : VSGameEvent
+    {
+        public Transform DoorTransform;
+
+        public DoorOpenedEvent(Transform door)
+        {
+            DoorTransform = door;
+        }
+    }
 }

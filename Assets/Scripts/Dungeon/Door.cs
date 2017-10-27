@@ -5,6 +5,8 @@ public class Door : MonoBehaviour
     [SerializeField] protected GameObject m_DoorObj;
     [SerializeField] private Transform m_EndLocation;
 
+    public bool IsOnMainPath = false;
+
     protected int m_RoomID;
     private bool m_MoveDoor = false;
 
@@ -15,6 +17,8 @@ public class Door : MonoBehaviour
 
     protected virtual void UnlockDoor()
     {
+        VSEventManager.Instance.TriggerEvent(new GameEvents.DoorOpenedEvent(this.transform));
+        
         // TODO make this less lame
         m_MoveDoor = true;
     }

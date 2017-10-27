@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections;
 using Rewired;
 
 public class CameraController : MonoBehaviour
@@ -7,6 +8,7 @@ public class CameraController : MonoBehaviour
 
 	[SerializeField] private Transform m_Target;
     [SerializeField] private Transform m_LockObject;
+    [SerializeField] private Transform m_Transform;
 
     [SerializeField] private Vector3 m_Offset;
     [SerializeField] private float m_Pitch = 2f;
@@ -18,20 +20,47 @@ public class CameraController : MonoBehaviour
 
     private eCameraMode m_CameraMode = eCameraMode.Free;
 
+    private Transform m_PlayerTransform;
+    private float m_LerpSpeed = 1f;
+
     private void Awake()
     {
         InputManager.Instance.AddInputEventDelegate(OnInputUpdate, Rewired.UpdateLoopType.Update);
         VSEventManager.Instance.AddListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
+
+        VSEventManager.Instance.AddListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
     }
 
     private void OnDestroy()
     {
         VSEventManager.Instance.RemoveListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
+        VSEventManager.Instance.RemoveListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
+    }
+
+    private void OnDoorOpened(GameEvents.DoorOpenedEvent e)
+    {
+        // adjust camera settings for quick movement
+        m_CameraMode = eCameraMode.Static;
+        m_LerpSpeed = Time.deltaTime * 0.15f;
+
+        m_Target = e.DoorTransform;
+        StartCoroutine(SetTargetAfterDelay(m_PlayerTransform, 3f));
+    }
+
+    private IEnumerator SetTargetAfterDelay(Transform target, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // change camera back
+        m_CameraMode = eCameraMode.Free;
+        m_LerpSpeed = 1f;
+        m_Target = target;
     }
 
     private void OnPlayerSpawned(GameEvents.PlayerSpawnedEvent e)
     {
-        m_Target = e.PlayerObj.transform;
+        m_PlayerTransform = e.PlayerObj.transform;
+        m_Target = m_PlayerTransform;
     }
 
     public void SetLockTarget(Transform lockObj)
@@ -54,6 +83,10 @@ public class CameraController : MonoBehaviour
 
             m_CurrentYaw += horizontal * m_YawSpeed * Time.deltaTime;
         }
+        else
+        {
+            m_CurrentYaw = 0f;
+        }
     }
 
     public void ChangeMode(eCameraMode mode)
@@ -67,10 +100,10 @@ public class CameraController : MonoBehaviour
         {
             if (m_CameraMode == eCameraMode.Free || m_CameraMode == eCameraMode.Static)
             {
-                transform.position = m_Target.position - m_Offset * m_Zoom;
-                transform.LookAt(m_Target.position + Vector3.up * m_Pitch);
-
-                transform.RotateAround(m_Target.position, Vector3.up, m_CurrentYaw);
+                Vector3 newPosition = m_Target.position - m_Offset * m_Zoom;
+                m_Transform.position = Vector3.Lerp(m_Transform.position, newPosition, m_LerpSpeed);
+                m_Transform.LookAt(m_Target.position + Vector3.up * m_Pitch);
+                m_Transform.RotateAround(m_Target.position, Vector3.up, m_CurrentYaw);
             }
             else if (m_CameraMode == eCameraMode.Locked)
             {
@@ -80,17 +113,17 @@ public class CameraController : MonoBehaviour
                 // don't adjust the camera's height, just rotation
                 lockToTarget.y = 0f;
 
-                //transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lockToTarget), m_LockRotationSpeed * Time.deltaTime);
-                transform.rotation = Quaternion.LookRotation(lockToTarget);
-                transform.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
-                //transform.position = Vector3.Slerp(transform.position, (m_Target.position + Vector3.up) - lockToTarget * m_LockedViewDistance, Time.deltaTime);
+                //m_Transform.rotation = Quaternion.Slerp(m_Transform.rotation, Quaternion.LookRotation(lockToTarget), m_LockRotationSpeed * Time.deltaTime);
+                m_Transform.rotation = Quaternion.LookRotation(lockToTarget);
+                m_Transform.eulerAngles = new Vector3(0, m_Transform.eulerAngles.y, 0);
+                //m_Transform.position = Vector3.Slerp(m_Transform.position, (m_Target.position + Vector3.up) - lockToTarget * m_LockedViewDistance, Time.deltaTime);
 
                 Vector3 cameraPos = (m_Target.position + Vector3.up) - lockToTarget * m_LockedViewDistance;
                 if (cameraPos.y < m_MinCameraY)
                 {
                     cameraPos.y = m_MinCameraY;
                 }
-                transform.position = cameraPos;
+                m_Transform.position = cameraPos;
             }
         }
     }

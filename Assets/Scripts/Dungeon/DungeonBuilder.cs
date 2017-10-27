@@ -315,6 +315,7 @@ public class DungeonBuilder : MonoBehaviour
                 GameObject doorObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.SwitchDoor), c.ObjTransform.position, c.ObjTransform.rotation);
                 SwitchDoor door = doorObj.GetComponent<SwitchDoor>();
                 door.SetRoomID(mainRoom.RoomID);
+                door.IsOnMainPath = c.IsOnMainPath;
             }
         }
 
@@ -340,6 +341,7 @@ public class DungeonBuilder : MonoBehaviour
                 {
                     GameObject doorObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.EnemyDoor), c.ObjTransform.position, c.ObjTransform.rotation);
                     EnemyDoor door = doorObj.GetComponent<EnemyDoor>();
+                    door.IsOnMainPath = c.IsOnMainPath;
                     door.SetRoomID(r.RoomID);
                 }
             }

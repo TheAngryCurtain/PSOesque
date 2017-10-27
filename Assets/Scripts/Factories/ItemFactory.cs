@@ -99,7 +99,7 @@ public class ItemFactory : MonoBehaviour
         int diffVariableModifier = (difficulty + 1) * 10;
         int variableAmount = UnityEngine.Random.Range(-5, 5 + 1) * diffVariableModifier;
 
-        ItemData data = new ItemData();
+        ItemData data = ScriptableObject.CreateInstance<ItemData>();
         data.m_ItemType = Enums.eItemType.Money;
         data.m_ItemValue = baseAmount + variableAmount;
 
