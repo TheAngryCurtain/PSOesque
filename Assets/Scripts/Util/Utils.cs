@@ -23,17 +23,17 @@ public class Utils
         }
 
         int rand = UnityEngine.Random.Range(1, sum);
-        Debug.LogFormat("Sum: {0}, Chance: {1}", sum, rand);
+        //Debug.LogFormat("Sum: {0}, Chance: {1}", sum, rand);
 
         int top = 0;
         for (int j = 0; j < probabilities.Length; j++)
         {
             top += probabilities[j];
-            Debug.LogFormat("> Top: {0}", top);
+            //Debug.LogFormat("> Top: {0}", top);
             if (rand < top)
             {
                 index = j;
-                Debug.LogFormat("Index is {0}", j);
+                //Debug.LogFormat("Index is {0}", j);
                 break;
             }
         }

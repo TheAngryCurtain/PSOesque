@@ -9,6 +9,12 @@ public class ItemProbability
     public int Probability;
 }
 
+[System.Serializable]
+public class SerializableIntArray
+{
+    public int[] Values = new int[3]; // money, item, or nothing
+}
+
 public class ItemFactory : MonoBehaviour
 {
     public enum eRewardType { Money, Item, Nothing };
@@ -17,21 +23,8 @@ public class ItemFactory : MonoBehaviour
     [SerializeField] private GameObject[] m_ItemPrefabs;
 
     [Header("Source Probabilities")]
-    [SerializeField] private int[][] m_ItemTypeCrateProbabilities = new int[3][] // chance of opening common, rare, and very rare crates and getting money, item, or nothing
-    {
-        new int[3],
-        new int[3],
-        new int[3]
-    };
-
-    [SerializeField] private int[][] m_ItemTypeEnemyProbabilities = new int[5][] // chance of defeating weak, reg, tough, vTough, boss enemies and getting money, item, or nothing
-    {
-        new int[3],
-        new int[3],
-        new int[3],
-        new int[3],
-        new int[3]
-    };
+    [SerializeField] private SerializableIntArray[] m_ItemTypeCrateProbabilities = new SerializableIntArray[3]; // common, rare, very rare crates
+    [SerializeField] private SerializableIntArray[] m_ItemTypeEnemyProbabilities = new SerializableIntArray[5]; // weak, regular, tough, vTough, boss enemies
 
     [Header("Money")]
     [SerializeField] private float[] m_BaseMoneyAmountByDiff = new float[5];
@@ -64,11 +57,11 @@ public class ItemFactory : MonoBehaviour
         switch (e.ItemSource)
         {
             case Enums.eItemSource.Crate:
-                sourceProbabilities = m_ItemTypeCrateProbabilities[(int)e.CrateType];
+                sourceProbabilities = m_ItemTypeCrateProbabilities[(int)e.CrateType].Values;
                 break;
 
             case Enums.eItemSource.Enemy:
-                sourceProbabilities = m_ItemTypeEnemyProbabilities[(int)e.EnemyType];
+                sourceProbabilities = m_ItemTypeEnemyProbabilities[(int)e.EnemyType].Values;
                 break;
         }
 
@@ -103,8 +96,8 @@ public class ItemFactory : MonoBehaviour
         int difficulty = (int)diff;
         float baseAmount = m_BaseMoneyAmountByDiff[difficulty];
 
-        float diffVariableModifier = (difficulty + 1) * 10f;
-        float variableAmount = UnityEngine.Random.Range(-5f, 5f) * diffVariableModifier;
+        int diffVariableModifier = (difficulty + 1) * 10;
+        int variableAmount = UnityEngine.Random.Range(-5, 5 + 1) * diffVariableModifier;
 
         ItemData data = new ItemData();
         data.m_ItemType = Enums.eItemType.Money;
@@ -135,6 +128,9 @@ public class ItemFactory : MonoBehaviour
         }
         else if (source == Enums.eItemSource.Enemy)
         {
+            // REMOVE THIS
+            return;
+
             switch (eType)
             {
                 case Enums.eEnemyType.Weak:

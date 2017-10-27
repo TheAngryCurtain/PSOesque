@@ -3,15 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// TODO this all needs to be put into it's own class
-
-public interface IInteractable
-{
-    void Highlight(WorldSpaceCallout callout);
-    void Unhighlight(WorldSpaceCallout callout);
-    void Interact(WorldSpaceCallout callout);
-}
-
 public class Switch : MonoBehaviour, IInteractable
 {
     [SerializeField] private Sprite m_CalloutSprite;
