@@ -36,9 +36,33 @@ public class InputManager : Singleton<InputManager>
         m_RewiredPlayer = ReInput.players.GetPlayer(InputManager.PrimaryPlayerId);
         m_InputDelegateCache = new List<Action<InputActionEventData>>();
 
+		ReInput.ControllerConnectedEvent += OnControllerConnected;
+		ReInput.ControllerDisconnectedEvent += OnControllerDisconnected;
+
+		AssignPrimaryDevice();
+
         Debug.AssertFormat(ValidateManager() != false, "{0} : Failed to validate, please ensure that all required components are set and not null.", InputManager.Identifier);
         base.Awake();
     }
+
+	public void AssignPrimaryDevice()
+	{
+		// TODO try to get this to work on PC.
+		//m_RewiredPlayer.controllers.hasKeyboard = m_RewiredPlayer.controllers.joystickCount == 0;
+	}
+
+	private void OnControllerConnected(ControllerStatusChangedEventArgs args)
+	{
+		AssignPrimaryDevice();
+	}
+
+	private void OnControllerDisconnected(ControllerStatusChangedEventArgs args)
+	{
+		// TODO maybe a popup here!
+		AssignPrimaryDevice();
+
+		// would be dismissed by the user pressing a button on controller or keyboard
+	}
 
     public override void OnDestroy()
     {
@@ -58,6 +82,9 @@ public class InputManager : Singleton<InputManager>
         {
             m_InputDelegateCache.Clear();
         }
+
+		ReInput.ControllerConnectedEvent -= OnControllerConnected;
+		ReInput.ControllerDisconnectedEvent -= OnControllerDisconnected;
 
         base.OnDestroy();
     }
