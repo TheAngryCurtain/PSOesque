@@ -34,6 +34,8 @@ public class Space : MonoBehaviour
             for (int j = 0; j < renderers[i].materials.Length; j++)
             {
                 renderers[i].materials[j].color = (show ? Color.white : Color.black);
+                renderers[i].receiveShadows = show;
+                renderers[i].shadowCastingMode = (show ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off);
             }
         }
     }

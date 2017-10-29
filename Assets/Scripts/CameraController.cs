@@ -41,7 +41,7 @@ public class CameraController : MonoBehaviour
     {
         // adjust camera settings for quick movement
         m_CameraMode = eCameraMode.Static;
-        m_LerpSpeed = Time.deltaTime * 0.15f;
+        m_LerpSpeed = Time.deltaTime * 0.25f;
 
         m_Target = e.DoorTransform;
         StartCoroutine(SetTargetAfterDelay(m_PlayerTransform, 3f));

@@ -4,6 +4,7 @@ public class Door : MonoBehaviour
 {
     [SerializeField] protected GameObject m_DoorObj;
     [SerializeField] private Transform m_EndLocation;
+    [SerializeField] private GameObject m_DustParticleObj;
 
     public bool IsOnMainPath = false;
 
@@ -21,6 +22,8 @@ public class Door : MonoBehaviour
         
         // TODO make this less lame
         m_MoveDoor = true;
+
+        Instantiate(m_DustParticleObj, transform.position, transform.rotation);
     }
 
     protected virtual void Update()

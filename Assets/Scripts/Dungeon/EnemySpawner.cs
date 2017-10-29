@@ -64,7 +64,6 @@ public class EnemySpawner : MonoBehaviour
             GameObject enemyObj = null;
 
             int enemyTypeIndex = Utils.WeightedRandom(m_EnemyProbabilities);
-            Debug.LogFormat(">> Enemy is {0}", (Enums.eEnemyType)enemyTypeIndex);
             enemyObj = (GameObject)Instantiate(m_EnemyPrefabs[enemyTypeIndex], randPos, randRot);
 
             // UGH. find a better way to do this

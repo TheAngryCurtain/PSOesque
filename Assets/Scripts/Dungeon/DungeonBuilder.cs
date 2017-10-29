@@ -18,6 +18,9 @@ public class DungeonBuilder : MonoBehaviour
     private List<RoomDatum> m_MainPathRooms;
     private List<RoomDatum> m_DeadEndRooms;
 
+    private Room m_StartRoom;
+    private Room m_EndRoom;
+
     private void Awake()
     {
         VSEventManager.Instance.AddListener<GameEvents.RequestDungeonEvent>(BuildDungeon);
@@ -210,6 +213,10 @@ public class DungeonBuilder : MonoBehaviour
             m_MainPathRooms.Add(roomData);
         }
 
+        // ugh
+        if (roomData.RoomType == eRoom.Start) m_StartRoom = roomData.Room;
+        else if (roomData.RoomType == eRoom.End) m_EndRoom = roomData.Room;
+
         return room;
     }
 
@@ -222,6 +229,7 @@ public class DungeonBuilder : MonoBehaviour
         // place any locked doors and/or switches, enemy spawners
         for (int i = 0; i < m_MainPathRooms.Count; i++)
         {
+            // enemies/switch rooms
             Room r = m_MainPathRooms[i].Room;
             if (m_MainPathRooms[i].RoomType == eRoom.Sqr_Lg ||
                 m_MainPathRooms[i].RoomType == eRoom.Sqr_Md)
@@ -240,7 +248,12 @@ public class DungeonBuilder : MonoBehaviour
                     SetupEnemyRoom(r);
                 }
             }
+
+            PlaceTorch(r);
         }
+
+        PlaceTorch(m_StartRoom);
+        PlaceTorch(m_EndRoom);
 
         // place any item boxes
         for (int i = 0; i < m_DeadEndRooms.Count; i++)
@@ -248,6 +261,28 @@ public class DungeonBuilder : MonoBehaviour
             if (!m_DeadEndRooms[i].Room.ContainsImportantObject)
             {
                 SetupItemRoom(m_DeadEndRooms[i].Room);
+            }
+        }
+    }
+
+    private void PlaceTorch(Room r)
+    {
+        // torches will get placed next to the exits of rooms on main paths to guide the player
+        for (int i = 0; i < r.Connectors.Count; i++)
+        {
+            Connector current = r.Connectors[i];
+            if (current.IsOnMainPath)
+            {
+                int xModifier = ((float)m_Rng.NextDouble() < 0.5f ? -1 : 1);
+                int xDist = (m_Rng.Next(3) + 3) * xModifier;
+                int zDist = m_Rng.Next(2);
+                Vector3 torchPosition = current.ObjTransform.position + (current.ObjTransform.right * xDist) - (current.ObjTransform.forward * zDist);
+                GameObject torchObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Torch), null);
+                torchObj.transform.position = torchPosition;
+                
+                // grrr
+                Torch t = torchObj.GetComponent<Torch>();
+                t.SetRoomID(r.RoomID);
             }
         }
     }

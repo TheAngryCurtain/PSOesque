@@ -117,4 +117,14 @@ public class GameEvents
             DoorTransform = door;
         }
     }
+
+    public class TimeOfDayChangeEvent : VSGameEvent
+    {
+        public Enums.eTimeOfDay TimeOfDay;
+
+        public TimeOfDayChangeEvent(Enums.eTimeOfDay tod)
+        {
+            TimeOfDay = tod;
+        }
+    }
 }

@@ -14,4 +14,5 @@ public class Enums
     public enum eEquipmentLocation { BackPrimary, BackSecondary, HandRight, WristRight, HandLeft, WristLeft };
     public enum eStatusEffect { Burn, Confusion, Curse, Paralysis, Poison, Sleep, Slow, All };
     public enum eStatType { Att, Def, Mgc, Acc, Evn, Spd, Lck };
+    public enum eTimeOfDay { Sunrise, Sunset };
 }

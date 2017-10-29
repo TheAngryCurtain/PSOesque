@@ -42,9 +42,18 @@ public class ItemFactory : MonoBehaviour
     [SerializeField] private ItemProbability[] m_VeryToughEnemyItems;
     [SerializeField] private ItemProbability[] m_BossEnemyItems;
 
+    [Header("Misc.")]
+    [SerializeField] private GameObject m_ItemSpawnParticleObj;
+    [SerializeField] private GameObject m_ItemMarkerObj;
+
+    private ParticleSystem m_ItemSpawnEffect;
+
     private void Awake()
     {
         VSEventManager.Instance.AddListener<GameEvents.RequestItemSpawnEvent>(OnItemRequested);
+
+        GameObject particleObj = (GameObject)Instantiate(m_ItemSpawnParticleObj, null);
+        m_ItemSpawnEffect = particleObj.GetComponentInChildren<ParticleSystem>();
     }
 
     private void OnItemRequested(GameEvents.RequestItemSpawnEvent e)
@@ -97,7 +106,7 @@ public class ItemFactory : MonoBehaviour
         float baseAmount = m_BaseMoneyAmountByDiff[difficulty];
 
         int diffVariableModifier = (difficulty + 1) * 10;
-        int variableAmount = UnityEngine.Random.Range(-5, 5 + 1) * diffVariableModifier;
+        int variableAmount = UnityEngine.Random.Range(-5, 5 + 1) + diffVariableModifier;
 
         ItemData data = ScriptableObject.CreateInstance<ItemData>();
         data.m_ItemType = Enums.eItemType.Money;
@@ -211,6 +220,14 @@ public class ItemFactory : MonoBehaviour
         GameObject itemObj = (GameObject)Instantiate(m_ItemPrefabs[(int)type], spawnPos, Quaternion.identity);
         Item item = itemObj.GetComponent<Item>();
         item.SetData(data);
+
+        // play particles
+        m_ItemSpawnEffect.transform.parent.gameObject.transform.position = spawnPos; // this is truely horrible
+        m_ItemSpawnEffect.Play();
+
+        // put down a marker
+        GameObject markerObj = (GameObject)Instantiate(m_ItemMarkerObj, null);
+        item.AssignMarkerObject(markerObj.transform);
 
         // for fun!
         Rigidbody rb = itemObj.GetComponent<Rigidbody>();
