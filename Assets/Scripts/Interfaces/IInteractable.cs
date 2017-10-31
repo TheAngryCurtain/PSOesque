@@ -13,3 +13,9 @@ public interface IUsable
 {
     void Use();
 }
+
+public interface IEquippable
+{
+    void Equip();
+    void Unequip();
+}

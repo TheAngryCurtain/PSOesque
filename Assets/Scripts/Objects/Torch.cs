@@ -24,7 +24,11 @@ public class Torch : MonoBehaviour
     {
         if (e.RoomID == m_RoomID && !m_LightSourceObj.activeInHierarchy)
         {
-            m_LightSourceObj.SetActive(true);
+            // only turn the torches on if it's night
+            if (TimeKeeper.CurrentTime <= TimeKeeper.PreSunrise || TimeKeeper.CurrentTime >= TimeKeeper.Sunset)
+            {
+                m_LightSourceObj.SetActive(true);
+            }
         }
     }
 }

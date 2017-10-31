@@ -32,8 +32,17 @@ public class EquippableData : ItemData
     public bool Equipped { get { return m_Equipped; } }
 }
 
-public class ConsumableData : ItemData { }
-public class StatBoostData : EquippableData { }
+public class ConsumableData : ItemData, IUsable
+{
+    public virtual void Use() { }
+}
+
+public class StatBoostData : EquippableData, IEquippable
+{
+    public virtual void Equip() { }
+    public virtual void Unequip() { }
+}
+
 public class ArmourData : EquippableData { }
 public class WeaponData : EquippableData
 {
@@ -51,29 +60,6 @@ public class BodyData : ArmourData
 public class ArmData : ArmourData
 {
 
-}
-
-#endregion
-
-#region Stat Boosts
-public class BoostData : StatBoostData
-{
-    public Enums.eStatType m_Stat;
-    public int m_BoostAmount;
-}
-
-public class ResistData : StatBoostData
-{
-    public Enums.eStatusEffect m_Resistance;
-}
-
-public class LongtermEffectData : StatBoostData
-{
-    public int m_HealthRegenAmount;
-    public int m_MagicRegenAmount;
-
-    public float m_HealthRegenTime;
-    public float m_MagicRegenTime;
 }
 
 #endregion
