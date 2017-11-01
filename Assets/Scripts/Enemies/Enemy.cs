@@ -1,9 +1,30 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : Character
+public class Enemy : NonPlayableCharacter
 {
+    private static IdleState _IdleState = new IdleState();
+
+    public class IdleState : State
+    {
+        public override void Enter(Character c)
+        {
+            
+        }
+
+        public override void Exit(Character c)
+        {
+            
+        }
+
+        public override State Update(Character c)
+        {
+            return _IdleState;
+        }
+    }
+
     [SerializeField] private float m_AttackRange = 1f;
     [SerializeField] private float m_AttackCooldownDelay = 2f;
     [SerializeField] private Enums.eEnemyType m_Type;

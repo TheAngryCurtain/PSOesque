@@ -53,7 +53,7 @@ public class DungeonBuilder : MonoBehaviour
         PlaceObjects();
 
         // notify
-        Vector3 startPosition = startRoom.Room.FloorCenter.position;
+        Vector3 startPosition = startRoom.Room.FloorCenter.position + Vector3.up * 2f;
         Quaternion startRotation = Quaternion.identity;
         VSEventManager.Instance.TriggerEvent(new GameEvents.DungeonBuiltEvent(startPosition, startRotation));
     }
