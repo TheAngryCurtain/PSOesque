@@ -24,12 +24,16 @@ public class ItemData : ScriptableObject
     public float m_ItemValue;
 }
 
-public class EquippableData : ItemData
+public class EquippableData : ItemData, IEquippable
 {
     public int m_MinLevelToEquip;
+    public List<Enums.eClassType> m_UsableByClass;
 
     protected bool m_Equipped = false;
     public bool Equipped { get { return m_Equipped; } }
+
+    public virtual void Equip() { }
+    public virtual void Unequip() { }
 }
 
 public class ConsumableData : ItemData, IUsable
@@ -37,50 +41,18 @@ public class ConsumableData : ItemData, IUsable
     public virtual void Use() { }
 }
 
-public class StatBoostData : EquippableData, IEquippable
+public class StatBoostData : EquippableData { }
+public class ArmourData : EquippableData
 {
-    public virtual void Equip() { }
-    public virtual void Unequip() { }
+    public int m_DefBoost;
 }
 
-public class ArmourData : EquippableData { }
 public class WeaponData : EquippableData
 {
     public int m_BaseDamage;
     public Enums.eStatusEffect m_DamageType;
     public float m_AttackRange;
 }
-
-#region Armour
-public class BodyData : ArmourData
-{
-
-}
-
-public class ArmData : ArmourData
-{
-
-}
-
-#endregion
-
-#region Weapons
-public class MeleeData : WeaponData
-{
-
-}
-
-public class RangedData : WeaponData
-{
-
-}
-
-public class MagicData : WeaponData
-{
-
-}
-
-#endregion
 
 // --- CONSUMABLES
 // Recovery         > fields for amount of health, magic to recover, bool for if it can revive?

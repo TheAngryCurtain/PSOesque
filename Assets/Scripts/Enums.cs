@@ -15,4 +15,5 @@ public class Enums
     public enum eStatusEffect { Burn, Confusion, Curse, Paralysis, Poison, Sleep, Slow, All };
     public enum eStatType { HP, MP, Att, Def, Mgc, Acc, Evn, Spd, Lck };
     public enum eTimeOfDay { Sunrise, Sunset };
+    public enum eClassType { Melee, Ranged, Magic, All };
 }

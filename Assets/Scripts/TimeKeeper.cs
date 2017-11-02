@@ -47,7 +47,14 @@ public class TimeKeeper : MonoBehaviour
         UpdateTime();
 	}
 
-	private void UpdateLight()
+#if UNITY_EDITOR
+    private void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 200, 200), m_Time.ToString());
+    }
+#endif
+
+    private void UpdateLight()
 	{
 		m_Light.transform.localRotation = Quaternion.Euler((m_CurrentTime * 360f) - 90, 170, 0);
 		m_Light.intensity = m_InitialLightIntensity * m_LightIntensity;
