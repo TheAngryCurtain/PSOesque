@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Door : MonoBehaviour
+public class Door : RoomObject
 {
     [SerializeField] protected GameObject m_DoorObj;
     [SerializeField] private Transform m_EndLocation;
@@ -8,13 +8,7 @@ public class Door : MonoBehaviour
 
     public bool IsOnMainPath = false;
 
-    protected int m_RoomID;
     private bool m_MoveDoor = false;
-
-    public virtual void SetRoomID(int id)
-    {
-        m_RoomID = id;
-    }
 
     protected virtual void UnlockDoor()
     {

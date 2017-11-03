@@ -127,4 +127,14 @@ public class GameEvents
             TimeOfDay = tod;
         }
     }
+
+    public class AttackLandedEvent : VSGameEvent
+    {
+        public Vector3 HitLocation;
+
+        public AttackLandedEvent(Vector3 position)
+        {
+            HitLocation = position;
+        }
+    }
 }

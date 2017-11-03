@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Teleporter : MonoBehaviour, IInteractable
+public class Teleporter : RoomObject, IInteractable
 {
     [SerializeField] private Sprite m_CalloutSprite;
     [SerializeField] private string m_CalloutText;

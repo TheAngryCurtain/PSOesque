@@ -2,33 +2,35 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Torch : MonoBehaviour
+public class Torch : RoomObject
 {
     [SerializeField] private GameObject m_LightSourceObj;
-
-    private int m_RoomID;
 
     private void Awake()
     {
         VSEventManager.Instance.AddListener<GameEvents.PlayerEnteredRoomEvent>(OnPlayerEnteredRoom);
+        VSEventManager.Instance.AddListener<GameEvents.TimeOfDayChangeEvent>(OnTimeOfDayChanged);
 
         m_LightSourceObj.SetActive(false);
     }
 
-    public void SetRoomID(int id)
+    protected override void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
     {
-        m_RoomID = id;
-    }
+        base.OnPlayerEnteredRoom(e);
 
-    private void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
-    {
-        if (e.RoomID == m_RoomID && !m_LightSourceObj.activeInHierarchy)
+        if (m_RoomID == e.RoomID && !m_LightSourceObj.activeInHierarchy)
         {
-            // only turn the torches on if it's night
+            // if you enter a room and night, active the torches
             if (TimeKeeper.CurrentTime <= TimeKeeper.PreSunrise || TimeKeeper.CurrentTime >= TimeKeeper.Sunset)
             {
                 m_LightSourceObj.SetActive(true);
             }
         }
+    }
+
+    protected void OnTimeOfDayChanged(GameEvents.TimeOfDayChangeEvent e)
+    {
+        // if you're playing and it changes to night, turn the torches on
+        m_LightSourceObj.SetActive(e.TimeOfDay == Enums.eTimeOfDay.Sunset);
     }
 }

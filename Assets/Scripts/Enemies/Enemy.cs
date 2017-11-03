@@ -130,11 +130,14 @@ public class Enemy : NonPlayableCharacter
     protected virtual void Kill()
     {
         if (m_Dead) return;
-        
+
         VSEventManager.Instance.RemoveListener<GameEvents.PlayerEnteredRoomEvent>(OnPlayerEnteredRoom);
         VSEventManager.Instance.RemoveListener<GameEvents.PlayerExitedRoomEvent>(OnPlayerExitedRoom);
 
         m_Dead = true;
+
+        // death particles?
+        VSEventManager.Instance.TriggerEvent(new GameEvents.AttackLandedEvent(this.transform.position));
 
         // make them fall, for now
         m_Rigidbody.constraints = RigidbodyConstraints.None;
@@ -143,7 +146,7 @@ public class Enemy : NonPlayableCharacter
         if (m_Target != null)
         {
             Vector3 forceDirection = m_Transform.position - m_Target.position;
-            m_Rigidbody.AddForce(forceDirection * 25f, ForceMode.Impulse);
+            m_Rigidbody.AddForce(forceDirection * 15f, ForceMode.Impulse);
         }
 
         VSEventManager.Instance.TriggerEvent(new GameEvents.EnemyDefeatedEvent(m_HomeRoomID));
@@ -159,6 +162,8 @@ public class Enemy : NonPlayableCharacter
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
+            // TODO maybe roll for a miss?
+
             Kill();
         }
     }

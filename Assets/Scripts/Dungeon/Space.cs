@@ -12,6 +12,8 @@ public class Space : MonoBehaviour
     protected List<Connector> m_Connectors;
     public List<Connector> Connectors { get { return m_Connectors; } }
 
+    private Renderer[] m_ObjectRenderers;
+
     protected virtual void Awake()
     {
         m_Connectors = new List<Connector>();
@@ -23,20 +25,21 @@ public class Space : MonoBehaviour
             }
         }
 
+        m_ObjectRenderers = GetComponentsInChildren<Renderer>();
         Show(false);
     }
 
     public virtual void Show(bool show)
     {
-        Renderer[] renderers = GetComponentsInChildren<Renderer>();
-        for (int i = 0; i < renderers.Length; i++)
+        for (int i = 0; i < m_ObjectRenderers.Length; i++)
         {
-            for (int j = 0; j < renderers[i].materials.Length; j++)
+            for (int j = 0; j < m_ObjectRenderers[i].materials.Length; j++)
             {
-                renderers[i].materials[j].color = (show ? Color.white : Color.black);
-                renderers[i].receiveShadows = show;
-                renderers[i].shadowCastingMode = (show ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off);
+                m_ObjectRenderers[i].materials[j].color = (show ? Color.white : Color.black);
             }
+
+            m_ObjectRenderers[i].receiveShadows = show;
+            m_ObjectRenderers[i].shadowCastingMode = (show ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off);
         }
     }
 

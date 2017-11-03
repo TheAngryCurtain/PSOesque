@@ -357,7 +357,8 @@ public class DungeonBuilder : MonoBehaviour
         // switch
         GameObject switchObj = (GameObject)Instantiate(ObjectFactory.Instance.GetObjectPrefab(ObjectFactory.eObject.Switch), switchRoom.FloorCenter.position, Quaternion.identity);
         Switch s = switchObj.GetComponent<Switch>();
-        s.SetRoomID(mainRoom.RoomID);
+        s.SetRoomID(switchRoom.RoomID);
+        s.SetDoorRoomID(mainRoom.RoomID);
 
         // mark that there is something important here
         switchRoom.ContainsImportantObject = true;

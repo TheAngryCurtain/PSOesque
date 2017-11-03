@@ -17,6 +17,13 @@ public class Room : Space
         base.Awake();
 
         RoomID = RoomCount++;
+
+        // find a better way to do this
+        Teleporter t = GetComponentInChildren<Teleporter>();
+        if (t != null)
+        {
+            t.SetRoomID(RoomID);
+        }
     }
 
     public void MakeDeadEnd()

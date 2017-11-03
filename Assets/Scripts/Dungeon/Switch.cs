@@ -3,17 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Switch : MonoBehaviour, IInteractable
+public class Switch : RoomObject, IInteractable
 {
     [SerializeField] private Sprite m_CalloutSprite;
     [SerializeField] private string m_CalloutText;
 
-    private int m_RoomID;
     private bool m_Used = false;
+    private int m_DoorRoomID;
 
-    public void SetRoomID(int id)
+    public void SetDoorRoomID(int id)
     {
-        m_RoomID = id;
+        m_DoorRoomID = id;
     }
 
     public void Highlight(WorldSpaceCallout callout)
@@ -34,7 +34,7 @@ public class Switch : MonoBehaviour, IInteractable
     {
         if (!m_Used)
         {
-            VSEventManager.Instance.TriggerEvent(new GameEvents.DoorSwitchPressedEvent(m_RoomID));
+            VSEventManager.Instance.TriggerEvent(new GameEvents.DoorSwitchPressedEvent(m_DoorRoomID));
             m_Used = true;
 
             Unhighlight(callout);
