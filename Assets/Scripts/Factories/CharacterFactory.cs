@@ -6,6 +6,7 @@ public class CharacterFactory : MonoBehaviour
 {
     [SerializeField] private GameObject m_CameraPrefab;
     [SerializeField] private GameObject m_PlayerPrefab;
+    [SerializeField] private GameObject m_CompanionPrefab;
 
     [Header("Misc.")]
     [SerializeField] private GameObject m_HitParticleObj;
@@ -24,6 +25,7 @@ public class CharacterFactory : MonoBehaviour
     private void OnDungeonBuilt(GameEvents.DungeonBuiltEvent e)
     {
         Instantiate(m_CameraPrefab, null);
+        Instantiate(m_CompanionPrefab, null);
         Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
     }
 

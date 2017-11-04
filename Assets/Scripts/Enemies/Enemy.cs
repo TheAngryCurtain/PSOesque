@@ -5,68 +5,37 @@ using UnityEngine;
 
 public class Enemy : NonPlayableCharacter
 {
-    private static IdleState _IdleState = new IdleState();
-
-    public class IdleState : State
-    {
-        public override void Enter(Character c)
-        {
-            
-        }
-
-        public override void Exit(Character c)
-        {
-            
-        }
-
-        public override State Update(Character c)
-        {
-            return _IdleState;
-        }
-    }
-
-    [SerializeField] private float m_AttackRange = 1f;
-    [SerializeField] private float m_AttackCooldownDelay = 2f;
+    
     [SerializeField] private Enums.eEnemyType m_Type;
 
-    private Transform m_Target;
-    private float m_AttackRangeSqr;
-    private float m_CurrentAttackTime = 0;
     private int m_HomeRoomID;
     private Vector3 m_SpawnPos;
-    private bool m_Dead = false;
 
     protected override void Awake()
     {
         base.Awake();
 
         m_SpawnPos = m_Transform.position;
-
-        VSEventManager.Instance.AddListener<GameEvents.PlayerEnteredRoomEvent>(OnPlayerEnteredRoom);
-        VSEventManager.Instance.AddListener<GameEvents.PlayerExitedRoomEvent>(OnPlayerExitedRoom);
-
-        m_AttackRangeSqr = m_AttackRange * m_AttackRange;
     }
 
-    private void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
+    protected override void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
     {
+        base.OnPlayerEnteredRoom(e);
+
         if (e.RoomID == m_HomeRoomID)
         {
             m_Target = e.Player;
         }
     }
 
-    private void OnPlayerExitedRoom(GameEvents.PlayerExitedRoomEvent e)
+    protected override void OnPlayerExitedRoom(GameEvents.PlayerExitedRoomEvent e)
     {
+        base.OnPlayerExitedRoom(e);
+
         if (e.RoomID == m_HomeRoomID)
         {
             m_Target = null;
         }
-    }
-
-    public void SetTarget(Transform t)
-    {
-        m_Target = t;
     }
 
     public void SetHomeRoom(int id)
@@ -76,54 +45,11 @@ public class Enemy : NonPlayableCharacter
 
     protected virtual void FixedUpdate()
     {
-        if (m_Dead) return;
-
-        if (m_Target != null)
+        if (!m_Dead)
         {
-            bool inRange = MoveWithinRange();
-            if (inRange)
-            {
-                Attack();
-            }
-        }
-        else
-        {
-            // player has left room
-            MoveWithinRange();
-        }
-    }
+            FollowTarget();
 
-    protected virtual bool MoveWithinRange()
-    {
-        Vector3 toTarget = Vector3.zero;
-        if (m_Target != null)
-        {
-            toTarget = m_Target.position - m_Transform.position;
-        }
-        else
-        {
-            toTarget = m_SpawnPos - m_Transform.position;
-        }
-
-        float distToTargetSqr = toTarget.sqrMagnitude;
-
-        bool inRange = (distToTargetSqr < m_AttackRangeSqr);
-        if (!inRange)
-        {
-            Move(toTarget.normalized);
-        }
-
-        return inRange;
-    }
-
-    protected virtual void Attack()
-    {
-        if (Time.time - m_CurrentAttackTime > m_AttackCooldownDelay)
-        {
-            m_CurrentAttackTime = Time.time;
-
-            // TODO determine what would be a good way to do this
-            Debug.Log("Attack");
+            Debug.DrawLine(m_Transform.position, m_Transform.position + m_Transform.forward * m_AttackRange, Color.red);
         }
     }
 

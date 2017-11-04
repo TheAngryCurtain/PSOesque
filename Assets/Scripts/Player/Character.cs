@@ -8,6 +8,7 @@ public class Character : MonoBehaviour
     [SerializeField] protected Rigidbody m_Rigidbody;
 
     [SerializeField] protected float m_MoveSpeed = 3f;
+    [SerializeField] protected float m_RotateSpeed = 3f;
 
     [SerializeField] protected Transform[] m_EquipTransforms = new Transform[6];
 
@@ -44,7 +45,7 @@ public class Character : MonoBehaviour
         if (direction != Vector3.zero)
         {
             Quaternion rotation = Quaternion.LookRotation(direction);
-            m_Rigidbody.MoveRotation(Quaternion.Slerp(m_Rigidbody.rotation, rotation, Time.fixedDeltaTime * 10f));
+            m_Rigidbody.MoveRotation(Quaternion.Slerp(m_Rigidbody.rotation, rotation, Time.deltaTime * m_RotateSpeed));
         }
     }
 }
