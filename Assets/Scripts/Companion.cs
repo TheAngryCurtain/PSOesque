@@ -6,7 +6,15 @@ public class Companion : NonPlayableCharacter
 {
     [SerializeField] private Vector3 m_Offset;
 
+    private ItemData m_CompanionData;
+    public ItemData CompanionData { get { return m_CompanionData; } }
+
     private Transform m_PlayerTransform;
+
+    public void SetData(ItemData data)
+    {
+        m_CompanionData = data;
+    }
 
     protected override void Awake()
     {

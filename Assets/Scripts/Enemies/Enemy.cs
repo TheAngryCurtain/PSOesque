@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class Enemy : NonPlayableCharacter
 {
-    
     [SerializeField] private Enums.eEnemyType m_Type;
 
     private int m_HomeRoomID;
@@ -48,6 +47,8 @@ public class Enemy : NonPlayableCharacter
         if (!m_Dead)
         {
             FollowTarget();
+
+            // TODO make them go back to their spawn position when the player leaves the room
 
             Debug.DrawLine(m_Transform.position, m_Transform.position + m_Transform.forward * m_AttackRange, Color.red);
         }

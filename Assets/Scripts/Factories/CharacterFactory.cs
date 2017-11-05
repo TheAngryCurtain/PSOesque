@@ -22,10 +22,16 @@ public class CharacterFactory : MonoBehaviour
         m_HitEffect = particleObj.GetComponentInChildren<ParticleSystem>();
     }
 
+    // private void OnCompanionEquipped()
+
     private void OnDungeonBuilt(GameEvents.DungeonBuiltEvent e)
     {
         Instantiate(m_CameraPrefab, null);
+
+        // TODO
+        // this should get moved to some other event when the item is equipped, so this is spawned
         Instantiate(m_CompanionPrefab, null);
+
         Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
     }
 

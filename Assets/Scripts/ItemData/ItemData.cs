@@ -7,7 +7,7 @@ using UnityEngine;
 public class ItemData : ScriptableObject
 {
     // TODO
-    // maybe also support species of enemies as well? I guess that would be a combination of theme + type though.
+    // breakable? repairable? ??
 
     // Find related
     public List<Enums.eLevelTheme> m_Themes;
