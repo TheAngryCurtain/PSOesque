@@ -5,9 +5,15 @@ using UnityEngine;
 [System.Serializable]
 public class CharacterStats
 {
-    // character name
-    // character class
-    // character race (TODO?)
+    public string m_PlayerName;
+    public Enums.eClassType m_Class;
+    // TODO Race
 
-    // max values for hp/mp/att/def/mgc/acc/evn/spd/lck
+    public Enums.eStatType[] m_Stats;
+
+    public CharacterStats()
+    {
+        m_PlayerName = string.Empty;
+        m_Stats = new Enums.eStatType[(int)Enums.eStatType.Count];
+    }
 }

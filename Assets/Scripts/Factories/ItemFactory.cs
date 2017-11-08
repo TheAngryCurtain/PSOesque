@@ -107,6 +107,11 @@ public class ItemFactory : MonoBehaviour
 
         int diffVariableModifier = difficulty * 10;
         int variableAmount = UnityEngine.Random.Range(-5, 5 + 1) + diffVariableModifier;
+        if (variableAmount < 0 && Mathf.Abs(variableAmount) >= baseAmount)
+        {
+            // will end up being negative or zero
+            variableAmount *= -1;
+        }
 
         ItemData data = ScriptableObject.CreateInstance<ItemData>();
         data.m_ItemType = Enums.eItemType.Money;
@@ -137,9 +142,6 @@ public class ItemFactory : MonoBehaviour
         }
         else if (source == Enums.eItemSource.Enemy)
         {
-            // REMOVE THIS
-            return;
-
             switch (eType)
             {
                 case Enums.eEnemyType.Weak:

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewStatUpgradeData", menuName = "Stat Upgrade Item Data")]
+[System.Serializable]
 public class StatUpgradeData : ConsumableData
 {
     public Enums.eStatType m_Stat;

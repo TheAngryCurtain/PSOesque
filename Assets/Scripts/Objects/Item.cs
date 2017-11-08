@@ -36,29 +36,27 @@ public class Item : MonoBehaviour, IInteractable
 
     public void Interact(WorldSpaceCallout callout)
     {
-        // TODO
-        // transfer item to inventory
-        // destroy item object
-        string output;
-        if (m_ItemData.m_ItemType == Enums.eItemType.Money)
+        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateInventoryEvent(m_ItemData, 1, AddedItemResult));
+
+        Unhighlight(callout);
+    }
+
+    private void AddedItemResult(bool success)
+    {
+        if (success)
         {
-            output = string.Format("${0}", m_ItemData.m_ItemValue);
+            // clean up
+            if (m_MarkerObj != null)
+            {
+                Destroy(m_MarkerObj.gameObject);
+            }
+
+            Destroy(this.gameObject);
         }
         else
         {
-            output = m_ItemData.m_ItemName;
+            Debug.LogWarningFormat("Failed to pick up item");
         }
-
-        Debug.LogFormat("Picked up {0}", output);
-        Unhighlight(callout);
-
-        // clean up
-        if (m_MarkerObj != null)
-        {
-            Destroy(m_MarkerObj.gameObject);
-        }
-
-        Destroy(this.gameObject);
     }
 
     private void LateUpdate()

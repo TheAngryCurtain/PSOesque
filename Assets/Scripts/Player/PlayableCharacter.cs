@@ -69,7 +69,7 @@ public class PlayableCharacter : Character
         m_Movement = m_CamTransform.forward * m_Vertical + m_CamTransform.right * m_Horizontal;
         m_Movement.y = 0f;
 
-        Move(m_Movement);
+        Move(m_Movement.normalized);
     }
 
     // TODO set up a better way of interactions?

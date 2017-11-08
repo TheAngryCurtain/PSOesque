@@ -137,4 +137,30 @@ public class GameEvents
             HitLocation = position;
         }
     }
+
+    public class UpdateCharacterStatEvent : VSGameEvent
+    {
+        public Enums.eStatType Stat;
+        public int Amount;
+
+        public UpdateCharacterStatEvent(Enums.eStatType stat, int amount)
+        {
+            Stat = stat;
+            Amount = amount;
+        }
+    }
+
+    public class UpdateInventoryEvent : VSGameEvent
+    {
+        public ItemData Data;
+        public int Quantity;
+        public System.Action<bool> AddedCallback;
+
+        public UpdateInventoryEvent(ItemData data, int quantity, System.Action<bool> callback)
+        {
+            Data = data;
+            Quantity = quantity;
+            AddedCallback = callback;
+        }
+    }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewLongTermData", menuName = "Long Term Effect Item Data")]
+[System.Serializable]
 public class LongTermEffectData : StatBoostData
 {
     public int m_HealthRegenAmount;

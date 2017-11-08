@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewArmData", menuName = "Arm Item Data")]
 [System.Serializable]
-public class ArmData : ArmourData
+public class StatBoostData : EquippableData
 {
 
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 // TODO more this somewhere else that makes more sense
 [CreateAssetMenu(fileName = "NewItemData", menuName = "Item Data")]
+[System.Serializable]
 public class ItemData : ScriptableObject
 {
     // TODO
@@ -22,36 +23,6 @@ public class ItemData : ScriptableObject
     [TextArea(3, 5)]
     public string m_ItemDescription;
     public float m_ItemValue;
-}
-
-public class EquippableData : ItemData, IEquippable
-{
-    public int m_MinLevelToEquip;
-    public List<Enums.eClassType> m_UsableByClass;
-
-    protected bool m_Equipped = false;
-    public bool Equipped { get { return m_Equipped; } }
-
-    public virtual void Equip() { }
-    public virtual void Unequip() { }
-}
-
-public class ConsumableData : ItemData, IUsable
-{
-    public virtual void Use() { }
-}
-
-public class StatBoostData : EquippableData { }
-public class ArmourData : EquippableData
-{
-    public int m_DefBoost;
-}
-
-public class WeaponData : EquippableData
-{
-    public int m_BaseDamage;
-    public Enums.eStatusEffect m_DamageType;
-    public float m_AttackRange;
 }
 
 // --- CONSUMABLES

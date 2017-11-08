@@ -73,15 +73,23 @@ public class CameraController : MonoBehaviour
         if (m_CameraMode == eCameraMode.Free)
         {
             float horizontal = 0f;
+            float vertical = 0f;
 
             switch (data.actionId)
             {
                 case RewiredConsts.Action.Camera_Horizontal:
                     horizontal = data.GetAxis();
                     break;
+
+                case RewiredConsts.Action.Camera_Vertical:
+                    vertical = data.GetAxis();
+                    break;
             }
 
             m_CurrentYaw += horizontal * m_YawSpeed * Time.deltaTime;
+
+            m_Offset.y += vertical * -1f * Time.deltaTime;
+            m_Offset.y = Mathf.Clamp(m_Offset.y, -3f, -0.75f);
         }
         else
         {

@@ -6,6 +6,7 @@ using UnityEngine;
 public class GameProgress
 {
     // TODO
+    // store world seed
     // store things like available themes/levels/depths/etc?
     // store completed quests?
     // store any companion/party/npc stats here?
