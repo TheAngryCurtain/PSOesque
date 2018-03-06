@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 [System.Serializable]
 public class ItemProbability
@@ -47,6 +48,31 @@ public class ItemFactory : MonoBehaviour
     [SerializeField] private GameObject m_ItemMarkerObj;
 
     private ParticleSystem m_ItemSpawnEffect;
+
+#if UNITY_EDITOR
+    [MenuItem("Item Factory/Assign Item Indices")]
+    public static void AssignItemIndices()
+    {
+        string[] guids = AssetDatabase.FindAssets("t: ItemData", new string[] { "Assets/Item Data" } );
+        int numGuids = guids.Length;
+
+        Debug.LogFormat("Found {0} Items", numGuids);
+        for (int i = 0; i < numGuids; i++)
+        {
+            string relativePath = AssetDatabase.GUIDToAssetPath(guids[i]);
+            ItemData data = (ItemData)AssetDatabase.LoadAssetAtPath(relativePath, typeof(ItemData));
+            if (data != null)
+            {
+                if (data.m_ItemID != i)
+                {
+                    Debug.LogFormat("Item at path: {0} has changed ID from {1} > {2}", relativePath, data.m_ItemID, i);
+                }
+
+                data.m_ItemID = i;
+            }
+        }
+    }
+#endif
 
     private void Awake()
     {

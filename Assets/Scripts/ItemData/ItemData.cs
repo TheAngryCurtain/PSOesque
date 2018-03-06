@@ -10,6 +10,8 @@ public class ItemData : ScriptableObject
     // TODO
     // breakable? repairable? ??
 
+    public int m_ItemID = -1;
+
     // Find related
     public List<Enums.eLevelTheme> m_Themes;
     public List<Enums.eDifficulty> m_Difficulties;
