@@ -50,26 +50,6 @@ public class ItemData : ScriptableObject
     [TextArea(3, 5)]
     public string m_ItemDescription;
     public float m_ItemValue;
-
-    public int m_Quantity = 1;
-
-
-    /*
-     * PROBLEM
-     * 
-     * Using these ScriptableObject items isn't going to work
-     * they can't be passed around and have fields like "Quantity" set on them
-     * When you pass them around from the item database, you're actually modifying their base fields when you edit them
-     * 
-     * example: all itemData objs have a quantity 1. When you add them to the inventory and stack them, adjusting the quantity in the inventory affects the itemDatabase version
-     * 
-     * POTENTIAL SOLUTION
-     * 
-     * Create an intermediate class InventoryItem that copies over things like name, value, description, and also holds dynamic fields like quantity (damage modifiers, etc)
-     * The ItemDatabase function can create and return an instance of this class and pass it around without affecting the version in the database
-     * UGH. Items are a pain.
-     * 
-     */
 }
 
 // --- CONSUMABLES

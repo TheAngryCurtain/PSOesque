@@ -70,8 +70,12 @@ public class CharacterManager : Singleton<CharacterManager>
     }
 
 #if UNITY_EDITOR
+    private string IdString = string.Empty;
+    private string quantityString = string.Empty;
+
     private int itemID = -1;
     private int itemQuantity = 1;
+    private string itemName = string.Empty;
 
     private void OnGUI()
     {
@@ -100,22 +104,36 @@ public class CharacterManager : Singleton<CharacterManager>
             GUILayout.BeginHorizontal();
 
             GUI.Label(new Rect(10f, 480f, 100f, 30f), "Item ID:");
-            string id = GUI.TextField(new Rect(10f, 500f, 100f, 30f), itemID.ToString());
-            try
+            IdString = GUI.TextField(new Rect(10f, 500f, 100f, 30f), IdString);
+            if (IdString != string.Empty)
             {
-                itemID = System.Convert.ToInt32(id);
+                try
+                {
+                    itemID = System.Convert.ToInt32(IdString);
+                }
+                catch (System.Exception e) { }
+
+                try
+                {
+                    itemName = ItemDatabase.Instance.GetItemFromID(itemID).Name;
+                }
+                catch (System.Exception e) { }
             }
-            catch (System.Exception e) { }
 
             GUI.Label(new Rect(120f, 480f, 100f, 30f), "Quantity:");
-            string quantity = GUI.TextField(new Rect(120f, 500f, 100f, 30f), itemQuantity.ToString());
-            try
+            quantityString = GUI.TextField(new Rect(120f, 500f, 100f, 30f), quantityString);
+            if (quantityString != string.Empty)
             {
-                itemQuantity = System.Convert.ToInt32(quantity);
+                try
+                {
+                    itemQuantity = System.Convert.ToInt32(quantityString);
+                }
+                catch (System.Exception e) { }
             }
-            catch (System.Exception e) { }
 
-            if (GUI.Button(new Rect(10f, 540f, 200f, 30f), "Get Item"))
+            GUI.Label(new Rect(10f, 530f, 200f, 30f), "Name: " + itemName);
+
+            if (GUI.Button(new Rect(10f, 560f, 200f, 30f), "Get Item"))
             {
                 Tuple<int, int> itemIdQuantity = new Tuple<int, int>(itemID, itemQuantity);
                 InventoryItem item = ItemDatabase.Instance.GetItemFromIDWithQuantity(itemIdQuantity);

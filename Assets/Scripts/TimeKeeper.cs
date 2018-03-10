@@ -50,7 +50,7 @@ public class TimeKeeper : MonoBehaviour
 #if UNITY_EDITOR
     private void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 200, 200), m_Time.ToString());
+        GUI.Label(new Rect(10, 10, 200, 200), "Current Time: " + m_Time.ToString());
     }
 #endif
 
