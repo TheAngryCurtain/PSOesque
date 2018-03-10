@@ -31,6 +31,8 @@ public class ItemData : ScriptableObject
     [TextArea(3, 5)]
     public string m_ItemDescription;
     public float m_ItemValue;
+
+    public int m_Quantity = 1;
 }
 
 // --- CONSUMABLES

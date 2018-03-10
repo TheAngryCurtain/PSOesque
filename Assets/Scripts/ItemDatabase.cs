@@ -6,8 +6,10 @@ public class ItemDatabase : Singleton<ItemDatabase>
 {
     private Dictionary<int, ItemData> m_itemCollection;
 
-    private void Awake()
+    public override void Awake()
     {
+        base.Awake();
+
         LoadItems();
     }
 
@@ -24,17 +26,36 @@ public class ItemDatabase : Singleton<ItemDatabase>
         }
     }
 
-    public List<ItemData> GetItemsFromIDs(List<int> itemIDs)
+    public List<ItemData> GetItemsFromIDs(List<Tuple<int, int>> itemIDsQuantities)
     {
-        int numItems = itemIDs.Count;
+        int numItems = itemIDsQuantities.Count;
         List<ItemData> data = new List<ItemData>(numItems);
 
         for (int i = 0; i < numItems; i++)
         {
-            int id = itemIDs[i];
-            data.Add(m_itemCollection[id]);
+            ItemData d = GetItemFromIDWithQuantity(itemIDsQuantities[i]);
+            if (d != null)
+            {
+                data.Add(d);
+            }
         }
 
         return data;
+    }
+
+    public ItemData GetItemFromIDWithQuantity(Tuple<int, int> IdQuantity)
+    {
+        ItemData d = null;
+        try
+        {
+            d = m_itemCollection[IdQuantity.m_First];
+            d.m_Quantity = IdQuantity.m_Second;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarningFormat("<!> Unable to get ItemData with ID {0}", IdQuantity.m_First);
+        }
+
+        return d;
     }
 }

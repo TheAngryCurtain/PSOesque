@@ -30,8 +30,13 @@ public class CharacterProgress
         m_Stats = new CharacterStats();
     }
 
+    public void Save()
+    {
+        m_Inventory.SetIDsFromInventory();
+    }
+
     public void Load()
     {
-        m_Inventory.PopulateOnLoad();
+        m_Inventory.BuildInventoryFromIDs();
     }
 }
