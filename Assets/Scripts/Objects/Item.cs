@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Item : MonoBehaviour, IInteractable
 {
-    [SerializeField] protected ItemData m_ItemData;
-    public ItemData Data { get { return m_ItemData; } }
+    [SerializeField] protected InventoryItem m_Item;
+    public InventoryItem ItemData { get { return m_Item; } }
 
     [SerializeField] private Transform m_Transform;
     [SerializeField] private Sprite m_CalloutSprite;
@@ -13,9 +13,9 @@ public class Item : MonoBehaviour, IInteractable
 
     private Transform m_MarkerObj;
 
-    public void SetData(ItemData data)
+    public void SetData(InventoryItem item)
     {
-        m_ItemData = data;
+        m_Item = item;
     }
 
     public void AssignMarkerObject(Transform marker)
@@ -36,7 +36,7 @@ public class Item : MonoBehaviour, IInteractable
 
     public void Interact(WorldSpaceCallout callout)
     {
-        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateInventoryEvent(m_ItemData, 1, AddedItemResult));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateInventoryEvent(m_Item, 1, AddedItemResult));
 
         Unhighlight(callout);
     }

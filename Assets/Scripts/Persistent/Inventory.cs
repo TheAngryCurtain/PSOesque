@@ -18,12 +18,7 @@ public class Tuple<T1, T2>
 [System.Serializable]
 public class Inventory
 {
-    [System.NonSerialized] private List<ItemData> m_Inventory;
-
-    // this is a work-around for not being able to save the ItemData scriptableObjects
-    // this list is built just before a save, and is considered out of date until the next save.
-    [SerializeField] private List<Tuple<int, int>> m_ItemIDQuantityPairs;
-    [SerializeField] private int m_Capacity;
+    [SerializeField] private List<InventoryItem> m_Inventory;
 
     [SerializeField] private float m_Money;
     public float Money { get { return m_Money; } }
@@ -32,32 +27,29 @@ public class Inventory
     // for debug display purposes
     public int Count { get { return m_Inventory.Count; } }
     public int Capacity { get { return m_Inventory.Capacity; } }
-    public string ItemNameAt(int i) { return m_Inventory[i].m_ItemName; }
-    public int QuantityAt(int i) { return m_Inventory[i].m_Quantity; }
+    public string ItemNameAt(int i) { return m_Inventory[i].Name; }
+    public int QuantityAt(int i) { return m_Inventory[i].Quantity; }
 #endif
 
     public Inventory(int maxSize)
     {
-        m_Capacity = maxSize;
-
-        m_Inventory = new List<ItemData>(maxSize);
-        m_ItemIDQuantityPairs = new List<Tuple<int, int>>(maxSize);
+        m_Inventory = new List<InventoryItem>(maxSize);
     }
 
-    public bool Add(ItemData d)
+    public bool Add(InventoryItem item)
     {
-        if (d.m_ItemType == Enums.eItemType.Money)
+        if (item.Type == Enums.eItemType.Money)
         {
-            m_Money += d.m_ItemValue;
+            m_Money += item.Value;
             return true;
         }
         else
         {
-            ItemData item = FindItemWithID(d.ItemID);
-            if (item != null)
+            InventoryItem i = FindItemWithID(item.ID);
+            if (i != null)
             {
                 // Item already existed, increment quantity
-                item.m_Quantity += d.m_Quantity;
+                i.Quantity += item.Quantity;
                 return true;
             }
             else
@@ -65,7 +57,7 @@ public class Inventory
                 // Item didn't exist, add it
                 if (m_Inventory.Count < m_Inventory.Capacity)
                 {
-                    m_Inventory.Add(d);
+                    m_Inventory.Add(item);
                     return true;
                 }
                 else
@@ -77,29 +69,29 @@ public class Inventory
         }
     }
 
-    private ItemData FindItemWithID(int id)
+    private InventoryItem FindItemWithID(int id)
     {
-        ItemData d = null;
+        InventoryItem item = null;
         for (int i = 0; i < m_Inventory.Count; i++)
         {
-            if (m_Inventory[i].ItemID == id)
+            if (m_Inventory[i].ID == id)
             {
-                d = m_Inventory[i];
+                item = m_Inventory[i];
                 break;
             }
         }
 
-        return d;
+        return item;
     }
 
-    public void Remove(ItemData d)
+    public void Remove(InventoryItem i)
     {
-        ItemData item = FindItemWithID(d.ItemID);
+        InventoryItem item = FindItemWithID(i.ID);
         if (item != null)
         {
-            if (item.m_Quantity > 1)
+            if (item.Quantity > 1)
             {
-                item.m_Quantity -= d.m_Quantity;
+                item.Quantity -= i.Quantity;
             }
             else
             {
@@ -108,30 +100,30 @@ public class Inventory
         }
         else
         {
-            Debug.LogWarningFormat("Tried to remove ItemData with ID {0} when it wasn't in the inventory", d.ItemID);
+            Debug.LogWarningFormat("Tried to remove ItemData with ID {0} when it wasn't in the inventory", i.ID);
         }
     }
 
-    public void SetIDsFromInventory()
-    {
-        m_ItemIDQuantityPairs.Clear();
+    //public void SetIDsFromInventory()
+    //{
+    //    m_ItemIDQuantityPairs.Clear();
 
-        for (int i = 0; i < m_Inventory.Count; i++)
-        {
-            ItemData d = m_Inventory[i];
-            m_ItemIDQuantityPairs.Add(new Tuple<int, int>(d.ItemID, d.m_Quantity));
-        }
-    }
+    //    for (int i = 0; i < m_Inventory.Count; i++)
+    //    {
+    //        ItemData d = m_Inventory[i];
+    //        m_ItemIDQuantityPairs.Add(new Tuple<int, int>(d.ItemID, d.m_Quantity));
+    //    }
+    //}
 
-    public void BuildInventoryFromIDs()
-    {
-        List<ItemData> data = ItemDatabase.Instance.GetItemsFromIDs(m_ItemIDQuantityPairs);
-        m_Inventory = new List<ItemData>(m_Capacity);
-        for (int i = 0; i < data.Count; i++)
-        {
-            m_Inventory.Add(data[i]);
-        }
+    //public void BuildInventoryFromIDs()
+    //{
+    //    List<ItemData> data = ItemDatabase.Instance.GetItemsFromIDs(m_ItemIDQuantityPairs);
+    //    m_Inventory = new List<ItemData>(m_Capacity);
+    //    for (int i = 0; i < data.Count; i++)
+    //    {
+    //        m_Inventory.Add(data[i]);
+    //    }
 
-        m_ItemIDQuantityPairs.Clear();
-    }
+    //    m_ItemIDQuantityPairs.Clear();
+    //}
 }

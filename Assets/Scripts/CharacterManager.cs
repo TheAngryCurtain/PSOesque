@@ -46,13 +46,13 @@ public class CharacterManager : Singleton<CharacterManager>
         else
         {
             Debug.LogFormat("> Successfully loaded... something!");
-            m_CharacterProgress.Load();
+            //m_CharacterProgress.Load();
         }
     }
 
     private void SaveCharacterProgress()
     {
-        m_CharacterProgress.Save();
+        //m_CharacterProgress.Save();
         SaveLoad.SaveCharacterProgress(m_CharacterProgress);
     }
 
@@ -63,10 +63,10 @@ public class CharacterManager : Singleton<CharacterManager>
 
     private void OnInventoryUpdated(GameEvents.UpdateInventoryEvent e)
     {
-        bool successful = m_CharacterProgress.m_Inventory.Add(e.Data);
+        bool successful = m_CharacterProgress.m_Inventory.Add(e.Item);
         e.AddedCallback(successful);
 
-        Debug.LogFormat("Adding {0} successful? {1}", e.Data.m_ItemName, successful);
+        Debug.LogFormat("Adding {0} successful? {1}", e.Item.Name, successful);
     }
 
 #if UNITY_EDITOR
@@ -118,10 +118,10 @@ public class CharacterManager : Singleton<CharacterManager>
             if (GUI.Button(new Rect(10f, 540f, 200f, 30f), "Get Item"))
             {
                 Tuple<int, int> itemIdQuantity = new Tuple<int, int>(itemID, itemQuantity);
-                ItemData data = ItemDatabase.Instance.GetItemFromIDWithQuantity(itemIdQuantity);
-                if (data != null)
+                InventoryItem item = ItemDatabase.Instance.GetItemFromIDWithQuantity(itemIdQuantity);
+                if (item != null)
                 {
-                    m_CharacterProgress.m_Inventory.Add(data);
+                    m_CharacterProgress.m_Inventory.Add(item);
                 }
             }
 

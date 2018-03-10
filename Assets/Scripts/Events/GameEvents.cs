@@ -152,13 +152,13 @@ public class GameEvents
 
     public class UpdateInventoryEvent : VSGameEvent
     {
-        public ItemData Data;
+        public InventoryItem Item;
         public int Quantity;
         public System.Action<bool> AddedCallback;
 
-        public UpdateInventoryEvent(ItemData data, int quantity, System.Action<bool> callback)
+        public UpdateInventoryEvent(InventoryItem item, int quantity, System.Action<bool> callback)
         {
-            Data = data;
+            Item = item;
             Quantity = quantity;
             AddedCallback = callback;
         }

@@ -26,36 +26,78 @@ public class ItemDatabase : Singleton<ItemDatabase>
         }
     }
 
-    public List<ItemData> GetItemsFromIDs(List<Tuple<int, int>> itemIDsQuantities)
+    public List<InventoryItem> GetItemsFromIDs(List<Tuple<int, int>> itemIDsQuantities)
     {
         int numItems = itemIDsQuantities.Count;
-        List<ItemData> data = new List<ItemData>(numItems);
+        List<InventoryItem> items = new List<InventoryItem>(numItems);
 
         for (int i = 0; i < numItems; i++)
         {
-            ItemData d = GetItemFromIDWithQuantity(itemIDsQuantities[i]);
+            InventoryItem d = GetItemFromIDWithQuantity(itemIDsQuantities[i]);
             if (d != null)
             {
-                data.Add(d);
+                items.Add(d);
             }
         }
 
-        return data;
+        return items;
+    }
+    
+    public List<Enums.eLevelTheme> GetThemesForItem(int id)
+    {
+        ItemData d = null;
+        try
+        {
+            d = m_itemCollection[id];
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarningFormat("<!> Unable to get ItemData with ID {0}", id);
+        }
+
+        return d.m_Themes;
     }
 
-    public ItemData GetItemFromIDWithQuantity(Tuple<int, int> IdQuantity)
+    public List<Enums.eDifficulty> GetDifficultiesForItem(int id)
+    {
+        ItemData d = null;
+        try
+        {
+            d = m_itemCollection[id];
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarningFormat("<!> Unable to get ItemData with ID {0}", id);
+        }
+
+        return d.m_Difficulties;
+    }
+
+    public InventoryItem GetItemFromID(int id)
+    {
+        return GetItemFromIDWithQuantity(new Tuple<int, int>(id, 1));
+    }
+
+    public InventoryItem GetItemFromIDWithQuantity(Tuple<int, int> IdQuantity)
     {
         ItemData d = null;
         try
         {
             d = m_itemCollection[IdQuantity.m_First];
-            d.m_Quantity = IdQuantity.m_Second;
         }
         catch (System.Exception e)
         {
             Debug.LogWarningFormat("<!> Unable to get ItemData with ID {0}", IdQuantity.m_First);
         }
 
-        return d;
+        // build item
+        InventoryItem item = new InventoryItem(d.ItemID);
+        item.Name = d.m_ItemName;
+        item.Description = d.m_ItemDescription;
+        item.Value = d.m_ItemValue;
+        item.Quantity = IdQuantity.m_Second;
+        item.Type = d.m_ItemType;
+
+        return item;
     }
 }

@@ -6,7 +6,7 @@ using UnityEditor;
 [System.Serializable]
 public class ItemProbability
 {
-    public ItemData Data;
+    public int ItemID;
     public int Probability;
 }
 
@@ -146,9 +146,9 @@ public class ItemFactory : MonoBehaviour
             variableAmount *= -1;
         }
 
-        ItemData data = ScriptableObject.CreateInstance<ItemData>();
-        data.m_ItemType = Enums.eItemType.Money;
-        data.m_ItemValue = baseAmount + variableAmount;
+        InventoryItem data = new InventoryItem(-1);
+        data.Type = Enums.eItemType.Money;
+        data.Value = baseAmount + variableAmount;
 
         SpawnItemObject(Enums.eItemType.Money, data, spawnPos);
     }
@@ -202,9 +202,12 @@ public class ItemFactory : MonoBehaviour
         int[] probabilities = new int[itemProbs.Length];
         for (int i = 0; i < itemProbs.Length; i++)
         {
+            List<Enums.eLevelTheme> availableThemes = ItemDatabase.Instance.GetThemesForItem(itemProbs[i].ItemID);
+            List<Enums.eDifficulty> availableDifficulties = ItemDatabase.Instance.GetDifficultiesForItem(itemProbs[i].ItemID);
+
             // theme/difficulty check
-            if ((itemProbs[i].Data.m_Themes[0] != Enums.eLevelTheme.All && !itemProbs[i].Data.m_Themes.Contains(theme)) ||
-                (itemProbs[i].Data.m_Difficulties[0] != Enums.eDifficulty.All && !itemProbs[i].Data.m_Difficulties.Contains(diff)))
+            if ((availableThemes[0] != Enums.eLevelTheme.All && !availableThemes.Contains(theme)) ||
+                (availableDifficulties[0] != Enums.eDifficulty.All && !availableDifficulties.Contains(diff)))
             {
                 itemProbs[i].Probability = 0;
             }
@@ -213,9 +216,9 @@ public class ItemFactory : MonoBehaviour
         }
 
         int dataIndex = Utils.WeightedRandom(probabilities);
-        ItemData data = itemProbs[dataIndex].Data;
+        InventoryItem data =  ItemDatabase.Instance.GetItemFromID(itemProbs[dataIndex].ItemID);
 
-        SpawnItemObject(data.m_ItemType, data, spawnPos);
+        SpawnItemObject(data.Type, data, spawnPos);
 
         //Enums.eItemType itemType = (Enums.eItemType)Utils.WeightedRandom(m_ItemTypeProbabilities);
         //switch (itemType)
@@ -250,7 +253,7 @@ public class ItemFactory : MonoBehaviour
         //SpawnItemObject(itemType, data, spawnPos);
     }
 
-    private void SpawnItemObject(Enums.eItemType type, ItemData data, Vector3 spawnPos)
+    private void SpawnItemObject(Enums.eItemType type, InventoryItem data, Vector3 spawnPos)
     {
         GameObject itemObj = (GameObject)Instantiate(m_ItemPrefabs[(int)type], spawnPos, Quaternion.identity);
         Item item = itemObj.GetComponent<Item>();
