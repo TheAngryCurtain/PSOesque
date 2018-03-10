@@ -66,4 +66,21 @@ public static class SaveLoad
             return null;
         }
     }
+
+    public static void ClearSaveData(bool character, bool game)
+    {
+        string saveTypeExtension = string.Empty;
+
+        if (character) saveTypeExtension = m_CharacterPath;
+        else if (game) saveTypeExtension = m_GamePath;
+
+        if (File.Exists(Application.persistentDataPath + saveTypeExtension))
+        {
+            File.Delete(Application.persistentDataPath + saveTypeExtension);
+        }
+        else
+        {
+            Debug.LogErrorFormat("No File exists at {0}", Application.persistentDataPath + saveTypeExtension);
+        }
+    }
 }

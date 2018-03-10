@@ -1,10 +1,25 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class CharacterManager : Singleton<CharacterManager>
 {
     private CharacterProgress m_CharacterProgress;
+
+#if UNITY_EDITOR
+    [MenuItem("Character Manager/Clear Character Save")]
+    public static void ClearCharacterSave()
+    {
+        SaveLoad.ClearSaveData(true, false);
+    }
+
+    [MenuItem("Character Manager/Clear Game Save")]
+    public static void ClearGameSave()
+    {
+        SaveLoad.ClearSaveData(false, true);
+    }
+#endif
 
     public override void Awake()
     {
@@ -24,11 +39,14 @@ public class CharacterManager : Singleton<CharacterManager>
         if (m_CharacterProgress == null)
         {
             m_CharacterProgress = new CharacterProgress();
+            m_CharacterProgress.Init();
+
             SaveCharacterProgress();
         }
         else
         {
             Debug.LogFormat("> Successfully loaded... something!");
+            m_CharacterProgress.Load();
         }
     }
 
@@ -53,19 +71,22 @@ public class CharacterManager : Singleton<CharacterManager>
 #if UNITY_EDITOR
     private void OnGUI()
     {
-        int count = m_CharacterProgress.m_Inventory.Count;
-        GUI.Label(new Rect(10, 40, 300, 30), string.Format("-- Inventory -- Count: {0}, Capacity: {1}", count, m_CharacterProgress.m_Inventory.Capacity));
-
-        for (int i = 0; i < count; i++)
+        if (m_CharacterProgress != null)
         {
-            GUI.Label(new Rect(10, 60 + (i * 20), 300, 30), m_CharacterProgress.m_Inventory.ItemNameAt(i));
-        }
+            int count = m_CharacterProgress.m_Inventory.Count;
+            GUI.Label(new Rect(10, 40, 300, 30), string.Format("-- Inventory -- Count: {0}, Capacity: {1}", count, m_CharacterProgress.m_Inventory.Capacity));
 
-        GUI.Label(new Rect(10, 300, 300, 30), string.Format("Money: {0}", m_CharacterProgress.m_Inventory.Money));
+            for (int i = 0; i < count; i++)
+            {
+                GUI.Label(new Rect(10, 60 + (i * 20), 300, 30), m_CharacterProgress.m_Inventory.ItemNameAt(i));
+            }
 
-        if (GUI.Button(new Rect(10, 330, 200, 30), "Save Character"))
-        {
-            SaveCharacterProgress();
+            GUI.Label(new Rect(10, 300, 300, 30), string.Format("Money: {0}", m_CharacterProgress.m_Inventory.Money));
+
+            if (GUI.Button(new Rect(10, 330, 200, 30), "Save Character"))
+            {
+                SaveCharacterProgress();
+            }
         }
     }
 #endif

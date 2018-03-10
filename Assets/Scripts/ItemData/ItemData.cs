@@ -8,9 +8,15 @@ using UnityEngine;
 public class ItemData : ScriptableObject
 {
     // TODO
-    // breakable? repairable? ??
+    // breakable? repairable? ?? maybe the rarest items are unbreakable but the smaller ones aren't?
 
-    public int m_ItemID = -1;
+    // for resource loading
+    // icon name string?
+    // model name string?
+    // data name string?
+
+    [SerializeField] private int m_ItemID = -1;
+    public int ItemID { get { return m_ItemID; } set { m_ItemID = value; } }
 
     // Find related
     public List<Enums.eLevelTheme> m_Themes;

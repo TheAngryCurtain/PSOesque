@@ -14,9 +14,24 @@ public class CharacterProgress
 
     private int m_MaxInventorySize = 20;
 
-    public CharacterProgress()
+    // this constructor somehow gets called with no callstack as soon as the game launches
+    // could be a secret built in unity class?
+
+    //public CharacterProgress()
+    //{
+    //    m_Inventory = new Inventory(m_MaxInventorySize);
+    //    m_Stats = new CharacterStats();
+    //}
+
+    // called after a successful load
+    public void Init()
     {
         m_Inventory = new Inventory(m_MaxInventorySize);
         m_Stats = new CharacterStats();
+    }
+
+    public void Load()
+    {
+        m_Inventory.PopulateOnLoad();
     }
 }

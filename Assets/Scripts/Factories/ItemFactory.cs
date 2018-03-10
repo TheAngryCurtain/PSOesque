@@ -53,7 +53,7 @@ public class ItemFactory : MonoBehaviour
     [MenuItem("Item Factory/Assign Item Indices")]
     public static void AssignItemIndices()
     {
-        string[] guids = AssetDatabase.FindAssets("t: ItemData", new string[] { "Assets/Item Data" } );
+        string[] guids = AssetDatabase.FindAssets("t: ItemData", new string[] { "Assets/Item Data" });
         int numGuids = guids.Length;
 
         Debug.LogFormat("Found {0} Items", numGuids);
@@ -63,23 +63,30 @@ public class ItemFactory : MonoBehaviour
             ItemData data = (ItemData)AssetDatabase.LoadAssetAtPath(relativePath, typeof(ItemData));
             if (data != null)
             {
-                if (data.m_ItemID != i)
+                if (data.ItemID != i)
                 {
-                    Debug.LogFormat("Item at path: {0} has changed ID from {1} > {2}", relativePath, data.m_ItemID, i);
+                    Debug.LogFormat("Item at path: {0} has changed ID from {1} > {2}", relativePath, data.ItemID, i);
                 }
 
-                data.m_ItemID = i;
+                data.ItemID = i;
+                EditorUtility.SetDirty(data);
             }
         }
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 #endif
 
     private void Awake()
     {
-        VSEventManager.Instance.AddListener<GameEvents.RequestItemSpawnEvent>(OnItemRequested);
-
         GameObject particleObj = (GameObject)Instantiate(m_ItemSpawnParticleObj, null);
         m_ItemSpawnEffect = particleObj.GetComponentInChildren<ParticleSystem>();
+    }
+
+    private void Start()
+    {
+        VSEventManager.Instance.AddListener<GameEvents.RequestItemSpawnEvent>(OnItemRequested);
     }
 
     private void OnItemRequested(GameEvents.RequestItemSpawnEvent e)
