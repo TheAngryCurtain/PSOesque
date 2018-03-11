@@ -5,9 +5,12 @@ using UnityEngine;
 public class ItemDatabase : Singleton<ItemDatabase>
 {
     private Dictionary<int, ItemData> m_itemCollection;
+    private string itemDataXMLPath;
 
     public override void Awake()
     {
+        itemDataXMLPath = Application.streamingAssetsPath + "/XML/ItemDatabase.xml";
+
         base.Awake();
 
         LoadItems();

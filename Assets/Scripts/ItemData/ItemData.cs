@@ -2,26 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// TODO
-// this will need to also copy over all possible values from different item types, like armour, weapons, companions, etc
-[System.Serializable]
-public class InventoryItem
-{
-    public int ID;
-    public string Name;
-    [TextArea(3, 5)] public string Description;
-
-    public float Value;
-    public int Quantity;
-
-    public Enums.eItemType Type;
-
-    public InventoryItem(int id)
-    {
-        ID = id;
-    }
-}
-
 [CreateAssetMenu(fileName = "NewItemData", menuName = "Item Data")]
 [System.Serializable]
 public class ItemData : ScriptableObject

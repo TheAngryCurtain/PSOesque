@@ -49,34 +49,34 @@ public class ItemFactory : MonoBehaviour
 
     private ParticleSystem m_ItemSpawnEffect;
 
-#if UNITY_EDITOR
-    [MenuItem("Item Factory/Assign Item Indices")]
-    public static void AssignItemIndices()
-    {
-        string[] guids = AssetDatabase.FindAssets("t: ItemData", new string[] { "Assets/Item Data" });
-        int numGuids = guids.Length;
+//#if UNITY_EDITOR
+//    [MenuItem("Item Factory/Assign Item Indices")]
+//    public static void AssignItemIndices()
+//    {
+//        string[] guids = AssetDatabase.FindAssets("t: ItemData", new string[] { "Assets/Item Data" });
+//        int numGuids = guids.Length;
 
-        Debug.LogFormat("Found {0} Items", numGuids);
-        for (int i = 0; i < numGuids; i++)
-        {
-            string relativePath = AssetDatabase.GUIDToAssetPath(guids[i]);
-            ItemData data = (ItemData)AssetDatabase.LoadAssetAtPath(relativePath, typeof(ItemData));
-            if (data != null)
-            {
-                if (data.ItemID != i)
-                {
-                    Debug.LogFormat("Item at path: {0} has changed ID from {1} > {2}", relativePath, data.ItemID, i);
-                }
+//        Debug.LogFormat("Found {0} Items", numGuids);
+//        for (int i = 0; i < numGuids; i++)
+//        {
+//            string relativePath = AssetDatabase.GUIDToAssetPath(guids[i]);
+//            ItemData data = (ItemData)AssetDatabase.LoadAssetAtPath(relativePath, typeof(ItemData));
+//            if (data != null)
+//            {
+//                if (data.ItemID != i)
+//                {
+//                    Debug.LogFormat("Item at path: {0} has changed ID from {1} > {2}", relativePath, data.ItemID, i);
+//                }
 
-                data.ItemID = i;
-                EditorUtility.SetDirty(data);
-            }
-        }
+//                data.ItemID = i;
+//                EditorUtility.SetDirty(data);
+//            }
+//        }
 
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-    }
-#endif
+//        AssetDatabase.SaveAssets();
+//        AssetDatabase.Refresh();
+//    }
+//#endif
 
     private void Awake()
     {
