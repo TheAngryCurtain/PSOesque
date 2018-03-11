@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+// TODO
+// this will need to also copy over all possible values from different item types, like armour, weapons, companions, etc
 [System.Serializable]
 public class InventoryItem
 {
@@ -21,7 +22,6 @@ public class InventoryItem
     }
 }
 
-// TODO more this somewhere else that makes more sense
 [CreateAssetMenu(fileName = "NewItemData", menuName = "Item Data")]
 [System.Serializable]
 public class ItemData : ScriptableObject

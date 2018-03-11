@@ -6,15 +6,22 @@ public class Companion : NonPlayableCharacter
 {
     [SerializeField] private Vector3 m_Offset;
 
-    private ItemData m_CompanionData;
-    public ItemData CompanionData { get { return m_CompanionData; } }
+    private InventoryItem m_CompanionData;
+    public InventoryItem CompanionData { get { return m_CompanionData; } }
 
     private Transform m_PlayerTransform;
 
-    public void SetData(ItemData data)
+    public void SetData(InventoryItem data)
     {
         m_CompanionData = data;
     }
+
+    /*
+     * TODO
+     * 
+     * will eventually need to make companions equippable.
+     * When they are equipped, they'll need to spawn this prefab (similarly, destroy it when unequipped)
+     */
 
     protected override void Awake()
     {

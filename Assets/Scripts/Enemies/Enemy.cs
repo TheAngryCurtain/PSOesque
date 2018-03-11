@@ -82,14 +82,13 @@ public class Enemy : NonPlayableCharacter
 
     // TODO
     // figure out how to handle attacking/damaging. Perhaps an IDamagable interface
-    // when an enemy is destory, fire the enemydefeated event
 
     // FOR TESTING
     protected virtual void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
-            // TODO maybe roll for a miss?
+            // TODO maybe roll for a miss? or roll for a block depending on a stat
 
             Kill();
         }

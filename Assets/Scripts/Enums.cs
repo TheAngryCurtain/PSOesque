@@ -16,4 +16,6 @@ namespace Enums
     public enum eStatType { HP, MP, Att, Def, Mgc, Acc, Evn, Spd, Lck, Count };
     public enum eTimeOfDay { Sunrise, Sunset };
     public enum eClassType { Melee, Ranged, Magic, All };
+    public enum eRaceType { Human };
+    public enum eGender { Male, Female };
 }

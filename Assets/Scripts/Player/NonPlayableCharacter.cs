@@ -78,6 +78,9 @@ public class NonPlayableCharacter : Character
             Vector3 toDest = m_Destination - m_Transform.position;
             float sqrDistToDest = toDest.sqrMagnitude;
 
+            // TODO
+            // adjust speed based on distance to target (e.g. full speed when far away, slow down to a stop as you reach dest)
+
             if (sqrDistToDest < m_StoppedDistSqr)
             {
                 // in range, stop
