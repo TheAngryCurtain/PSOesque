@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor;
 
 public class ItemEditor : EditorWindow
@@ -36,7 +37,8 @@ public class ItemEditor : EditorWindow
     private int MinLevelToEquip;
     private Enums.eStatType MinStatType;
     private int MinStatLevel;
-    private Enums.eClassType[] UsableClasses = new Enums.eClassType[3];
+    private List<Enums.eClassType> UsableClasses = new List<Enums.eClassType>((int)Enums.eClassType.All);
+    private List<Enums.eRaceType> UsableRaces = new List<Enums.eRaceType>((int)Enums.eRaceType.All);
 
     // armours
     private Enums.eArmourLocation newArmourType;
@@ -115,6 +117,7 @@ public class ItemEditor : EditorWindow
 
         if (GUILayout.Button("Create Item"))
         {
+            Debug.LogFormat("TODO");
             // TODO
             // take the lowest sub-type to create an instance of that class
             
@@ -155,6 +158,8 @@ public class ItemEditor : EditorWindow
 
     private void ShowStatBoosts()
     {
+        ShowEquippables();
+
         GUILayout.Label("Stat Boosts", EditorStyles.boldLabel);
         newBoostType = (Enums.eStatBoostType)EditorGUILayout.EnumPopup("Boost Type: ", newBoostType);
         switch (newBoostType)
@@ -184,6 +189,26 @@ public class ItemEditor : EditorWindow
         MinLevelToEquip = EditorGUILayout.IntField("Minimum Level: ", MinLevelToEquip);
         MinStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Limiting Stat: ", MinStatType);
         MinStatLevel = EditorGUILayout.IntField("Min Stat Level: ", MinStatLevel);
+
+        for (int i = 0; i < UsableClasses.Count; i++)
+        {
+            UsableClasses[i] = (Enums.eClassType)EditorGUILayout.EnumPopup("Usable By (Class): ", UsableClasses[i]);
+        }
+
+        if (GUILayout.Button("Add Usable Class"))
+        {
+            UsableClasses.Add(Enums.eClassType.Melee);
+        }
+
+        for (int i = 0; i < UsableRaces.Count; i++)
+        {
+            UsableRaces[i] = (Enums.eRaceType)EditorGUILayout.EnumPopup("Usable By (Race): ", UsableRaces[i]);
+        }
+
+        if (GUILayout.Button("Add Usable Race"))
+        {
+            UsableRaces.Add(Enums.eRaceType.Human);
+        }
     }
 
     private void ShowArmours()

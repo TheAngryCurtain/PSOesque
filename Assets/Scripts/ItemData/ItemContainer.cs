@@ -118,6 +118,7 @@ public class EquippableItem : InventoryItem, IEquippable
     [XmlAttribute("MinimumStat")]       public Enums.eStatType StatType;
     [XmlAttribute("MinimumStatValue")]  public int MinStatValueToEquip;
     [XmlArray("UsableClasses")]         public List<Enums.eClassType> UsableClasses;
+    [XmlArray("UsableRaces")]           public List<Enums.eRaceType> UsableRaces;
 
     // need this for xml serialization
     public EquippableItem() : base() { }
