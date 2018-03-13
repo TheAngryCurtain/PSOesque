@@ -17,6 +17,19 @@ public class ItemContainer
 [XmlInclude(typeof(StatusEffectItem))]
 [XmlInclude(typeof(WeaponUpgradeItem))]
 [XmlInclude(typeof(EquippableItem))]
+[XmlInclude(typeof(ArmourItem))]
+[XmlInclude(typeof(CompanionItem))]
+[XmlInclude(typeof(EquippableStatBoost))]
+[XmlInclude(typeof(WeaponItem))]
+[XmlInclude(typeof(ArmArmourItem))]
+[XmlInclude(typeof(BodyArmourItem))]
+[XmlInclude(typeof(HeadArmourItem))]
+[XmlInclude(typeof(StatBoostItem))]
+[XmlInclude(typeof(LongTermEffectItem))]
+[XmlInclude(typeof(ResistItem))]
+[XmlInclude(typeof(MeleeWeaponItem))]
+[XmlInclude(typeof(RangedWeaponItem))]
+
 [System.Serializable]
 public class InventoryItem
 {
@@ -27,6 +40,7 @@ public class InventoryItem
     [XmlAttribute("Value")]         public float Value;
     [XmlIgnore]                     public int Quantity;
     [XmlAttribute("Type")]          public Enums.eItemType Type;
+    [XmlAttribute("Rarity")]        public Enums.eRarity Rarity;
 
     // need this for xml serialization
     public InventoryItem() { }
@@ -111,3 +125,124 @@ public class EquippableItem : InventoryItem, IEquippable
     public virtual void Equip() { }
     public virtual void Unequip() { }
 }
+
+#region Equippable Sub-Types
+[System.Serializable]
+public class ArmourItem : EquippableItem
+{
+    [XmlAttribute("ArmourLocation")]    public Enums.eArmourLocation Location;
+    [XmlAttribute("DefBoost")]          public int DefBoost;
+
+    // need this for xml serialization
+    public ArmourItem() : base() { }
+}
+
+[System.Serializable]
+public class CompanionItem : EquippableItem
+{
+    // need this for xml serialization
+    public CompanionItem() : base() { }
+}
+
+[System.Serializable]
+public class EquippableStatBoost : EquippableItem
+{
+    // need this for xml serialization
+    public EquippableStatBoost() : base() { }
+}
+
+[System.Serializable]
+public class WeaponItem : EquippableItem
+{
+    [XmlAttribute("BaseDamage")]    public int BaseDamage;
+    [XmlAttribute("StatusEffect")]  public Enums.eStatusEffect Effect;
+    [XmlAttribute("MultiTarget")]   public bool MultiTarget;
+    // TODO elemental properties?
+
+    // need this for xml serialization
+    public WeaponItem() : base() { }
+}
+#endregion
+
+#region Armour Sub-Types
+[System.Serializable]
+public class ArmArmourItem : ArmourItem
+{
+    // need this for xml serialization
+    public ArmArmourItem() : base() { }
+}
+
+[System.Serializable]
+public class BodyArmourItem : ArmourItem
+{
+    [XmlAttribute("Slots")] public int Slots;
+
+    // need this for xml serialization
+    public BodyArmourItem() : base() { }
+}
+
+[System.Serializable]
+public class HeadArmourItem : ArmourItem
+{
+    // need this for xml serialization
+    public HeadArmourItem() : base() { }
+}
+#endregion
+
+#region Stat Boost Sub-Types
+[System.Serializable]
+public class StatBoostItem : EquippableStatBoost
+{
+    [XmlAttribute("StatType")]  public Enums.eStatType Stat;
+    [XmlAttribute("Amount")]    public int Amount;
+
+    // need this for xml serialization
+    public StatBoostItem() : base() { }
+}
+
+[System.Serializable]
+public class LongTermEffectItem : EquippableStatBoost
+{
+    [XmlAttribute("EffectType")]    public Enums.eLongTermEffectType EffectType;
+    [XmlAttribute("Delay")]         public float Delay;
+    [XmlAttribute("Amount")]        public int Amount;
+
+    // need this for xml serialization
+    public LongTermEffectItem() : base() { }
+}
+
+[System.Serializable]
+public class ResistItem : EquippableStatBoost
+{
+    [XmlAttribute("ResistEffect")]  public Enums.eStatusEffect Effect;
+    [XmlAttribute("Percent")]       public float Percent;
+
+    // need this for xml serialization
+    public ResistItem() : base() { }
+}
+#endregion
+
+#region Weapon Sub-Types
+[System.Serializable]
+public class MeleeWeaponItem : WeaponItem
+{
+    [XmlAttribute("TwoHanded")] public bool TwoHanded;
+
+    // need this for xml serialization
+    public MeleeWeaponItem() : base() { }
+}
+
+[System.Serializable]
+public class RangedWeaponItem : WeaponItem
+{
+    [XmlAttribute("Range")] public float Range;
+    // string for projectile prefab path?
+
+    // need this for xml serialization
+    public RangedWeaponItem() : base() { }
+}
+
+
+// TODO account for magical weapons (MP cost and so on)
+
+#endregion
