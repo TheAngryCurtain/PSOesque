@@ -34,10 +34,10 @@ public class ItemContainer
 public class InventoryItem
 {
     [XmlAttribute("ID")]            public int ID;
-    [XmlAttribute("Icon")]          public string IconName;
+    [XmlAttribute("IconName")]      public string IconName;
     [XmlAttribute("Name")]          public string Name;
     [XmlAttribute("Description")]   public string Description;
-    [XmlAttribute("Value")]         public float Value;
+    [XmlAttribute("Worth")]         public float Value;
     [XmlIgnore]                     public int Quantity;
     [XmlAttribute("Type")]          public Enums.eItemType Type;
     [XmlAttribute("Rarity")]        public Enums.eRarity Rarity;

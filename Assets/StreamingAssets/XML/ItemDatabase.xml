@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<ItemContainer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Items>
+    <InventoryItem xsi:type="RecoveryItem" ID="0" IconName="testSpriteIcon" Name="TEST ITEM" Description="TEST DESCRIPTION" Worth="25" Type="Consumable" Rarity="Uncommon" ConsumableType="HP" Amount="59" />
+  </Items>
+</ItemContainer>

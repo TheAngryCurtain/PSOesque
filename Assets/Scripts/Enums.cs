@@ -11,7 +11,7 @@ namespace Enums
     public enum eCrateType { Common, Rare, VeryRare };
     public enum eEnemyType { Weak, Regular, Tough, ExtraTough, Boss };
 
-    public enum eItemType { Consumable, StatBoost, Armour, Weapon, Money };
+    public enum eItemType { Consumable, Companion, StatBoost, Armour, Weapon, Money };
     public enum eConsumableType { Recovery, StatUpgrade, StatusEffect, WeaponUpgrade };
     public enum eStatBoostType { Basic, LongTerm, Resist };
     public enum eMinEquipRequirementType { None = -1, Stat, Level };
