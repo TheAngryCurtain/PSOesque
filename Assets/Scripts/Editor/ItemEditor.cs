@@ -2,6 +2,47 @@
 using UnityEngine;
 using UnityEditor;
 
+public class ConfirmPopup : EditorWindow
+{
+    public System.Action<bool> OnResultClicked;
+
+    private string mMessage;
+
+    public static ConfirmPopup Create()
+    {
+        ConfirmPopup window = ScriptableObject.CreateInstance<ConfirmPopup>();
+        window.position = new Rect(Screen.width / 2, Screen.height / 2, 200, 75);
+        window.Show();
+
+        return window;
+    }
+
+    void OnGUI()
+    {
+        EditorGUILayout.LabelField(mMessage, EditorStyles.wordWrappedLabel);
+        GUILayout.Space(70);
+
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Yes"))
+        {
+            OnResultClicked(true);
+        }
+
+        if (GUILayout.Button("No"))
+        {
+            OnResultClicked(false);
+        }
+
+        EditorGUILayout.EndHorizontal();
+    }
+
+    public void SetMessage(string message)
+    {
+        mMessage = message;
+    }
+}
+
 public class ItemEditor : EditorWindow
 {
     private static int itemID = 0;
@@ -9,10 +50,10 @@ public class ItemEditor : EditorWindow
     private List<InventoryItem> ItemList;
     private ItemContainer ItemContainer;
     private string ItemXMLPath;
-    private InventoryItem CurrentItem = null;
+    private InventoryItem mCurrentItem = null;
 
-    private bool IsCreating = false;
-    private bool IsEditing = false;
+    private bool mIsCreating = false;
+    private bool mIsEditing = false;
 
     #region Create Item Fields
     private string newItemName ;
@@ -63,11 +104,13 @@ public class ItemEditor : EditorWindow
     #endregion
 
     #region Edit Item Fields
-    private int SelectedItemIndex = 0;
-    private string[] ItemOptions;
-    private InventoryItem SelectedItem;
-    private Sprite SelectedItemSprite = null;
+    private int mSelectedItemIndex = 0;
+    private string[] mItemOptions;
+    private InventoryItem mSelectedItem;
+    private Sprite mSelectedItemSprite = null;
     #endregion
+
+    private ConfirmPopup mConfirmPopup;
 
     [MenuItem("Tools/Item Editor")]
     private static void Init()
@@ -90,6 +133,7 @@ public class ItemEditor : EditorWindow
         try
         {
             ItemContainer = XMLSerializer.Deserialize<ItemContainer>(ItemXMLPath);
+            itemID = ItemContainer.m_Items.Count;
         }
         catch (System.IO.FileNotFoundException e)
         {
@@ -98,12 +142,15 @@ public class ItemEditor : EditorWindow
         }
 
         ItemList = ItemContainer.m_Items;
+        PopulateOptionItems();
+    }
 
-        // set up edit stuff
-        ItemOptions = new string[ItemList.Count];
+    private void PopulateOptionItems()
+    {
+        mItemOptions = new string[ItemList.Count];
         for (int i = 0; i < ItemList.Count; i++)
         {
-            ItemOptions[i] = string.Format("[{0}] {1}", ItemList[i].ID, ItemList[i].Name);
+            mItemOptions[i] = string.Format("[{0}] {1}", ItemList[i].ID, ItemList[i].Name);
         }
     }
 
@@ -115,7 +162,7 @@ public class ItemEditor : EditorWindow
 
     private void Reset()
     {
-        CurrentItem = new InventoryItem();
+        mCurrentItem = new InventoryItem();
 
         newItemName = "New Item";
         newItemIcon = null;
@@ -167,32 +214,34 @@ public class ItemEditor : EditorWindow
     private void OnGUI()
     {
         GUILayout.BeginHorizontal();
-        if (GUILayout.Button((IsCreating ? "Creating" : "Create")))
+        if (GUILayout.Button((mIsCreating ? "Creating" : "Create")))
         {
-            IsEditing = false;
-            IsCreating = !IsCreating;
+            mIsEditing = false;
+            mIsCreating = !mIsCreating;
         }
 
-        if (GUILayout.Button((IsEditing ? "Editing" : "Edit")))
+        if (GUILayout.Button((mIsEditing ? "Editing" : "Edit")))
         {
-            IsCreating = false;
-            IsEditing = !IsEditing;
+            mIsCreating = false;
+
+            if (!mIsEditing)
+            {
+                mSelectedItemIndex = 0;
+                PopulateOptionItems();
+            }
+
+            mIsEditing = !mIsEditing;
         }
         GUILayout.EndHorizontal();
 
-        if (IsCreating)
+        if (mIsCreating)
         {
             ShowCreateItem();
         }
 
-        if (IsEditing)
+        if (mIsEditing)
         {
             ShowEditItem();
-        }
-
-        if (GUILayout.Button("Save"))
-        {
-            Save();
         }
 
         GUILayout.Label("Total Items: " + ItemList.Count, EditorStyles.boldLabel);
@@ -243,12 +292,13 @@ public class ItemEditor : EditorWindow
         if (GUILayout.Button("Create Item"))
         {
             CreateItem();
+            Save();
         }
     }
 
     private void CreateItem()
     {
-        System.Type currentType = CurrentItem.GetType();
+        System.Type currentType = mCurrentItem.GetType();
 
         // fill in required fields
         #region Consumables
@@ -263,7 +313,7 @@ public class ItemEditor : EditorWindow
             item.Name = newItemName;
             item.Description = newItemDesc;
             item.Type = newItemType;
-            item.IconName = newItemIcon.name;
+            item.IconName = (newItemIcon == null ? string.Empty : newItemIcon.name);
             item.Value = newItemValue;
             item.Rarity = newItemRarity;
 
@@ -540,11 +590,13 @@ public class ItemEditor : EditorWindow
                     break;
             }
 
+            item.UsableClasses = new List<Enums.eClassType>();
             for (int i = 0; i < UsableClasses.Count; i++)
             {
                 item.UsableClasses.Add(UsableClasses[i]);
             }
 
+            item.UsableRaces = new List<Enums.eRaceType>();
             for (int i = 0; i < UsableRaces.Count; i++)
             {
                 item.UsableRaces.Add(UsableRaces[i]);
@@ -743,37 +795,266 @@ public class ItemEditor : EditorWindow
 
     private void ShowEditItem()
     {
-        SelectedItemIndex = EditorGUILayout.Popup("Item: ", SelectedItemIndex, ItemOptions);
-        SelectedItem = ItemList[SelectedItemIndex];
+        mSelectedItemIndex = EditorGUILayout.Popup("Item: ", mSelectedItemIndex, mItemOptions);
+        mSelectedItem = ItemList[mSelectedItemIndex];
 
-        System.Type currentType = SelectedItem.GetType();
+        System.Type currentType = mSelectedItem.GetType();
+        #region Consumables
         if (currentType == typeof(RecoveryItem))
         {
-            RecoveryItem item = (RecoveryItem)SelectedItem;
+            RecoveryItem item = (RecoveryItem)mSelectedItem;
 
-            // base item
-            item.Name = EditorGUILayout.TextField("Name: ", item.Name);
-            if (SelectedItemSprite == null)
-            {
-                SelectedItemSprite = Resources.Load<Sprite>( string.Format("Icons/{0}", item.IconName));
-            }
-            else
-            {
-                SelectedItemSprite = (Sprite)EditorGUILayout.ObjectField("Icon", SelectedItemSprite, typeof(Sprite), false);
-                item.IconName = SelectedItemSprite.name;
-            }
+            ShowEditItemBase(item);
 
-            EditorGUILayout.PrefixLabel("Description");
-            EditorStyles.textField.wordWrap = true;
-            item.Description = EditorGUILayout.TextArea(item.Description, GUILayout.MinHeight(60f));
-            item.Value = EditorGUILayout.FloatField("Worth: ", item.Value);
-            item.Rarity = (Enums.eRarity)EditorGUILayout.EnumPopup("Rarity: ", item.Rarity);
-
+            // recovery
             item.ConsumableType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", item.ConsumableType);
             item.Amount = EditorGUILayout.IntField("Amount: ", item.Amount);
         }
+        else if (currentType == typeof(StatUpgradeItem))
+        {
+            StatUpgradeItem item = (StatUpgradeItem)mSelectedItem;
 
-        // TODO all of the other item types
+            ShowEditItemBase(item);
+
+            // stat upgrade
+            item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", item.StatType);
+            item.Amount = EditorGUILayout.IntField("Amount: ", item.Amount);
+        }
+        else if (currentType == typeof(StatusEffectItem))
+        {
+            StatusEffectItem item = (StatusEffectItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+
+            // status effect
+            item.Effect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", item.Effect);
+        }
+        else if (currentType == typeof(WeaponUpgradeItem))
+        {
+            WeaponUpgradeItem item = (WeaponUpgradeItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+
+            // weapon upgrade
+            item.Amount = EditorGUILayout.IntField("Amount: ", item.Amount);
+        }
+        #endregion
+
+        #region Companions
+        else if (currentType == typeof(CompanionItem))
+        {
+            CompanionItem item = (CompanionItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // companion
+        }
+        #endregion
+
+        #region Stat Boosts
+        else if (currentType == typeof(StatBoostItem))
+        {
+            StatBoostItem item = (StatBoostItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+
+            // equippable
+            GUILayout.Label("Equippable", EditorStyles.boldLabel);
+            item.MinEquipType = (Enums.eMinEquipRequirementType)EditorGUILayout.EnumPopup("Minimum Requirement: ", item.MinEquipType);
+            item.MinLevelToEquip = EditorGUILayout.IntField("Minimum Level: ", item.MinLevelToEquip);
+            item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Limiting Stat: ", item.StatType);
+            item.MinStatValueToEquip = EditorGUILayout.IntField("Min Stat Level: ", item.MinStatValueToEquip);
+
+            for (int i = 0; i < item.UsableClasses.Count; i++)
+            {
+                item.UsableClasses[i] = (Enums.eClassType)EditorGUILayout.EnumPopup("Usable By (Class): ", item.UsableClasses[i]);
+            }
+
+            for (int i = 0; i < item.UsableRaces.Count; i++)
+            {
+                item.UsableRaces[i] = (Enums.eRaceType)EditorGUILayout.EnumPopup("Usable By (Race): ", item.UsableRaces[i]);
+            }
+
+            // stat boost
+            item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Stat: ", item.StatType);
+            item.Amount = EditorGUILayout.IntField("Amount: ", item.Amount);
+        }
+        else if (currentType == typeof(LongTermEffectItem))
+        {
+            LongTermEffectItem item = (LongTermEffectItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+
+            // equippable
+            GUILayout.Label("Equippable", EditorStyles.boldLabel);
+            item.MinEquipType = (Enums.eMinEquipRequirementType)EditorGUILayout.EnumPopup("Minimum Requirement: ", item.MinEquipType);
+            item.MinLevelToEquip = EditorGUILayout.IntField("Minimum Level: ", item.MinLevelToEquip);
+            item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Limiting Stat: ", item.StatType);
+            item.MinStatValueToEquip = EditorGUILayout.IntField("Min Stat Level: ", item.MinStatValueToEquip);
+
+            for (int i = 0; i < item.UsableClasses.Count; i++)
+            {
+                item.UsableClasses[i] = (Enums.eClassType)EditorGUILayout.EnumPopup("Usable By (Class): ", item.UsableClasses[i]);
+            }
+
+            for (int i = 0; i < item.UsableRaces.Count; i++)
+            {
+                item.UsableRaces[i] = (Enums.eRaceType)EditorGUILayout.EnumPopup("Usable By (Race): ", item.UsableRaces[i]);
+            }
+
+            // long term effect
+            item.EffectType = (Enums.eLongTermEffectType)EditorGUILayout.EnumPopup("Effect: ", item.EffectType);
+            item.Delay = EditorGUILayout.FloatField("Interval: ", item.Delay);
+            item.Amount = EditorGUILayout.IntField("Amount: ", item.Amount);
+        }
+        else if (currentType == typeof(ResistItem))
+        {
+            ResistItem item = (ResistItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+
+            // equippable
+            GUILayout.Label("Equippable", EditorStyles.boldLabel);
+            item.MinEquipType = (Enums.eMinEquipRequirementType)EditorGUILayout.EnumPopup("Minimum Requirement: ", item.MinEquipType);
+            item.MinLevelToEquip = EditorGUILayout.IntField("Minimum Level: ", item.MinLevelToEquip);
+            item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Limiting Stat: ", item.StatType);
+            item.MinStatValueToEquip = EditorGUILayout.IntField("Min Stat Level: ", item.MinStatValueToEquip);
+
+            for (int i = 0; i < item.UsableClasses.Count; i++)
+            {
+                item.UsableClasses[i] = (Enums.eClassType)EditorGUILayout.EnumPopup("Usable By (Class): ", item.UsableClasses[i]);
+            }
+
+            for (int i = 0; i < item.UsableRaces.Count; i++)
+            {
+                item.UsableRaces[i] = (Enums.eRaceType)EditorGUILayout.EnumPopup("Usable By (Race): ", item.UsableRaces[i]);
+            }
+
+            // resist
+            item.Effect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", item.Effect);
+            item.Percent = EditorGUILayout.FloatField("Percent: ", item.Percent);
+        }
+        #endregion
+
+        #region Armours
+        else if (currentType == typeof(HeadArmourItem))
+        {
+            HeadArmourItem item = (HeadArmourItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // head armour
+        }
+        else if (currentType == typeof(BodyArmourItem))
+        {
+            BodyArmourItem item = (BodyArmourItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // body armour
+            item.Slots = EditorGUILayout.IntField("# Slots: ", item.Slots);
+        }
+        else if (currentType == typeof(ArmArmourItem))
+        {
+            ArmArmourItem item = (ArmArmourItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // arm armour
+        }
+        #endregion
+
+        #region Weapons
+        else if (currentType == typeof(MeleeWeaponItem))
+        {
+            MeleeWeaponItem item = (MeleeWeaponItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // melee weapon
+            item.TwoHanded = EditorGUILayout.Toggle("Two Handed?: ", item.TwoHanded);
+        }
+        else if (currentType == typeof(RangedWeaponItem))
+        {
+            RangedWeaponItem item = (RangedWeaponItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // ranged weapon
+            item.Range = EditorGUILayout.FloatField("Range: ", item.Range);
+        }
+        #endregion
+
+        if (GUILayout.Button("Delete Item"))
+        {
+            mConfirmPopup = ConfirmPopup.Create();
+            mConfirmPopup.OnResultClicked += OnPopupClosed;
+            mConfirmPopup.SetMessage("Are you sure you'd like to delete this item?");
+        }
+    }
+
+    private void OnPopupClosed(bool result)
+    {
+        mConfirmPopup.OnResultClicked -= OnPopupClosed;
+        if (result)
+        {
+            ItemList.Remove(mSelectedItem);
+            mSelectedItemIndex = 0;
+            PopulateOptionItems();
+
+            Save();
+        }
+
+        mConfirmPopup.Close();
+        mConfirmPopup = null;
+    }
+
+    private void ShowEditItemBase(InventoryItem item)
+    {
+        // base item
+        item.Name = EditorGUILayout.TextField("Name: ", item.Name);
+        if (mSelectedItemSprite == null)
+        {
+            mSelectedItemSprite = Resources.Load<Sprite>(string.Format("Icons/{0}", item.IconName));
+        }
+        else
+        {
+            mSelectedItemSprite = (Sprite)EditorGUILayout.ObjectField("Icon", mSelectedItemSprite, typeof(Sprite), false);
+            item.IconName = mSelectedItemSprite.name;
+        }
+
+        EditorGUILayout.PrefixLabel("Description");
+        EditorStyles.textField.wordWrap = true;
+        item.Description = EditorGUILayout.TextArea(item.Description, GUILayout.MinHeight(60f));
+        GUILayout.Label("Type: " + item.Type, EditorStyles.label);
+        item.Value = EditorGUILayout.FloatField("Worth: ", item.Value);
+        item.Rarity = (Enums.eRarity)EditorGUILayout.EnumPopup("Rarity: ", item.Rarity);
+    }
+
+    private void ShowEditEquippableBase(EquippableItem item)
+    {
+        // equippable
+        GUILayout.Label("Equippable", EditorStyles.boldLabel);
+        item.MinEquipType = (Enums.eMinEquipRequirementType)EditorGUILayout.EnumPopup("Minimum Requirement: ", item.MinEquipType);
+        item.MinLevelToEquip = EditorGUILayout.IntField("Minimum Level: ", item.MinLevelToEquip);
+        item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Limiting Stat: ", item.StatType);
+        item.MinStatValueToEquip = EditorGUILayout.IntField("Min Stat Level: ", item.MinStatValueToEquip);
+
+        for (int i = 0; i < item.UsableClasses.Count; i++)
+        {
+            item.UsableClasses[i] = (Enums.eClassType)EditorGUILayout.EnumPopup("Usable By (Class): ", item.UsableClasses[i]);
+        }
+
+        for (int i = 0; i < item.UsableRaces.Count; i++)
+        {
+            item.UsableRaces[i] = (Enums.eRaceType)EditorGUILayout.EnumPopup("Usable By (Race): ", item.UsableRaces[i]);
+        }
     }
 
     private void ShowConsumables()
@@ -786,9 +1067,9 @@ public class ItemEditor : EditorWindow
                     newRecoveryStatType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", newRecoveryStatType);
                     recoveryAmount = EditorGUILayout.IntField("Amount: ", recoveryAmount);
 
-                if (CurrentItem.GetType() != typeof(RecoveryItem))
+                if (mCurrentItem.GetType() != typeof(RecoveryItem))
                 {
-                    CurrentItem = new RecoveryItem();
+                    mCurrentItem = new RecoveryItem();
                 }
                 break;
 
@@ -796,27 +1077,27 @@ public class ItemEditor : EditorWindow
                     newStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", newStatType);
                     statBoostAmount = EditorGUILayout.IntField("Amount: ", statBoostAmount);
 
-                if (CurrentItem.GetType() != typeof(StatUpgradeItem))
+                if (mCurrentItem.GetType() != typeof(StatUpgradeItem))
                 {
-                    CurrentItem = new StatUpgradeItem();
+                    mCurrentItem = new StatUpgradeItem();
                 }
                 break;
 
             case Enums.eConsumableType.StatusEffect:
                     newEffectType = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", newEffectType);
 
-                if (CurrentItem.GetType() != typeof(StatusEffectItem))
+                if (mCurrentItem.GetType() != typeof(StatusEffectItem))
                 {
-                    CurrentItem = new StatusEffectItem();
+                    mCurrentItem = new StatusEffectItem();
                 }
                 break;
 
             case Enums.eConsumableType.WeaponUpgrade:
                     weaponUpgradeAmount = EditorGUILayout.IntField("Amount: ", weaponUpgradeAmount);
 
-                if (CurrentItem.GetType() != typeof(WeaponUpgradeItem))
+                if (mCurrentItem.GetType() != typeof(WeaponUpgradeItem))
                 {
-                    CurrentItem = new WeaponUpgradeItem();
+                    mCurrentItem = new WeaponUpgradeItem();
                 }
                 break;
         }
@@ -828,9 +1109,9 @@ public class ItemEditor : EditorWindow
 
         GUILayout.Label("Companions", EditorStyles.boldLabel);
 
-        if (CurrentItem.GetType() != typeof(CompanionItem))
+        if (mCurrentItem.GetType() != typeof(CompanionItem))
         {
-            CurrentItem = new CompanionItem();
+            mCurrentItem = new CompanionItem();
         }
     }
 
@@ -846,9 +1127,9 @@ public class ItemEditor : EditorWindow
                 StatToBoost = (Enums.eStatType)EditorGUILayout.EnumPopup("Stat: ", StatToBoost);
                 BoostAmount = EditorGUILayout.IntField("Amount: ", BoostAmount);
 
-                if (CurrentItem.GetType() != typeof(StatBoostItem))
+                if (mCurrentItem.GetType() != typeof(StatBoostItem))
                 {
-                    CurrentItem = new StatBoostItem();
+                    mCurrentItem = new StatBoostItem();
                 }
                 break;
 
@@ -857,9 +1138,9 @@ public class ItemEditor : EditorWindow
                 LongTermDelay = EditorGUILayout.FloatField("Interval: ", LongTermDelay);
                 LongTermAmount = EditorGUILayout.IntField("Amount: ", LongTermAmount);
 
-                if (CurrentItem.GetType() != typeof(LongTermEffectItem))
+                if (mCurrentItem.GetType() != typeof(LongTermEffectItem))
                 {
-                    CurrentItem = new LongTermEffectItem();
+                    mCurrentItem = new LongTermEffectItem();
                 }
                 break;
 
@@ -867,9 +1148,9 @@ public class ItemEditor : EditorWindow
                 ResistEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", ResistEffect);
                 ResistPercent = EditorGUILayout.FloatField("Percent: ", ResistPercent);
 
-                if (CurrentItem.GetType() != typeof(ResistItem))
+                if (mCurrentItem.GetType() != typeof(ResistItem))
                 {
-                    CurrentItem = new ResistItem();
+                    mCurrentItem = new ResistItem();
                 }
                 break;
         }
@@ -913,24 +1194,24 @@ public class ItemEditor : EditorWindow
         switch (newArmourType)
         {
             case Enums.eArmourLocation.Head:
-                if (CurrentItem.GetType() != typeof(HeadArmourItem))
+                if (mCurrentItem.GetType() != typeof(HeadArmourItem))
                 {
-                    CurrentItem = new HeadArmourItem();
+                    mCurrentItem = new HeadArmourItem();
                 }
                 break;
 
             case Enums.eArmourLocation.Body:
                 BodySlots = EditorGUILayout.IntField("# Slots: ", BodySlots);
-                if (CurrentItem.GetType() != typeof(BodyArmourItem))
+                if (mCurrentItem.GetType() != typeof(BodyArmourItem))
                 {
-                    CurrentItem = new BodyArmourItem();
+                    mCurrentItem = new BodyArmourItem();
                 }
                 break;
 
             case Enums.eArmourLocation.Arm:
-                if (CurrentItem.GetType() != typeof(ArmArmourItem))
+                if (mCurrentItem.GetType() != typeof(ArmArmourItem))
                 {
-                    CurrentItem = new ArmArmourItem();
+                    mCurrentItem = new ArmArmourItem();
                 }
                 break;
         }
@@ -950,17 +1231,17 @@ public class ItemEditor : EditorWindow
         {
             case Enums.eWeaponRangeType.Melee:
                 MeleeTwoHanded = EditorGUILayout.Toggle("Two Handed?: ", MeleeTwoHanded);
-                if (CurrentItem.GetType() != typeof(MeleeWeaponItem))
+                if (mCurrentItem.GetType() != typeof(MeleeWeaponItem))
                 {
-                    CurrentItem = new MeleeWeaponItem();
+                    mCurrentItem = new MeleeWeaponItem();
                 }
                 break;
 
             case Enums.eWeaponRangeType.Ranged:
                 RangedRange = EditorGUILayout.FloatField("Range: ", RangedRange);
-                if (CurrentItem.GetType() != typeof(RangedWeaponItem))
+                if (mCurrentItem.GetType() != typeof(RangedWeaponItem))
                 {
-                    CurrentItem = new RangedWeaponItem();
+                    mCurrentItem = new RangedWeaponItem();
                 }
                 break;
         }
