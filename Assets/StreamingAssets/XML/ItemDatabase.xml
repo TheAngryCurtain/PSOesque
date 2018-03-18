@@ -17,5 +17,9 @@
         <eRaceType>All</eRaceType>
       </UsableRaces>
     </InventoryItem>
+    <InventoryItem xsi:type="StatBoostItem" ID="2" IconName="testgunSprite" Name="TeST Limits Item" Description="testing the limits of int field values. UPDATE." Worth="999" Type="StatBoost" Rarity="Common" MiniumType="Level" MiniumLevel="99" MinimumStat="HP" MinimumStatValue="0" StatType="MP" Amount="99">
+      <UsableClasses />
+      <UsableRaces />
+    </InventoryItem>
   </Items>
 </ItemContainer>

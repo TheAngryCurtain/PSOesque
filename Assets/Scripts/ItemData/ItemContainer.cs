@@ -57,6 +57,8 @@ public class ConsumableItem : InventoryItem, IUsable
     // need this for xml serialization
     public ConsumableItem() : base() { }
 
+    public ConsumableItem(int id) : base(id) { }
+
     public virtual void Use() { }
 }
 
@@ -70,6 +72,8 @@ public class RecoveryItem : ConsumableItem
     // need this for xml serialization
     public RecoveryItem() : base() { }
 
+    public RecoveryItem(int id) : base(id) { }
+
     public override void Use() { }
 }
 
@@ -82,6 +86,8 @@ public class StatUpgradeItem : ConsumableItem
     // need this for xml serialization
     public StatUpgradeItem() : base() { }
 
+    public StatUpgradeItem(int id) : base(id) { }
+
     public override void Use() { }
 }
 
@@ -92,6 +98,8 @@ public class StatusEffectItem : ConsumableItem
 
     // need this for xml serialization
     public StatusEffectItem() : base() { }
+
+    public StatusEffectItem(int id) : base(id) { }
 
     public override void Use() { }
 }
@@ -104,6 +112,8 @@ public class WeaponUpgradeItem : ConsumableItem
 
     // need this for xml serialization
     public WeaponUpgradeItem() : base() { }
+
+    public WeaponUpgradeItem(int id) : base(id) { }
 
     public override void Use() { }
 }
@@ -123,6 +133,12 @@ public class EquippableItem : InventoryItem, IEquippable
     // need this for xml serialization
     public EquippableItem() : base() { }
 
+    public EquippableItem(int id) : base(id)
+    {
+        UsableClasses = new List<Enums.eClassType>();
+        UsableRaces = new List<Enums.eRaceType>();
+    }
+
     public virtual void Equip() { }
     public virtual void Unequip() { }
 }
@@ -136,6 +152,8 @@ public class ArmourItem : EquippableItem
 
     // need this for xml serialization
     public ArmourItem() : base() { }
+
+    public ArmourItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -143,6 +161,8 @@ public class CompanionItem : EquippableItem
 {
     // need this for xml serialization
     public CompanionItem() : base() { }
+
+    public CompanionItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -150,6 +170,8 @@ public class EquippableStatBoost : EquippableItem
 {
     // need this for xml serialization
     public EquippableStatBoost() : base() { }
+
+    public EquippableStatBoost(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -162,6 +184,8 @@ public class WeaponItem : EquippableItem
 
     // need this for xml serialization
     public WeaponItem() : base() { }
+
+    public WeaponItem(int id) : base(id) { }
 }
 #endregion
 
@@ -171,6 +195,8 @@ public class ArmArmourItem : ArmourItem
 {
     // need this for xml serialization
     public ArmArmourItem() : base() { }
+
+    public ArmArmourItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -180,6 +206,8 @@ public class BodyArmourItem : ArmourItem
 
     // need this for xml serialization
     public BodyArmourItem() : base() { }
+
+    public BodyArmourItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -187,6 +215,8 @@ public class HeadArmourItem : ArmourItem
 {
     // need this for xml serialization
     public HeadArmourItem() : base() { }
+
+    public HeadArmourItem(int id) : base(id) { }
 }
 #endregion
 
@@ -199,6 +229,8 @@ public class StatBoostItem : EquippableStatBoost
 
     // need this for xml serialization
     public StatBoostItem() : base() { }
+
+    public StatBoostItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -210,6 +242,8 @@ public class LongTermEffectItem : EquippableStatBoost
 
     // need this for xml serialization
     public LongTermEffectItem() : base() { }
+
+    public LongTermEffectItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -220,6 +254,8 @@ public class ResistItem : EquippableStatBoost
 
     // need this for xml serialization
     public ResistItem() : base() { }
+
+    public ResistItem(int id) : base(id) { }
 }
 #endregion
 
@@ -231,6 +267,8 @@ public class MeleeWeaponItem : WeaponItem
 
     // need this for xml serialization
     public MeleeWeaponItem() : base() { }
+
+    public MeleeWeaponItem(int id) : base(id) { }
 }
 
 [System.Serializable]
@@ -241,6 +279,8 @@ public class RangedWeaponItem : WeaponItem
 
     // need this for xml serialization
     public RangedWeaponItem() : base() { }
+
+    public RangedWeaponItem(int id) : base(id) { }
 }
 
 
