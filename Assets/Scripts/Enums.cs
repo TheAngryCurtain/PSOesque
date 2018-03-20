@@ -12,12 +12,15 @@ namespace Enums
     public enum eEnemyType { Weak, Regular, Tough, ExtraTough, Boss };
 
     public enum eItemType { Consumable, Companion, StatBoost, Armour, Weapon, Money };
-    public enum eConsumableType { Recovery, StatUpgrade, StatusEffect, WeaponUpgrade };
+    public enum eConsumableType { Recovery, StatUpgrade, StatusEffect, WeaponUpgrade, CharacterSupport };
     public enum eStatBoostType { Basic, LongTerm, Resist };
     public enum eMinEquipRequirementType { None = -1, Stat, Level };
     public enum eArmourLocation { Head, Body, Arm };
     public enum eLongTermEffectType { HP, MP, Special };
-    public enum eWeaponRangeType { Melee, Ranged }
+    public enum eWeaponType { Melee, Ranged, Magic };
+    public enum eMagicFocusType { Directional, AOE, Room, Self };
+    public enum eMagicType { Attack, Support };
+    public enum eCharacterSupportType { Revive, Teleport, Resource };
 
     public enum eDifficulty { Easy, Medium, Hard, VeryHard, Hardest, All };
     public enum eEquipmentLocation { BackPrimary, BackSecondary, HandRight, ArmRight, HandLeft, ArmLeft };

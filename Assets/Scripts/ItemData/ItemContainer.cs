@@ -31,7 +31,7 @@ public class ItemContainer
 [XmlInclude(typeof(RangedWeaponItem))]
 
 [System.Serializable]
-public class InventoryItem
+public class InventoryItem : IInventoryItem
 {
     [XmlAttribute("ID")]            public int ID;
     [XmlAttribute("IconName")]      public string IconName;
@@ -49,6 +49,9 @@ public class InventoryItem
     {
         ID = id;
     }
+
+    public virtual void Drop() { }
+    public virtual void Sort() { }
 }
 
 [System.Serializable]
@@ -117,6 +120,22 @@ public class WeaponUpgradeItem : ConsumableItem
 
     public override void Use() { }
 }
+
+[System.Serializable]
+public class CharacterSupportItem : ConsumableItem
+{
+    [XmlAttribute("SupportType")] public Enums.eCharacterSupportType SuportType;
+    // bool for revive on death?
+    // list of stats that resource will boost on companion?
+
+    // need this for xml serialization
+    public CharacterSupportItem() : base() { }
+
+    public CharacterSupportItem(int id) : base(id) { }
+
+    public override void Use() { }
+}
+
 #endregion
 
 [System.Serializable]
@@ -177,9 +196,13 @@ public class EquippableStatBoost : EquippableItem
 [System.Serializable]
 public class WeaponItem : EquippableItem
 {
-    [XmlAttribute("BaseDamage")]    public int BaseDamage;
-    [XmlAttribute("StatusEffect")]  public Enums.eStatusEffect Effect;
-    [XmlAttribute("MultiTarget")]   public bool MultiTarget;
+    [XmlAttribute("BaseDamage")]     public int BaseDamage;
+    [XmlAttribute("StatusEffect")]   public Enums.eStatusEffect Effect;
+    [XmlAttribute("MultiTarget")]    public bool MultiTarget;
+    [XmlAttribute("Range")]          public float Range;
+    [XmlAttribute("ProjectileName")] public string ProjectileName;
+    [XmlIgnore]                      protected GameObject ProjectilePrefab;
+
     // TODO elemental properties?
 
     // need this for xml serialization
@@ -274,16 +297,27 @@ public class MeleeWeaponItem : WeaponItem
 [System.Serializable]
 public class RangedWeaponItem : WeaponItem
 {
-    [XmlAttribute("Range")] public float Range;
-    // string for projectile prefab path?
-
     // need this for xml serialization
     public RangedWeaponItem() : base() { }
 
     public RangedWeaponItem(int id) : base(id) { }
 }
 
+[System.Serializable]
+public class MagicWeaponItem : WeaponItem
+{
+    [XmlAttribute("Focus Type")]    public Enums.eMagicFocusType FocusType;
+    [XmlAttribute("Type")]          public Enums.eMagicType MagicType;
+    [XmlAttribute("Radius")]        public float Radius;
+    [XmlAttribute("Effect")]        public Enums.eStatusEffect MagicEffect;
+    [XmlAttribute("Cost")]          public int MPCost;
+    [XmlIgnore]                     protected int RoomID;
+    [XmlIgnore]                     protected Vector3 TargetPosition;
 
-// TODO account for magical weapons (MP cost and so on)
+    // need this for xml serialization
+    public MagicWeaponItem() : base() { }
+
+    public MagicWeaponItem(int id) : base(id) { }
+}
 
 #endregion

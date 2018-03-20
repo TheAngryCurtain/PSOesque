@@ -98,9 +98,14 @@ public class ItemEditor : EditorWindow
     private int BaseWeaponDamage;
     private Enums.eStatusEffect WeaponEffect;
     private bool WeaponMultiTarget;
-    private Enums.eWeaponRangeType WeaponRangeType;
+    private Enums.eWeaponType WeaponRangeType;
     private bool MeleeTwoHanded;
-    private float RangedRange;
+    private float Range;
+    private Enums.eMagicFocusType MagicFocusType;
+    private Enums.eMagicType MagicType;
+    private float MagicRadius;
+    private Enums.eStatusEffect MagicEffect;
+    private int MagicCost;
     #endregion
 
     #region Edit Item Fields
@@ -206,10 +211,15 @@ public class ItemEditor : EditorWindow
         BaseWeaponDamage = 0;
         WeaponEffect = Enums.eStatusEffect.None;
         WeaponMultiTarget = false;
-        WeaponRangeType = Enums.eWeaponRangeType.Melee;
+        WeaponRangeType = Enums.eWeaponType.Melee;
         MeleeTwoHanded = false;
-        RangedRange = 0f;
-    }
+        Range = 0f;
+        MagicFocusType = Enums.eMagicFocusType.Self;
+        MagicType = Enums.eMagicType.Support;
+        MagicRadius = 1f;
+        MagicEffect = Enums.eStatusEffect.None;
+        MagicCost = 0;
+}
 
     private void OnGUI()
     {
@@ -340,6 +350,10 @@ public class ItemEditor : EditorWindow
 
             ItemList.Add(item);
         }
+        else if (currentType == typeof(CharacterSupportItem))
+        {
+            // TODO
+        }
         #endregion
 
         #region Companions
@@ -442,7 +456,22 @@ public class ItemEditor : EditorWindow
         {
             RangedWeaponItem item = new RangedWeaponItem(itemID);
 
-            item.Range = RangedRange;
+            item.Range = Range;
+
+            SetItemBase(item);
+            SetEquippableBase(item);
+
+            ItemList.Add(item);
+        }
+        else if (currentType == typeof(MagicWeaponItem))
+        {
+            MagicWeaponItem item = new MagicWeaponItem(itemID);
+
+            item.FocusType = MagicFocusType;
+            item.MagicType = MagicType;
+            item.Radius = MagicRadius;
+            item.MagicEffect = MagicEffect;
+            item.MPCost = MagicCost;
 
             SetItemBase(item);
             SetEquippableBase(item);
@@ -548,6 +577,10 @@ public class ItemEditor : EditorWindow
             // weapon upgrade
             item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
         }
+        else if (currentType == typeof(CharacterSupportItem))
+        {
+            // TODO
+        }
         #endregion
 
         #region Companions
@@ -651,6 +684,20 @@ public class ItemEditor : EditorWindow
             // ranged weapon
             item.Range = EditorGUILayout.FloatField("Range: ", Mathf.Clamp(item.Range, 0, 99));
         }
+        else if (currentType == typeof(MagicWeaponItem))
+        {
+            MagicWeaponItem item = (MagicWeaponItem)mSelectedItem;
+
+            ShowEditItemBase(item);
+            ShowEditEquippableBase(item);
+
+            // magic weapon
+            item.FocusType = (Enums.eMagicFocusType)EditorGUILayout.EnumPopup("Focus: ", item.FocusType);
+            item.MagicType = (Enums.eMagicType)EditorGUILayout.EnumPopup("Type: ", item.MagicType);
+            item.Radius = EditorGUILayout.FloatField("Radius: ", Mathf.Clamp(item.Radius, 0, 99));
+            item.MagicEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", item.MagicEffect);
+            item.MPCost = EditorGUILayout.IntField("Cost: ", Mathf.Clamp(item.MPCost, 0, 999));
+        }
         #endregion
 
         if (GUILayout.Button("Delete Item"))
@@ -731,8 +778,8 @@ public class ItemEditor : EditorWindow
         switch (newConsumableType)
         {
             case Enums.eConsumableType.Recovery:
-                    newRecoveryStatType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", newRecoveryStatType);
-                    recoveryAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(recoveryAmount, 0, 99));
+                newRecoveryStatType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", newRecoveryStatType);
+                recoveryAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(recoveryAmount, 0, 99));
 
                 if (mCurrentItem.GetType() != typeof(RecoveryItem))
                 {
@@ -741,8 +788,8 @@ public class ItemEditor : EditorWindow
                 break;
 
             case Enums.eConsumableType.StatUpgrade:
-                    newStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", newStatType);
-                    statBoostAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(statBoostAmount, 0, 99));
+                newStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", newStatType);
+                statBoostAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(statBoostAmount, 0, 99));
 
                 if (mCurrentItem.GetType() != typeof(StatUpgradeItem))
                 {
@@ -751,7 +798,7 @@ public class ItemEditor : EditorWindow
                 break;
 
             case Enums.eConsumableType.StatusEffect:
-                    newEffectType = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", newEffectType);
+                newEffectType = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", newEffectType);
 
                 if (mCurrentItem.GetType() != typeof(StatusEffectItem))
                 {
@@ -760,12 +807,16 @@ public class ItemEditor : EditorWindow
                 break;
 
             case Enums.eConsumableType.WeaponUpgrade:
-                    weaponUpgradeAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(weaponUpgradeAmount, 0, 99));
+                weaponUpgradeAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(weaponUpgradeAmount, 0, 99));
 
                 if (mCurrentItem.GetType() != typeof(WeaponUpgradeItem))
                 {
                     mCurrentItem = new WeaponUpgradeItem();
                 }
+                break;
+
+            case Enums.eConsumableType.CharacterSupport:
+                // TODO
                 break;
         }
     }
@@ -892,11 +943,13 @@ public class ItemEditor : EditorWindow
         BaseWeaponDamage = EditorGUILayout.IntField("Base Damage: ", Mathf.Clamp(BaseWeaponDamage, 0, 999));
         WeaponEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", WeaponEffect);
         WeaponMultiTarget = EditorGUILayout.Toggle("Multiple Targets?: ", WeaponMultiTarget);
+        Range = EditorGUILayout.FloatField("Range: ", Mathf.Clamp(Range, 0, 99));
 
-        WeaponRangeType = (Enums.eWeaponRangeType)EditorGUILayout.EnumPopup("Weapon Type: ", WeaponRangeType);
+        GUILayout.Label("Type", EditorStyles.boldLabel);
+        WeaponRangeType = (Enums.eWeaponType)EditorGUILayout.EnumPopup("Weapon Type: ", WeaponRangeType);
         switch (WeaponRangeType)
         {
-            case Enums.eWeaponRangeType.Melee:
+            case Enums.eWeaponType.Melee:
                 MeleeTwoHanded = EditorGUILayout.Toggle("Two Handed?: ", MeleeTwoHanded);
                 if (mCurrentItem.GetType() != typeof(MeleeWeaponItem))
                 {
@@ -904,11 +957,22 @@ public class ItemEditor : EditorWindow
                 }
                 break;
 
-            case Enums.eWeaponRangeType.Ranged:
-                RangedRange = EditorGUILayout.FloatField("Range: ", Mathf.Clamp(RangedRange, 0, 99));
+            case Enums.eWeaponType.Ranged:
                 if (mCurrentItem.GetType() != typeof(RangedWeaponItem))
                 {
                     mCurrentItem = new RangedWeaponItem();
+                }
+                break;
+
+            case Enums.eWeaponType.Magic:
+                MagicFocusType = (Enums.eMagicFocusType)EditorGUILayout.EnumPopup("Focus: ", MagicFocusType);
+                MagicType = (Enums.eMagicType)EditorGUILayout.EnumPopup("Type: ", MagicType);
+                MagicRadius = EditorGUILayout.FloatField("Radius: ", Mathf.Clamp(MagicRadius, 0, 99));
+                MagicEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", MagicEffect);
+                MagicCost = EditorGUILayout.IntField("Cost: ", Mathf.Clamp(MagicCost, 0, 999));
+                if (mCurrentItem.GetType() != typeof(MagicWeaponItem))
+                {
+                    mCurrentItem = new MagicWeaponItem();
                 }
                 break;
         }

@@ -19,3 +19,9 @@ public interface IEquippable
     void Equip();
     void Unequip();
 }
+
+public interface IInventoryItem
+{
+    void Drop();
+    void Sort();
+}
