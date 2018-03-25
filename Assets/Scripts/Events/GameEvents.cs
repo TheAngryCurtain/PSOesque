@@ -141,12 +141,14 @@ public class GameEvents
     public class UpdateCharacterStatEvent : VSGameEvent
     {
         public Enums.eStatType Stat;
+        public bool UpdateMax;
         public int Amount;
 
-        public UpdateCharacterStatEvent(Enums.eStatType stat, int amount)
+        public UpdateCharacterStatEvent(Enums.eStatType stat, int amount, bool updateMax = false)
         {
             Stat = stat;
             Amount = amount;
+            UpdateMax = updateMax;
         }
     }
 

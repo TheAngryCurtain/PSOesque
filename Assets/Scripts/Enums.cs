@@ -20,7 +20,7 @@ namespace Enums
     public enum eWeaponType { Melee, Ranged, Magic };
     public enum eMagicFocusType { Directional, AOE, Room, Self };
     public enum eMagicType { Attack, Support };
-    public enum eCharacterSupportType { Revive, Teleport, Resource };
+    public enum eCharacterSupportType { Revive, Teleport, Resource, Scroll };
 
     public enum eDifficulty { Easy, Medium, Hard, VeryHard, Hardest, All };
     public enum eEquipmentLocation { BackPrimary, BackSecondary, HandRight, ArmRight, HandLeft, ArmLeft };
@@ -34,5 +34,5 @@ namespace Enums
     public enum eRaceType { Human, All };
     public enum eGender { Male, Female };
 
-    public enum eConsumableStatType { HP, MP, Life };
+    public enum eConsumableStatType { HP, MP };
 }

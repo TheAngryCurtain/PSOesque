@@ -18,6 +18,8 @@ public class PlayableCharacter : Character
     {
         base.Awake();
 
+        CharacterManager.Instance.RegisterCharacter(this);
+
         // TODO do this better
         m_CamTransform = Camera.main.transform;
     }

@@ -5,6 +5,10 @@ using UnityEditor;
 
 public class CharacterManager : Singleton<CharacterManager>
 {
+    public Character PlayerCharacter { get { return m_RegisteredCharacters[0]; } }
+
+    private List<Character> m_RegisteredCharacters;
+
     private CharacterProgress m_CharacterProgress;
 
     private Dictionary<int, CharacterClassStatsPreset> m_ClassPresets;
@@ -26,6 +30,8 @@ public class CharacterManager : Singleton<CharacterManager>
 
     public override void Awake()
     {
+        m_RegisteredCharacters = new List<Character>();
+
         LoadClassPresets();
         LoadRacePresets();
 
@@ -67,7 +73,7 @@ public class CharacterManager : Singleton<CharacterManager>
 
     public void Start()
     {
-        VSEventManager.Instance.AddListener<GameEvents.UpdateCharacterStatEvent>(OnCharacterUpdated);
+        VSEventManager.Instance.AddListener<GameEvents.UpdateCharacterStatEvent>(OnCharacterStatUpdated);
         VSEventManager.Instance.AddListener<GameEvents.UpdateInventoryEvent>(OnInventoryUpdated);
     }
 
@@ -87,14 +93,19 @@ public class CharacterManager : Singleton<CharacterManager>
         }
     }
 
+    public void RegisterCharacter(Character c)
+    {
+        m_RegisteredCharacters.Add(c);
+    }
+
     private void SaveCharacterProgress()
     {
         SaveLoad.SaveCharacterProgress(m_CharacterProgress);
     }
 
-    private void OnCharacterUpdated(GameEvents.UpdateCharacterStatEvent e)
+    private void OnCharacterStatUpdated(GameEvents.UpdateCharacterStatEvent e)
     {
-        Debug.LogFormat("Updating {0} by {1}", e.Stat, e.Amount);
+        Debug.LogFormat("Updating {0} by {1} (update max? {2})", e.Stat, e.Amount, e.UpdateMax);
     }
 
     private void OnInventoryUpdated(GameEvents.UpdateInventoryEvent e)
@@ -168,7 +179,14 @@ public class CharacterManager : Singleton<CharacterManager>
 
             for (int i = 0; i < count; i++)
             {
+                GUILayout.BeginHorizontal();
                 GUI.Label(new Rect(10f, 60f + (i * 20f), 300f, 30f), m_CharacterProgress.m_Inventory.ItemNameAt(i) + ", Quantity: " + m_CharacterProgress.m_Inventory.QuantityAt(i).ToString());
+                if (m_CharacterProgress.m_Inventory.IsItemUsable(i) && GUI.Button(new Rect(10f, 60f + (i * 20f), 300f, 30f), "USE"))
+                {
+                    InventoryItem item = m_CharacterProgress.m_Inventory.GetItemAt(i);
+                    m_CharacterProgress.m_Inventory.UseItem(item);
+                }
+                GUILayout.EndHorizontal();
             }
 
             GUI.Label(new Rect(10f, 300f, 300f, 30f), string.Format("Money: {0}", m_CharacterProgress.m_Inventory.Money));

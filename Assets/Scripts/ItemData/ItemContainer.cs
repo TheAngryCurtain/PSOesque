@@ -31,7 +31,7 @@ public class ItemContainer
 [XmlInclude(typeof(RangedWeaponItem))]
 
 [System.Serializable]
-public class InventoryItem : IInventoryItem
+public class InventoryItem
 {
     [XmlAttribute("ID")]            public int ID;
     [XmlAttribute("IconName")]      public string IconName;
@@ -49,9 +49,6 @@ public class InventoryItem : IInventoryItem
     {
         ID = id;
     }
-
-    public virtual void Drop() { }
-    public virtual void Sort() { }
 }
 
 [System.Serializable]
@@ -62,7 +59,7 @@ public class ConsumableItem : InventoryItem, IUsable
 
     public ConsumableItem(int id) : base(id) { }
 
-    public virtual void Use() { }
+    public virtual void Use(Character target) { }
 }
 
 #region Consumable Sub-Types
@@ -77,7 +74,7 @@ public class RecoveryItem : ConsumableItem
 
     public RecoveryItem(int id) : base(id) { }
 
-    public override void Use() { }
+    public override void Use(Character target) { }
 }
 
 [System.Serializable]
@@ -91,7 +88,7 @@ public class StatUpgradeItem : ConsumableItem
 
     public StatUpgradeItem(int id) : base(id) { }
 
-    public override void Use() { }
+    public override void Use(Character target) { }
 }
 
 [System.Serializable]
@@ -104,13 +101,13 @@ public class StatusEffectItem : ConsumableItem
 
     public StatusEffectItem(int id) : base(id) { }
 
-    public override void Use() { }
+    public override void Use(Character target) { }
 }
 
 [System.Serializable]
 public class WeaponUpgradeItem : ConsumableItem
 {
-    // TODO I guess this assumes it upgrades weapon Att? Probably should have an enum with upgradable options and put it here
+    // only applies to Att
     [XmlAttribute("Amount")]  public int Amount;
 
     // need this for xml serialization
@@ -118,7 +115,7 @@ public class WeaponUpgradeItem : ConsumableItem
 
     public WeaponUpgradeItem(int id) : base(id) { }
 
-    public override void Use() { }
+    public override void Use(Character target) { }
 }
 
 [System.Serializable]
@@ -133,7 +130,7 @@ public class CharacterSupportItem : ConsumableItem
 
     public CharacterSupportItem(int id) : base(id) { }
 
-    public override void Use() { }
+    public override void Use(Character target) { }
 }
 
 #endregion
@@ -243,7 +240,7 @@ public class HeadArmourItem : ArmourItem
 }
 #endregion
 
-#region Stat Boost Sub-Types
+#region Equippable Stat Boost Sub-Types
 [System.Serializable]
 public class StatBoostItem : EquippableStatBoost
 {
@@ -321,3 +318,19 @@ public class MagicWeaponItem : WeaponItem
 }
 
 #endregion
+
+[System.Serializable]
+public class HPRecover : RecoveryItem
+{
+    public HPRecover(int id) : base(id)
+    {
+        ConsumableType = Enums.eConsumableStatType.HP;
+    }
+
+    public override void Use(Character target)
+    {
+        base.Use(target);
+
+        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateCharacterStatEvent(Enums.eStatType.HP, Amount));
+    }
+}

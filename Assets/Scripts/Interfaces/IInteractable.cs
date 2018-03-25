@@ -11,17 +11,11 @@ public interface IInteractable
 
 public interface IUsable
 {
-    void Use();
+    void Use(Character target);
 }
 
 public interface IEquippable
 {
     void Equip();
     void Unequip();
-}
-
-public interface IInventoryItem
-{
-    void Drop();
-    void Sort();
 }

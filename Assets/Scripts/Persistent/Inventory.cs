@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO remove this and rewrite the stuff that uses it
+
 [System.Serializable]
 public class Tuple<T1, T2>
 {
@@ -67,6 +69,32 @@ public class Inventory
                 }
             }
         }
+    }
+
+    public bool IsItemUsable(int i)
+    {
+        bool hasUsable = ((IUsable)m_Inventory[i] != null);
+        return hasUsable;
+    }
+
+    public void UseItem(InventoryItem i)
+    {
+        IUsable item = (IUsable)i;
+        PlayableCharacter player = (PlayableCharacter)CharacterManager.Instance.PlayerCharacter;
+
+        if (player != null)
+        {
+            item.Use(player);
+        }
+        else
+        {
+            Debug.LogErrorFormat("Unable to get Playable Character");
+        }
+    }
+
+    public InventoryItem GetItemAt(int i)
+    {
+        return m_Inventory[i];
     }
 
     private InventoryItem FindItemWithID(int id)
