@@ -20,6 +20,7 @@ namespace Enums
     public enum eWeaponType { Melee, Ranged, Magic };
     public enum eMagicFocusType { Directional, AOE, Room, Self };
     public enum eMagicType { Attack, Support };
+    public enum eSpellType { Fire, Water, Earth, Ice, Electricity, Wind, Ghost, Undead, Sun, Moon }; // just made these up on the fly
     public enum eCharacterSupportType { Revive, Teleport, Resource, Scroll };
 
     public enum eDifficulty { Easy, Medium, Hard, VeryHard, Hardest, All };
@@ -27,6 +28,7 @@ namespace Enums
 
     public enum eStatusEffect { None = -1, Burn, Confusion, Curse, Paralysis, Poison, Sleep, Slow, All };
     public enum eStatType { HP, MP, Att, Def, Mgc, Acc, Evn, Spd, Lck, Count };
+    //public enum eAttributeType { Stealth, BodyTemp };
 
     public enum eTimeOfDay { Sunrise, Sunset };
 

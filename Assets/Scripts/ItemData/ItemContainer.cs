@@ -29,6 +29,15 @@ public class ItemContainer
 [XmlInclude(typeof(ResistItem))]
 [XmlInclude(typeof(MeleeWeaponItem))]
 [XmlInclude(typeof(RangedWeaponItem))]
+[XmlInclude(typeof(MagicWeaponItem))]
+
+[XmlInclude(typeof(HPRecover))]
+[XmlInclude(typeof(MPRecover))]
+[XmlInclude(typeof(Teleport))]
+[XmlInclude(typeof(Revive))]
+[XmlInclude(typeof(Resource))]
+[XmlInclude(typeof(Scroll))]
+[XmlInclude(typeof(Spell))]
 
 [System.Serializable]
 public class InventoryItem
@@ -39,8 +48,11 @@ public class InventoryItem
     [XmlAttribute("Description")]   public string Description;
     [XmlAttribute("Worth")]         public float Value;
     [XmlIgnore]                     public int Quantity;
-    [XmlAttribute("Type")]          public Enums.eItemType Type;
+    [XmlAttribute("ItemType")]      public Enums.eItemType Type;
     [XmlAttribute("Rarity")]        public Enums.eRarity Rarity;
+    [XmlArray("Themes")]            public List<Enums.eLevelTheme> Themes;
+    [XmlArray("Difficulties")]      public List<Enums.eDifficulty> Difficulties;
+
 
     // need this for xml serialization
     public InventoryItem() { }
@@ -48,12 +60,17 @@ public class InventoryItem
     public InventoryItem(int id)
     {
         ID = id;
+
+        Themes = new List<Enums.eLevelTheme>();
+        Difficulties = new List<Enums.eDifficulty>();
     }
 }
 
 [System.Serializable]
 public class ConsumableItem : InventoryItem, IUsable
 {
+    [XmlIgnore] public Enums.eConsumableType ConsumableType;
+
     // need this for xml serialization
     public ConsumableItem() : base() { }
 
@@ -66,7 +83,7 @@ public class ConsumableItem : InventoryItem, IUsable
 [System.Serializable]
 public class RecoveryItem : ConsumableItem
 {
-    [XmlAttribute("ConsumableType")]    public Enums.eConsumableStatType ConsumableType;
+    [XmlAttribute("ConsumableType")]    public Enums.eConsumableStatType ConsumableStatType;
     [XmlAttribute("Amount")]            public int Amount;
 
     // need this for xml serialization
@@ -86,7 +103,10 @@ public class StatUpgradeItem : ConsumableItem
     // need this for xml serialization
     public StatUpgradeItem() : base() { }
 
-    public StatUpgradeItem(int id) : base(id) { }
+    public StatUpgradeItem(int id) : base(id)
+    {
+        ConsumableType = Enums.eConsumableType.StatUpgrade;
+    }
 
     public override void Use(Character target) { }
 }
@@ -99,7 +119,10 @@ public class StatusEffectItem : ConsumableItem
     // need this for xml serialization
     public StatusEffectItem() : base() { }
 
-    public StatusEffectItem(int id) : base(id) { }
+    public StatusEffectItem(int id) : base(id)
+    {
+        ConsumableType = Enums.eConsumableType.StatusEffect;
+    }
 
     public override void Use(Character target) { }
 }
@@ -113,7 +136,10 @@ public class WeaponUpgradeItem : ConsumableItem
     // need this for xml serialization
     public WeaponUpgradeItem() : base() { }
 
-    public WeaponUpgradeItem(int id) : base(id) { }
+    public WeaponUpgradeItem(int id) : base(id)
+    {
+        ConsumableType = Enums.eConsumableType.WeaponUpgrade;
+    }
 
     public override void Use(Character target) { }
 }
@@ -121,14 +147,17 @@ public class WeaponUpgradeItem : ConsumableItem
 [System.Serializable]
 public class CharacterSupportItem : ConsumableItem
 {
-    [XmlAttribute("SupportType")] public Enums.eCharacterSupportType SuportType;
+    [XmlAttribute("SupportType")] public Enums.eCharacterSupportType SupportType;
     // bool for revive on death?
     // list of stats that resource will boost on companion?
 
     // need this for xml serialization
     public CharacterSupportItem() : base() { }
 
-    public CharacterSupportItem(int id) : base(id) { }
+    public CharacterSupportItem(int id) : base(id)
+    {
+        ConsumableType = Enums.eConsumableType.CharacterSupport;
+    }
 
     public override void Use(Character target) { }
 }
@@ -169,7 +198,10 @@ public class ArmourItem : EquippableItem
     // need this for xml serialization
     public ArmourItem() : base() { }
 
-    public ArmourItem(int id) : base(id) { }
+    public ArmourItem(int id) : base(id)
+    {
+        Type = Enums.eItemType.Armour;
+    }
 }
 
 [System.Serializable]
@@ -178,16 +210,24 @@ public class CompanionItem : EquippableItem
     // need this for xml serialization
     public CompanionItem() : base() { }
 
-    public CompanionItem(int id) : base(id) { }
+    public CompanionItem(int id) : base(id)
+    {
+        Type = Enums.eItemType.Companion;
+    }
 }
 
 [System.Serializable]
 public class EquippableStatBoost : EquippableItem
 {
+    [XmlIgnore] public Enums.eStatBoostType StatBoostType;
+
     // need this for xml serialization
     public EquippableStatBoost() : base() { }
 
-    public EquippableStatBoost(int id) : base(id) { }
+    public EquippableStatBoost(int id) : base(id)
+    {
+        Type = Enums.eItemType.StatBoost;
+    }
 }
 
 [System.Serializable]
@@ -199,13 +239,17 @@ public class WeaponItem : EquippableItem
     [XmlAttribute("Range")]          public float Range;
     [XmlAttribute("ProjectileName")] public string ProjectileName;
     [XmlIgnore]                      protected GameObject ProjectilePrefab;
+    [XmlIgnore]                      public Enums.eWeaponType WeaponType;
 
-    // TODO elemental properties?
+    // TODO elemental properties? for non-spells probably?
 
     // need this for xml serialization
     public WeaponItem() : base() { }
 
-    public WeaponItem(int id) : base(id) { }
+    public WeaponItem(int id) : base(id)
+    {
+        Type = Enums.eItemType.Weapon;
+    }
 }
 #endregion
 
@@ -216,7 +260,10 @@ public class ArmArmourItem : ArmourItem
     // need this for xml serialization
     public ArmArmourItem() : base() { }
 
-    public ArmArmourItem(int id) : base(id) { }
+    public ArmArmourItem(int id) : base(id)
+    {
+        Location = Enums.eArmourLocation.Arm;
+    }
 }
 
 [System.Serializable]
@@ -227,7 +274,10 @@ public class BodyArmourItem : ArmourItem
     // need this for xml serialization
     public BodyArmourItem() : base() { }
 
-    public BodyArmourItem(int id) : base(id) { }
+    public BodyArmourItem(int id) : base(id)
+    {
+        Location = Enums.eArmourLocation.Body;
+    }
 }
 
 [System.Serializable]
@@ -236,7 +286,10 @@ public class HeadArmourItem : ArmourItem
     // need this for xml serialization
     public HeadArmourItem() : base() { }
 
-    public HeadArmourItem(int id) : base(id) { }
+    public HeadArmourItem(int id) : base(id)
+    {
+        Location = Enums.eArmourLocation.Head;
+    }
 }
 #endregion
 
@@ -250,7 +303,10 @@ public class StatBoostItem : EquippableStatBoost
     // need this for xml serialization
     public StatBoostItem() : base() { }
 
-    public StatBoostItem(int id) : base(id) { }
+    public StatBoostItem(int id) : base(id)
+    {
+        StatBoostType = Enums.eStatBoostType.Basic;
+    }
 }
 
 [System.Serializable]
@@ -263,7 +319,10 @@ public class LongTermEffectItem : EquippableStatBoost
     // need this for xml serialization
     public LongTermEffectItem() : base() { }
 
-    public LongTermEffectItem(int id) : base(id) { }
+    public LongTermEffectItem(int id) : base(id)
+    {
+        StatBoostType = Enums.eStatBoostType.LongTerm;
+    }
 }
 
 [System.Serializable]
@@ -275,7 +334,10 @@ public class ResistItem : EquippableStatBoost
     // need this for xml serialization
     public ResistItem() : base() { }
 
-    public ResistItem(int id) : base(id) { }
+    public ResistItem(int id) : base(id)
+    {
+        StatBoostType = Enums.eStatBoostType.Resist;
+    }
 }
 #endregion
 
@@ -288,7 +350,10 @@ public class MeleeWeaponItem : WeaponItem
     // need this for xml serialization
     public MeleeWeaponItem() : base() { }
 
-    public MeleeWeaponItem(int id) : base(id) { }
+    public MeleeWeaponItem(int id) : base(id)
+    {
+        WeaponType = Enums.eWeaponType.Melee;
+    }
 }
 
 [System.Serializable]
@@ -297,14 +362,17 @@ public class RangedWeaponItem : WeaponItem
     // need this for xml serialization
     public RangedWeaponItem() : base() { }
 
-    public RangedWeaponItem(int id) : base(id) { }
+    public RangedWeaponItem(int id) : base(id)
+    {
+        WeaponType = Enums.eWeaponType.Ranged;
+    }
 }
 
 [System.Serializable]
 public class MagicWeaponItem : WeaponItem
 {
     [XmlAttribute("Focus Type")]    public Enums.eMagicFocusType FocusType;
-    [XmlAttribute("Type")]          public Enums.eMagicType MagicType;
+    [XmlAttribute("MagicType")]     public Enums.eMagicType MagicType;
     [XmlAttribute("Radius")]        public float Radius;
     [XmlAttribute("Effect")]        public Enums.eStatusEffect MagicEffect;
     [XmlAttribute("Cost")]          public int MPCost;
@@ -314,7 +382,10 @@ public class MagicWeaponItem : WeaponItem
     // need this for xml serialization
     public MagicWeaponItem() : base() { }
 
-    public MagicWeaponItem(int id) : base(id) { }
+    public MagicWeaponItem(int id) : base(id)
+    {
+        WeaponType = Enums.eWeaponType.Magic;
+    }
 }
 
 #endregion
@@ -322,9 +393,14 @@ public class MagicWeaponItem : WeaponItem
 [System.Serializable]
 public class HPRecover : RecoveryItem
 {
+    // need this for xml serialization
+    public HPRecover() : base() { }
+
     public HPRecover(int id) : base(id)
     {
-        ConsumableType = Enums.eConsumableStatType.HP;
+        Type = Enums.eItemType.Consumable;
+        ConsumableType = Enums.eConsumableType.Recovery;
+        ConsumableStatType = Enums.eConsumableStatType.HP;
     }
 
     public override void Use(Character target)
@@ -334,3 +410,146 @@ public class HPRecover : RecoveryItem
         VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateCharacterStatEvent(Enums.eStatType.HP, Amount));
     }
 }
+
+[System.Serializable]
+public class MPRecover : RecoveryItem
+{
+    // need this for xml serialization
+    public MPRecover() : base() { }
+
+    public MPRecover(int id) : base(id)
+    {
+        Type = Enums.eItemType.Consumable;
+        ConsumableType = Enums.eConsumableType.Recovery;
+        ConsumableStatType = Enums.eConsumableStatType.MP;
+    }
+
+    public override void Use(Character target)
+    {
+        base.Use(target);
+
+        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateCharacterStatEvent(Enums.eStatType.MP, Amount));
+    }
+}
+
+[System.Serializable]
+public class Teleport : CharacterSupportItem
+{
+    [XmlIgnore]                     private GameObject TeleportPrefab;
+    [XmlAttribute("PrefabName")]    public string PrefabName;
+    [XmlAttribute("LifeTime")]      public float LifeTime;
+    [XmlIgnore]                     private float PlacementTime;
+
+    // life time and placement time maybe able to be stored in teh Teleporter class instead of here
+
+    // need this for xml serialization
+    public Teleport() : base() { }
+
+    public Teleport(int id) : base(id)
+    {
+        SupportType = Enums.eCharacterSupportType.Teleport;
+    }
+
+    public override void Use(Character target)
+    {
+        base.Use(target);
+
+        // TODO
+        // load prefab
+        // instantiate prefab at character target position
+        // set start time
+        // will probably need to register this (teleporter script instance) with the level generator thing with a level id and position so it can be loaded back into the level in the correct location
+        // perhaps a teleporter can be assigned as the "main" one that the player loads in at, and this one could be set as the one to load in at, if it exists.
+    }
+}
+
+[System.Serializable]
+public class Revive : CharacterSupportItem
+{
+    // need this for xml serialization
+    public Revive() : base() { }
+
+    public Revive(int id) : base(id)
+    {
+        SupportType = Enums.eCharacterSupportType.Revive;
+    }
+
+    public override void Use(Character target)
+    {
+        base.Use(target);
+
+        // TODO
+        // should probably only work if the target is dead...
+        // send an event to revive the target player
+    }
+}
+
+[System.Serializable]
+public class Resource : CharacterSupportItem
+{
+    // TODO
+    // set up a list of buffs/debuffs so that each resource fed to a companion can raise/lower stats
+
+    // need this for xml serialization
+    public Resource() : base() { }
+
+    // a resource is used for feeding companions to bolster their stats
+    public Resource(int id) : base(id)
+    {
+        SupportType = Enums.eCharacterSupportType.Resource;
+    }
+
+    public override void Use(Character target)
+    {
+        base.Use(target);
+    }
+}
+
+[System.Serializable]
+public class Scroll : CharacterSupportItem
+{
+    [XmlAttribute("TeachSpellType")] public Enums.eSpellType TeachSpellType;
+
+    // need this for xml serialization
+    public Scroll() : base() { }
+
+    public Scroll(int id) : base(id)
+    {
+        SupportType = Enums.eCharacterSupportType.Scroll;
+    }
+
+    public override void Use(Character target)
+    {
+        base.Use(target);
+
+        // TODO
+        // look up the base level spell for the given type and add it to the player inventory for later equipping.
+    }
+}
+
+[System.Serializable]
+public class Spell : MagicWeaponItem
+{
+    [XmlAttribute("SpellLevel")]    private int SpellLevel;
+    [XmlAttribute("SpellType")]     public Enums.eSpellType SpellType;
+
+    // need this for xml serialization
+    public Spell() : base() { }
+
+    public Spell(int id) : base(id)
+    {
+
+
+        SpellLevel = 0;
+    }
+}
+
+[System.Serializable]
+public class Hood : HeadArmourItem
+{
+    
+}
+
+// TODO
+// NOTE: Probably only need a different class for Hoods/other more specific items IF they will have special stat applications (hoods for stealth, etc)
+// add individual armour items: different head, body, and arm pieces. Add them to the master list up top and remove the base classes

@@ -56,12 +56,14 @@ public class ItemEditor : EditorWindow
     private bool mIsEditing = false;
 
     #region Create Item Fields
-    private string newItemName ;
+    private string newItemName;
     private Sprite newItemIcon;
     private string newItemDesc;
     private Enums.eItemType newItemType;
     private int newItemValue;
     private Enums.eRarity newItemRarity;
+    private List<Enums.eLevelTheme> Themes;
+    private List<Enums.eDifficulty> Difficulties;
 
     // consumable
     private Enums.eConsumableType newConsumableType;
@@ -106,6 +108,11 @@ public class ItemEditor : EditorWindow
     private float MagicRadius;
     private Enums.eStatusEffect MagicEffect;
     private int MagicCost;
+
+    private GameObject TeleportPrefab;
+    private string TeleportPrefabName;
+    private Enums.eSpellType ScrollTeachType;
+    private Enums.eSpellType SpellType;
     #endregion
 
     #region Edit Item Fields
@@ -114,6 +121,54 @@ public class ItemEditor : EditorWindow
     private InventoryItem mSelectedItem;
     private Sprite mSelectedItemSprite = null;
     #endregion
+
+    private InventoryItem[] mCreateClassTypes = new InventoryItem[]
+    {
+        new HPRecover(-1),
+        new MPRecover(-1),
+        new StatUpgradeItem(-1),
+        new StatusEffectItem(-1),
+        new WeaponUpgradeItem(-1),
+        new Teleport(-1),
+        new Revive(-1),
+        new Resource(-1),
+        new Scroll(-1),
+
+        new StatBoostItem(-1),
+        new LongTermEffectItem(-1),
+        new ResistItem(-1),
+
+        new HeadArmourItem(-1),
+        new BodyArmourItem(-1),
+        new ArmArmourItem(-1),
+
+        new Spell(-1)
+    };
+
+    private int mCreateClassIndex = 0;
+    private string[] mCreateClassOptions = new string[]
+    {
+        "HP Recover",
+        "MP Recover",
+        "Stat Upgrade",
+        "Status Effect",
+        "Weapon Upgrade",
+        "Teleport",
+        "Revive",
+        "Resource",
+        "Scroll",
+
+        "Basic Stat Boost",
+        "Long Term Effect",
+        "Resist",
+
+        "Head Armour",
+        "Body Armour",
+        "Arm Armour",
+
+        "Spell"
+    };
+    private InventoryItem mCurrentCreateType;
 
     private ConfirmPopup mConfirmPopup;
 
@@ -175,6 +230,8 @@ public class ItemEditor : EditorWindow
         newItemType = Enums.eItemType.Consumable;
         newItemValue = 0;
         newItemRarity = Enums.eRarity.Common;
+        Themes = new List<Enums.eLevelTheme>((int)Enums.eLevelTheme.All);
+        Difficulties = new List<Enums.eDifficulty>((int)Enums.eDifficulty.All);
 
         // consumable
         newConsumableType = Enums.eConsumableType.Recovery;
@@ -219,7 +276,7 @@ public class ItemEditor : EditorWindow
         MagicRadius = 1f;
         MagicEffect = Enums.eStatusEffect.None;
         MagicCost = 0;
-}
+    }
 
     private void OnGUI()
     {
@@ -260,6 +317,9 @@ public class ItemEditor : EditorWindow
     private void ShowCreateItem()
     {
         GUILayout.Label("Create Item", EditorStyles.boldLabel);
+        mCreateClassIndex = EditorGUILayout.Popup("Item: ", mCreateClassIndex, mCreateClassOptions);
+        mCurrentCreateType = mCreateClassTypes[mCreateClassIndex];
+
         newItemIcon = (Sprite)EditorGUILayout.ObjectField("Icon", newItemIcon, typeof(Sprite), false);
         newItemName = EditorGUILayout.TextField("Name: ", newItemName);
 
@@ -269,10 +329,30 @@ public class ItemEditor : EditorWindow
         newItemValue = EditorGUILayout.IntField("Worth: ", Mathf.Clamp(newItemValue, 0, 999));
         newItemRarity = (Enums.eRarity)EditorGUILayout.EnumPopup("Rarity: ", newItemRarity);
 
-        GUILayout.Label("Item Type", EditorStyles.boldLabel);
-        newItemType = (Enums.eItemType)EditorGUILayout.EnumPopup("Type: ", newItemType);
+        for (int i = 0; i < Themes.Count; i++)
+        {
+            Themes[i] = (Enums.eLevelTheme)EditorGUILayout.EnumPopup("Found in Theme: ", Themes[i]);
+        }
 
-        switch (newItemType)
+        if (GUILayout.Button("Add Theme"))
+        {
+            Themes.Add(Enums.eLevelTheme.All);
+        }
+
+        for (int i = 0; i < Difficulties.Count; i++)
+        {
+            Difficulties[i] = (Enums.eDifficulty)EditorGUILayout.EnumPopup("Found in Difficulty: ", Difficulties[i]);
+        }
+
+        if (GUILayout.Button("Add Difficulty"))
+        {
+            Difficulties.Add(Enums.eDifficulty.All);
+        }
+
+        //GUILayout.Label("Item Type: " + , EditorStyles.boldLabel);
+        //newItemType = (Enums.eItemType)EditorGUILayout.EnumPopup("Type: ", newItemType);
+
+        switch (mCurrentCreateType.Type)
         {
             case Enums.eItemType.Consumable:
                 ShowConsumables();
@@ -308,52 +388,63 @@ public class ItemEditor : EditorWindow
 
     private void CreateItem()
     {
-        System.Type currentType = mCurrentItem.GetType();
+        //System.Type currentType = mCurrentItem.GetType();
+        System.Type currentType = mCurrentCreateType.GetType();
 
         // fill in required fields
         #region Consumables
-        if (currentType == typeof(RecoveryItem))
+        if (currentType == typeof(HPRecover))
         {
-            RecoveryItem item = new RecoveryItem(itemID);
-            item.ConsumableType = newRecoveryStatType;
+            HPRecover item = new HPRecover(itemID);
             item.Amount = recoveryAmount;
 
             SetItemBase(item);
 
             ItemList.Add(item);
         }
-        else if (currentType == typeof(StatUpgradeItem))
-        {
-            StatUpgradeItem item = new StatUpgradeItem(itemID);
-            item.StatType = newStatType;
-            item.Amount = statBoostAmount;
 
-            SetItemBase(item);
+        //if (currentType == typeof(RecoveryItem))
+        //{
+        //    RecoveryItem item = new RecoveryItem(itemID);
+        //    item.ConsumableStatType = newRecoveryStatType;
+        //    item.Amount = recoveryAmount;
 
-            ItemList.Add(item);
-        }
-        else if (currentType == typeof(StatusEffectItem))
-        {
-            StatusEffectItem item = new StatusEffectItem(itemID);
-            item.Effect = newEffectType;
+        //    SetItemBase(item);
 
-            SetItemBase(item);
+        //    ItemList.Add(item);
+        //}
+        //else if (currentType == typeof(StatUpgradeItem))
+        //{
+        //    StatUpgradeItem item = new StatUpgradeItem(itemID);
+        //    item.StatType = newStatType;
+        //    item.Amount = statBoostAmount;
 
-            ItemList.Add(item);
-        }
-        else if (currentType == typeof(WeaponUpgradeItem))
-        {
-            WeaponUpgradeItem item = new WeaponUpgradeItem(itemID);
-            item.Amount = weaponUpgradeAmount;
+        //    SetItemBase(item);
 
-            SetItemBase(item);
+        //    ItemList.Add(item);
+        //}
+        //else if (currentType == typeof(StatusEffectItem))
+        //{
+        //    StatusEffectItem item = new StatusEffectItem(itemID);
+        //    item.Effect = newEffectType;
 
-            ItemList.Add(item);
-        }
-        else if (currentType == typeof(CharacterSupportItem))
-        {
-            // TODO
-        }
+        //    SetItemBase(item);
+
+        //    ItemList.Add(item);
+        //}
+        //else if (currentType == typeof(WeaponUpgradeItem))
+        //{
+        //    WeaponUpgradeItem item = new WeaponUpgradeItem(itemID);
+        //    item.Amount = weaponUpgradeAmount;
+
+        //    SetItemBase(item);
+
+        //    ItemList.Add(item);
+        //}
+        //else if (currentType == typeof(CharacterSupportItem))
+        //{
+        //    // TODO
+        //}
         #endregion
 
         #region Companions
@@ -493,6 +584,16 @@ public class ItemEditor : EditorWindow
         item.IconName = newItemIcon.name;
         item.Value = newItemValue;
         item.Rarity = newItemRarity;
+
+        for (int i = 0; i < Themes.Count; i++)
+        {
+            item.Themes.Add(Themes[i]);
+        }
+
+        for (int i = 0; i < Difficulties.Count; i++)
+        {
+            item.Difficulties.Add(Difficulties[i]);
+        }
     }
 
     private void SetEquippableBase(EquippableItem item)
@@ -539,48 +640,57 @@ public class ItemEditor : EditorWindow
 
         System.Type currentType = mSelectedItem.GetType();
         #region Consumables
-        if (currentType == typeof(RecoveryItem))
+        if (currentType == typeof(HPRecover))
         {
-            RecoveryItem item = (RecoveryItem)mSelectedItem;
+            HPRecover item = (HPRecover)mSelectedItem;
 
             ShowEditItemBase(item);
 
             // recovery
-            item.ConsumableType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", item.ConsumableType);
             item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
         }
-        else if (currentType == typeof(StatUpgradeItem))
-        {
-            StatUpgradeItem item = (StatUpgradeItem)mSelectedItem;
+        //if (currentType == typeof(RecoveryItem))
+        //{
+        //    RecoveryItem item = (RecoveryItem)mSelectedItem;
 
-            ShowEditItemBase(item);
+        //    ShowEditItemBase(item);
 
-            // stat upgrade
-            item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", item.StatType);
-            item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
-        }
-        else if (currentType == typeof(StatusEffectItem))
-        {
-            StatusEffectItem item = (StatusEffectItem)mSelectedItem;
+        //    // recovery
+        //    item.ConsumableStatType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", item.ConsumableStatType);
+        //    item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
+        //}
+        //else if (currentType == typeof(StatUpgradeItem))
+        //{
+        //    StatUpgradeItem item = (StatUpgradeItem)mSelectedItem;
 
-            ShowEditItemBase(item);
+        //    ShowEditItemBase(item);
 
-            // status effect
-            item.Effect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", item.Effect);
-        }
-        else if (currentType == typeof(WeaponUpgradeItem))
-        {
-            WeaponUpgradeItem item = (WeaponUpgradeItem)mSelectedItem;
+        //    // stat upgrade
+        //    item.StatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", item.StatType);
+        //    item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
+        //}
+        //else if (currentType == typeof(StatusEffectItem))
+        //{
+        //    StatusEffectItem item = (StatusEffectItem)mSelectedItem;
 
-            ShowEditItemBase(item);
+        //    ShowEditItemBase(item);
 
-            // weapon upgrade
-            item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
-        }
-        else if (currentType == typeof(CharacterSupportItem))
-        {
-            // TODO
-        }
+        //    // status effect
+        //    item.Effect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", item.Effect);
+        //}
+        //else if (currentType == typeof(WeaponUpgradeItem))
+        //{
+        //    WeaponUpgradeItem item = (WeaponUpgradeItem)mSelectedItem;
+
+        //    ShowEditItemBase(item);
+
+        //    // weapon upgrade
+        //    item.Amount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(item.Amount, 0, 999));
+        //}
+        //else if (currentType == typeof(CharacterSupportItem))
+        //{
+        //    // TODO
+        //}
         #endregion
 
         #region Companions
@@ -773,50 +883,90 @@ public class ItemEditor : EditorWindow
 
     private void ShowConsumables()
     {
-        GUILayout.Label("Consumables", EditorStyles.boldLabel);
-        newConsumableType = (Enums.eConsumableType)EditorGUILayout.EnumPopup("Consumable: ", newConsumableType);
-        switch (newConsumableType)
+        GUILayout.Label("> Consumable", EditorStyles.boldLabel);
+        //newConsumableType = (Enums.eConsumableType)EditorGUILayout.EnumPopup("Consumable: ", newConsumableType);
+        ConsumableItem consumable = (ConsumableItem)mCurrentCreateType;
+        switch (consumable.ConsumableType)
         {
             case Enums.eConsumableType.Recovery:
-                newRecoveryStatType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", newRecoveryStatType);
-                recoveryAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(recoveryAmount, 0, 99));
+                GUILayout.Label("  > Recovery", EditorStyles.boldLabel);
+                RecoveryItem recovery = (RecoveryItem)consumable;
+                //newRecoveryStatType = (Enums.eConsumableStatType)EditorGUILayout.EnumPopup("Stat Type: ", newRecoveryStatType);
+                GUILayout.Label("Recovery Type: " + recovery.ConsumableStatType, EditorStyles.boldLabel);
+                recoveryAmount = EditorGUILayout.IntField("Recovery Amount: ", Mathf.Clamp(recoveryAmount, 0, 99));
 
-                if (mCurrentItem.GetType() != typeof(RecoveryItem))
-                {
-                    mCurrentItem = new RecoveryItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(RecoveryItem))
+                //{
+                //    mCurrentItem = new RecoveryItem();
+                //}
                 break;
 
             case Enums.eConsumableType.StatUpgrade:
-                newStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Stat: ", newStatType);
+                GUILayout.Label("  > Stat Upgrade", EditorStyles.boldLabel);
+                StatUpgradeItem statUpgrade = (StatUpgradeItem)consumable;
+                newStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Boost Max Stat: ", newStatType);
                 statBoostAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(statBoostAmount, 0, 99));
 
-                if (mCurrentItem.GetType() != typeof(StatUpgradeItem))
-                {
-                    mCurrentItem = new StatUpgradeItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(StatUpgradeItem))
+                //{
+                //    mCurrentItem = new StatUpgradeItem();
+                //}
                 break;
 
             case Enums.eConsumableType.StatusEffect:
+                GUILayout.Label("  > Status Effect", EditorStyles.boldLabel);
+                StatusEffectItem status = (StatusEffectItem)consumable;
                 newEffectType = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", newEffectType);
 
-                if (mCurrentItem.GetType() != typeof(StatusEffectItem))
-                {
-                    mCurrentItem = new StatusEffectItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(StatusEffectItem))
+                //{
+                //    mCurrentItem = new StatusEffectItem();
+                //}
                 break;
 
             case Enums.eConsumableType.WeaponUpgrade:
+                GUILayout.Label("  > Weapon Upgrade", EditorStyles.boldLabel);
+                WeaponUpgradeItem weaponUpgrade = (WeaponUpgradeItem)consumable;
+                GUILayout.Label("Stat Boosted: ATT", EditorStyles.boldLabel);
                 weaponUpgradeAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(weaponUpgradeAmount, 0, 99));
 
-                if (mCurrentItem.GetType() != typeof(WeaponUpgradeItem))
-                {
-                    mCurrentItem = new WeaponUpgradeItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(WeaponUpgradeItem))
+                //{
+                //    mCurrentItem = new WeaponUpgradeItem();
+                //}
                 break;
 
             case Enums.eConsumableType.CharacterSupport:
-                // TODO
+                GUILayout.Label("  > Character Support", EditorStyles.boldLabel);
+                CharacterSupportItem support = (CharacterSupportItem)consumable;
+                switch (support.SupportType)
+                {
+                    case Enums.eCharacterSupportType.Teleport:
+                        GUILayout.Label("    > Teleport", EditorStyles.boldLabel);
+                        Teleport t = (Teleport)support;
+                        TeleportPrefab = (GameObject)EditorGUILayout.ObjectField("Prefab:", TeleportPrefab, typeof(GameObject), false);
+                        if (TeleportPrefab != null)
+                        {
+                            TeleportPrefabName = TeleportPrefab.name;
+                        }
+                        break;
+
+                    case Enums.eCharacterSupportType.Revive:
+                        GUILayout.Label("    > Revive", EditorStyles.boldLabel);
+                        // no fields
+                        break;
+
+                    case Enums.eCharacterSupportType.Resource:
+                        GUILayout.Label("    > Resource", EditorStyles.boldLabel);
+                        // will need fields filled in
+                        break;
+
+                    case Enums.eCharacterSupportType.Scroll:
+                        GUILayout.Label("    > Scroll", EditorStyles.boldLabel);
+
+                        ScrollTeachType = (Enums.eSpellType)EditorGUILayout.EnumPopup("Spell Type: ", ScrollTeachType);
+                        break;
+                }
                 break;
         }
     }
@@ -825,58 +975,65 @@ public class ItemEditor : EditorWindow
     {
         ShowEquippables();
 
-        GUILayout.Label("Companions", EditorStyles.boldLabel);
+        GUILayout.Label("> Companions", EditorStyles.boldLabel);
+        CompanionItem companion = (CompanionItem)mCurrentCreateType;
+        // no fields currently
 
-        if (mCurrentItem.GetType() != typeof(CompanionItem))
-        {
-            mCurrentItem = new CompanionItem();
-        }
+        //if (mCurrentItem.GetType() != typeof(CompanionItem))
+        //{
+        //    mCurrentItem = new CompanionItem();
+        //}
     }
 
     private void ShowStatBoosts()
     {
         ShowEquippables();
 
-        GUILayout.Label("Stat Boosts", EditorStyles.boldLabel);
-        newBoostType = (Enums.eStatBoostType)EditorGUILayout.EnumPopup("Boost Type: ", newBoostType);
-        switch (newBoostType)
+        GUILayout.Label("> Stat Boost", EditorStyles.boldLabel);
+        //newBoostType = (Enums.eStatBoostType)EditorGUILayout.EnumPopup("Boost Type: ", newBoostType);
+        EquippableStatBoost boost = (EquippableStatBoost)mCurrentCreateType;
+        switch (boost.StatBoostType)
         {
             case Enums.eStatBoostType.Basic:
+                GUILayout.Label("  > Basic Boost", EditorStyles.boldLabel);
+                StatBoostItem boostItem = (StatBoostItem)boost;
                 StatToBoost = (Enums.eStatType)EditorGUILayout.EnumPopup("Stat: ", StatToBoost);
                 BoostAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(BoostAmount, 0, 99));
 
-                if (mCurrentItem.GetType() != typeof(StatBoostItem))
-                {
-                    mCurrentItem = new StatBoostItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(StatBoostItem))
+                //{
+                //    mCurrentItem = new StatBoostItem();
+                //}
                 break;
 
             case Enums.eStatBoostType.LongTerm:
+                GUILayout.Label("  > Long Term Effect", EditorStyles.boldLabel);
                 LongTermEffect = (Enums.eLongTermEffectType)EditorGUILayout.EnumPopup("Effect: ", LongTermEffect);
                 LongTermDelay = EditorGUILayout.FloatField("Interval: ", Mathf.Clamp(LongTermDelay, 0, 10));
                 LongTermAmount = EditorGUILayout.IntField("Amount: ", Mathf.Clamp(LongTermAmount, 0, 99));
 
-                if (mCurrentItem.GetType() != typeof(LongTermEffectItem))
-                {
-                    mCurrentItem = new LongTermEffectItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(LongTermEffectItem))
+                //{
+                //    mCurrentItem = new LongTermEffectItem();
+                //}
                 break;
 
             case Enums.eStatBoostType.Resist:
+                GUILayout.Label("  > Resist", EditorStyles.boldLabel);
                 ResistEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", ResistEffect);
                 ResistPercent = EditorGUILayout.FloatField("Percent: ", Mathf.Clamp(ResistPercent, 0, 100));
 
-                if (mCurrentItem.GetType() != typeof(ResistItem))
-                {
-                    mCurrentItem = new ResistItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(ResistItem))
+                //{
+                //    mCurrentItem = new ResistItem();
+                //}
                 break;
         }
     }
 
     private void ShowEquippables()
     {
-        GUILayout.Label("Equippable", EditorStyles.boldLabel);
+        GUILayout.Label("> Equippable", EditorStyles.boldLabel);
         MinEquipType = (Enums.eMinEquipRequirementType)EditorGUILayout.EnumPopup("Minimum Requirement: ", MinEquipType);
         MinLevelToEquip = EditorGUILayout.IntField("Minimum Level: ", Mathf.Clamp(MinLevelToEquip, 0, 99));
         MinStatType = (Enums.eStatType)EditorGUILayout.EnumPopup("Limiting Stat: ", MinStatType);
@@ -907,30 +1064,34 @@ public class ItemEditor : EditorWindow
     {
         ShowEquippables();
 
-        GUILayout.Label("Armour", EditorStyles.boldLabel);
-        newArmourType = (Enums.eArmourLocation)EditorGUILayout.EnumPopup("Armour Type: ", newArmourType);
-        switch (newArmourType)
+        GUILayout.Label("> Armour", EditorStyles.boldLabel);
+        //newArmourType = (Enums.eArmourLocation)EditorGUILayout.EnumPopup("Armour Type: ", newArmourType);
+        ArmourItem armour = (ArmourItem)mCurrentCreateType;
+        switch (armour.Location)
         {
             case Enums.eArmourLocation.Head:
-                if (mCurrentItem.GetType() != typeof(HeadArmourItem))
-                {
-                    mCurrentItem = new HeadArmourItem();
-                }
+                GUILayout.Label("  > Head", EditorStyles.boldLabel);
+                //if (mCurrentItem.GetType() != typeof(HeadArmourItem))
+                //{
+                //    mCurrentItem = new HeadArmourItem();
+                //}
                 break;
 
             case Enums.eArmourLocation.Body:
+                GUILayout.Label("  > Body", EditorStyles.boldLabel);
                 BodySlots = EditorGUILayout.IntField("# Slots: ", Mathf.Clamp(BodySlots, 0, 5));
-                if (mCurrentItem.GetType() != typeof(BodyArmourItem))
-                {
-                    mCurrentItem = new BodyArmourItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(BodyArmourItem))
+                //{
+                //    mCurrentItem = new BodyArmourItem();
+                //}
                 break;
 
             case Enums.eArmourLocation.Arm:
-                if (mCurrentItem.GetType() != typeof(ArmArmourItem))
-                {
-                    mCurrentItem = new ArmArmourItem();
-                }
+                GUILayout.Label("  > Arm", EditorStyles.boldLabel);
+                //if (mCurrentItem.GetType() != typeof(ArmArmourItem))
+                //{
+                //    mCurrentItem = new ArmArmourItem();
+                //}
                 break;
         }
     }
@@ -939,41 +1100,52 @@ public class ItemEditor : EditorWindow
     {
         ShowEquippables();
 
-        GUILayout.Label("Weapon", EditorStyles.boldLabel);
+        GUILayout.Label("> Weapon", EditorStyles.boldLabel);
         BaseWeaponDamage = EditorGUILayout.IntField("Base Damage: ", Mathf.Clamp(BaseWeaponDamage, 0, 999));
         WeaponEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", WeaponEffect);
         WeaponMultiTarget = EditorGUILayout.Toggle("Multiple Targets?: ", WeaponMultiTarget);
         Range = EditorGUILayout.FloatField("Range: ", Mathf.Clamp(Range, 0, 99));
 
-        GUILayout.Label("Type", EditorStyles.boldLabel);
-        WeaponRangeType = (Enums.eWeaponType)EditorGUILayout.EnumPopup("Weapon Type: ", WeaponRangeType);
-        switch (WeaponRangeType)
+        WeaponItem weapon = (WeaponItem)mCurrentCreateType;
+        //GUILayout.Label("Type", EditorStyles.boldLabel);
+        //WeaponRangeType = (Enums.eWeaponType)EditorGUILayout.EnumPopup("Weapon Type: ", WeaponRangeType);
+        switch (weapon.WeaponType)
         {
             case Enums.eWeaponType.Melee:
                 MeleeTwoHanded = EditorGUILayout.Toggle("Two Handed?: ", MeleeTwoHanded);
-                if (mCurrentItem.GetType() != typeof(MeleeWeaponItem))
-                {
-                    mCurrentItem = new MeleeWeaponItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(MeleeWeaponItem))
+                //{
+                //    mCurrentItem = new MeleeWeaponItem();
+                //}
                 break;
 
             case Enums.eWeaponType.Ranged:
-                if (mCurrentItem.GetType() != typeof(RangedWeaponItem))
-                {
-                    mCurrentItem = new RangedWeaponItem();
-                }
+                //if (mCurrentItem.GetType() != typeof(RangedWeaponItem))
+                //{
+                //    mCurrentItem = new RangedWeaponItem();
+                //}
                 break;
 
             case Enums.eWeaponType.Magic:
+                GUILayout.Label("  > Magic", EditorStyles.boldLabel);
                 MagicFocusType = (Enums.eMagicFocusType)EditorGUILayout.EnumPopup("Focus: ", MagicFocusType);
                 MagicType = (Enums.eMagicType)EditorGUILayout.EnumPopup("Type: ", MagicType);
                 MagicRadius = EditorGUILayout.FloatField("Radius: ", Mathf.Clamp(MagicRadius, 0, 99));
                 MagicEffect = (Enums.eStatusEffect)EditorGUILayout.EnumPopup("Effect: ", MagicEffect);
                 MagicCost = EditorGUILayout.IntField("Cost: ", Mathf.Clamp(MagicCost, 0, 999));
-                if (mCurrentItem.GetType() != typeof(MagicWeaponItem))
+
+                Spell spell = (Spell)weapon;
+                if (spell != null)
                 {
-                    mCurrentItem = new MagicWeaponItem();
+                    GUILayout.Label("    > Spell", EditorStyles.boldLabel);
+                    SpellType = (Enums.eSpellType)EditorGUILayout.EnumPopup("Type: ", SpellType);
+                    break;
                 }
+
+                //if (mCurrentItem.GetType() != typeof(MagicWeaponItem))
+                //{
+                //    mCurrentItem = new MagicWeaponItem();
+                //}
                 break;
         }
     }

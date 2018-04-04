@@ -1,25 +1,13 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <ItemContainer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
-    <InventoryItem xsi:type="HeadArmourItem" ID="1" IconName="testSpriteIcon" Name="Helmet of Hair" Description="It's just hair." Worth="0" Type="Armour" Rarity="Common" MiniumType="None" MiniumLevel="0" MinimumStat="HP" MinimumStatValue="0" ArmourLocation="Head" DefBoost="0">
-      <UsableClasses>
-        <eClassType>All</eClassType>
-      </UsableClasses>
-      <UsableRaces>
-        <eRaceType>All</eRaceType>
-      </UsableRaces>
-    </InventoryItem>
-    <InventoryItem xsi:type="MeleeWeaponItem" ID="2" IconName="testSpriteIcon" Name="Pork Sword" Description="Trouser hotdog." Worth="2" Type="Weapon" Rarity="OneOfAKind" MiniumType="None" MiniumLevel="0" MinimumStat="HP" MinimumStatValue="0" BaseDamage="0" StatusEffect="Burn" MultiTarget="false" TwoHanded="false">
-      <UsableClasses>
-        <eClassType>Melee</eClassType>
-      </UsableClasses>
-      <UsableRaces>
-        <eRaceType>All</eRaceType>
-      </UsableRaces>
-    </InventoryItem>
-    <InventoryItem xsi:type="StatBoostItem" ID="2" IconName="testgunSprite" Name="TeST Limits Item" Description="testing the limits of int field values. UPDATE." Worth="999" Type="StatBoost" Rarity="Common" MiniumType="Level" MiniumLevel="99" MinimumStat="HP" MinimumStatValue="0" StatType="MP" Amount="99">
-      <UsableClasses />
-      <UsableRaces />
+    <InventoryItem xsi:type="HPRecover" ID="0" IconName="test_box_icon" Name="Sana S" Description="Health Description." Worth="15" ItemType="Consumable" Rarity="Common" ConsumableType="HP" Amount="25">
+      <Themes>
+        <eLevelTheme>All</eLevelTheme>
+      </Themes>
+      <Difficulties>
+        <eDifficulty>All</eDifficulty>
+      </Difficulties>
     </InventoryItem>
   </Items>
 </ItemContainer>
