@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// TODO replace with shader
 public class TextureScroll : MonoBehaviour
 {
     [SerializeField] private Renderer m_Renderer;
