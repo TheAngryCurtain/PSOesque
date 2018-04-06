@@ -7,6 +7,8 @@ public class CharacterManager : Singleton<CharacterManager>
 {
     public Character PlayerCharacter { get { return m_RegisteredCharacters[0]; } }
 
+    public bool DebugGUI = false;
+
     private List<Character> m_RegisteredCharacters;
 
     private CharacterProgress m_CharacterProgress;
@@ -171,7 +173,7 @@ public class CharacterManager : Singleton<CharacterManager>
 
     private void OnGUI()
     {
-        if (m_CharacterProgress != null)
+        if (DebugGUI && m_CharacterProgress != null)
         {
             // Inventory --------------------------------------------------------
             int count = m_CharacterProgress.m_Inventory.Count;

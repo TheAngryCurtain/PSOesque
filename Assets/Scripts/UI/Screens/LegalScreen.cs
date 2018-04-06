@@ -5,7 +5,7 @@ using UI;
 using UI.Enums;
 using Rewired;
 
-public class CompanyScreen : UIBaseScreen
+public class LegalScreen : UIBaseScreen
 {
     [SerializeField] private float mLogoScreenTime = 2f;
 
@@ -64,6 +64,6 @@ public class CompanyScreen : UIBaseScreen
 
     private void ContinueFlow()
     {
-        UIManager.Instance.TransitionToScreen(ScreenId.Legal);
+        UIManager.Instance.TransitionToScreen(ScreenId.Title);
     }
 }

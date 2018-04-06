@@ -1,5 +1,5 @@
 /* Rewired Constants
-   This list was generated on 10/22/2017 7:33:01 PM
+   This list was generated on 4/5/2018 7:27:02 PM
    The list applies to only the Rewired Input Manager from which it was generated.
    If you use a different Rewired Input Manager, you will have to generate a new list.
    If you make changes to the exported items in the Rewired Input Manager, you will need to regenerate this list.
@@ -8,15 +8,25 @@
 namespace RewiredConsts {
     public static class Action {
         // Default
-        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Move Horizontal")]
+        // UI
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "UI", friendlyName = "Navigate Horizontal")]
+        public const int Navigate_Horizontal = 5;
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "UI", friendlyName = "Navigate Vertical")]
+        public const int Navigate_Vertical = 6;
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "UI", friendlyName = "Confirm")]
+        public const int Confirm = 7;
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "UI", friendlyName = "Cancel")]
+        public const int Cancel = 8;
+        // Gameplay
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Gameplay", friendlyName = "Move Horizontal")]
         public const int Move_Horizontal = 0;
-        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Move Vertical")]
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Gameplay", friendlyName = "Move Vertical")]
         public const int Move_Vertical = 1;
-        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Camera Horizontal")]
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Gameplay", friendlyName = "Camera Horizontal")]
         public const int Camera_Horizontal = 2;
-        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Camera Vertical")]
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Gameplay", friendlyName = "Camera Vertical")]
         public const int Camera_Vertical = 3;
-        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Default", friendlyName = "Interact")]
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "Gameplay", friendlyName = "Interact")]
         public const int Interact = 4;
     }
     public static class Category {

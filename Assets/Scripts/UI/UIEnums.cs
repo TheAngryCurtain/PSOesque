@@ -7,7 +7,7 @@
             None = -1,
             Company,
             Legal,
-            Splash,
+            Title,
             Main
         }
 

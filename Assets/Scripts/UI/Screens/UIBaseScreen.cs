@@ -38,7 +38,6 @@ namespace UI
         protected List<UIPromptInfo> m_PromptInfo;
 
         protected UIScreenAnimState m_ActiveState;
-        protected bool m_HasSubSectionFocus = false;                    //! Does this screen have a subsection focused? If so, you can't back out 
 
         ///////////////////////////////////////////////////////////////////
         /// MonoBehaviour Implementation
@@ -133,18 +132,18 @@ namespace UI
         {
             switch (data.actionId)
             {
-                //case RewiredConsts.Action.UI_Cancel:
-                //    if (data.GetButtonDown())
-                //    {
-                //        if (m_CanBack && !m_HasSubSectionFocus)
-                //        {
-                //            UIManager.Instance.DoBackTransition();
+                case RewiredConsts.Action.Cancel:
+                    if (data.GetButtonDown())
+                    {
+                        if (m_CanBack)
+                        {
+                            UIManager.Instance.DoBackTransition();
 
-                //            // audio
-                //            VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Back));
-                //        }
-                //    }
-                //    break;
+                            // audio
+                            //VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Back));
+                        }
+                    }
+                    break;
             }
         }
 

@@ -11,17 +11,10 @@ public class UIManager : Singleton<UIManager>
     private static readonly string Identifier = "UIManager";
 
     // Inspector Serialized Fields
-    [SerializeField]
-    private Canvas m_Canvas;                            //! The Game Canvas. We'll only use one and load prefabs for Screens and other elements Under it.
-
-    [SerializeField]
-    private Transform m_PromptsBar;
-
-    [SerializeField]
-    private GameObject m_PromptPrefab;
-
-    [SerializeField]
-    private List<UIScreenPrefabInfo> m_PrefabInfo;      //! List of Prefab Information: Includes ID to Prefab For Loading.
+    [SerializeField] private Canvas m_Canvas;                            //! The Game Canvas. We'll only use one and load prefabs for Screens and other elements Under it.
+    [SerializeField] private Transform m_PromptsBar;
+    [SerializeField] private GameObject m_PromptPrefab;
+    [SerializeField] private List<UIScreenPrefabInfo> m_PrefabInfo;      //! List of Prefab Information: Includes ID to Prefab For Loading.
 
     // Private Member Variables
     private Animator m_ScreenAnimator;                  //! Reference Member Variable for the current screen animator. Use this to play animations and transitions.
@@ -32,6 +25,7 @@ public class UIManager : Singleton<UIManager>
     private bool m_AnimationLock;                       //! Animation Lock, do not allow screens to animate while this is locked.
     private bool m_InputLock;                           //! Input Lock, block input while this is locked.
     private bool m_PrefabLoadingLock;                   //! Lock when loading a prefab, so we don't do anything else or load another prefab.
+    private Animator m_PromptsBarAnimator;
 
     public bool IsAnimationLocked { get { return m_AnimationLock; } set { m_AnimationLock = value; } }
     public bool IsInputLocked { get { return m_InputLock; } set { m_InputLock = value; } }
@@ -42,6 +36,8 @@ public class UIManager : Singleton<UIManager>
         Debug.AssertFormat(ValidateManager() != false, "{0} : Failed to validate, please ensure that all required components are set and not null.", UIManager.Identifier);
         m_ScreenStack = new Stack<ScreenId>();
         base.Awake();
+
+        m_PromptsBarAnimator = m_Canvas.GetComponent<Animator>();
     }
 
     /// <summary>
@@ -212,6 +208,8 @@ public class UIManager : Singleton<UIManager>
             if (m_CurrentScreen != null)
             {
                 canNavigateBackwards = m_CurrentScreen.CanNavigateBack;
+                m_PromptsBarAnimator.SetTrigger("Outro");
+
                 yield return StartCoroutine(m_CurrentScreen.DoScreenAnimation(UIScreenAnimState.Outro));
                 UnloadCurrentScreen();
             }
@@ -244,7 +242,9 @@ public class UIManager : Singleton<UIManager>
                 yield return StartCoroutine(m_CurrentScreen.DoScreenAnimation(UIScreenAnimState.Intro));
 
                 ClearPrompts();
+
                 m_CurrentScreen.SetPrompts(m_PromptsBar, m_PromptPrefab);
+                m_PromptsBarAnimator.SetTrigger("Intro");
             }
             m_InputLock = false;
         }
