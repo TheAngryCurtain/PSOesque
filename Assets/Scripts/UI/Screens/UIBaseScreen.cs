@@ -135,6 +135,8 @@ namespace UI
         /// <param name="data"></param>
         protected virtual void OnInputUpdate(InputActionEventData data)
         {
+            if (InputLocked()) return;
+
             switch (data.actionId)
             {
                 case RewiredConsts.Action.Cancel:
@@ -239,6 +241,11 @@ namespace UI
             }
 
             return param;
+        }
+
+        protected bool InputLocked()
+        {
+            return UIManager.Instance.IsInputLocked || UIManager.Instance.IsAnimationLocked;
         }
     }
 }

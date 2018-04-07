@@ -59,8 +59,9 @@ public class TitleScreen : UIBaseScreen
 
     protected override void OnInputUpdate(InputActionEventData data)
     {
-        bool handled = false;
+        if (InputLocked()) return;
 
+        bool handled = false;
         if (m_State == eScreenState.Title)
         {
             switch (data.actionId)
@@ -70,6 +71,7 @@ public class TitleScreen : UIBaseScreen
                     {
                         m_ScreenContentAnimator.SetTrigger("OpenMenu");
 
+                        m_MainMenu.RefocusMenu();
                         UIManager.Instance.RefreshPrompts(m_ContentPromptInfo);
 
                         // audio
@@ -110,6 +112,8 @@ public class TitleScreen : UIBaseScreen
     // receive the event from the screen content animator and pass it on
     public void ContentAnimationEvent(UIScreenAnimEvent animEvent)
     {
+        OnUIScreenAnimEvent(animEvent);
+
         switch (animEvent)
         {
             case UIScreenAnimEvent.Start:
@@ -126,7 +130,5 @@ public class TitleScreen : UIBaseScreen
                 }
                 break;
         }
-
-        OnUIScreenAnimEvent(animEvent);
     }
 }

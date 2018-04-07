@@ -38,8 +38,9 @@ public class CompanyScreen : UIBaseScreen
 
     protected override void OnInputUpdate(InputActionEventData data)
     {
-        bool handled = false;
+        if (InputLocked()) return;
 
+        bool handled = false;
         switch (data.actionId)
         {
 #if UNITY_EDITOR
