@@ -34,8 +34,7 @@ namespace UI
         private bool m_CanBack;                                         //! Can this screen navigate backwards?
         public bool CanNavigateBack { get { return m_CanBack; } }
 
-        [SerializeField]
-        protected List<UIPromptInfo> m_PromptInfo;
+        [SerializeField] protected List<UIPromptInfo> m_PromptInfo;
 
         protected UIScreenAnimState m_ActiveState;
 
@@ -83,14 +82,20 @@ namespace UI
         /// </summary>
         public virtual void SetPrompts(Transform parent, GameObject prefab)
         {
-            for (int i = 0; i < m_PromptInfo.Count; i++)
+            SetPrompts(parent, prefab, m_PromptInfo);
+        }
+
+        // set the current screen prompts
+        public virtual void SetPrompts(Transform parent, GameObject prefab, List<UIPromptInfo> newPrompts)
+        {
+            for (int i = 0; i < newPrompts.Count; i++)
             {
                 GameObject promptObj = (GameObject)Instantiate(prefab, parent);
                 UIPrompt prompt = promptObj.GetComponent<UIPrompt>();
                 if (prompt != null)
                 {
-                    prompt.SetIcon(m_PromptInfo[i].m_IconSprite);
-                    prompt.SetLabel(m_PromptInfo[i].m_LabelText);
+                    prompt.SetIcon(newPrompts[i].m_IconSprite);
+                    prompt.SetLabel(newPrompts[i].m_LabelText);
                 }
                 else
                 {

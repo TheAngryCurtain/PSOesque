@@ -250,6 +250,30 @@ public class UIManager : Singleton<UIManager>
         }
     }
 
+    public void RefreshPrompts(List<UIPromptInfo> prompts = null)
+    {
+        StartCoroutine(WaitFreshPrompts(prompts));
+    }
+
+    private IEnumerator WaitFreshPrompts(List<UIPromptInfo> prompts)
+    {
+        m_PromptsBarAnimator.SetTrigger("Outro");
+        yield return new WaitForSeconds(0.5f);
+
+        ClearPrompts();
+
+        if (prompts == null)
+        {
+            m_CurrentScreen.SetPrompts(m_PromptsBar, m_PromptPrefab);
+        }
+        else
+        {
+            m_CurrentScreen.SetPrompts(m_PromptsBar, m_PromptPrefab, prompts);
+        }
+
+        m_PromptsBarAnimator.SetTrigger("Intro");
+    }
+
     public void LoadLevelWithScreen(int locationIndex, UI.Enums.ScreenId screenToLoad)
     {
         ClearScreenStack();

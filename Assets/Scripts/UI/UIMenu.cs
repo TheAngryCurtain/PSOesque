@@ -6,12 +6,17 @@ using UnityEngine.EventSystems;
 public class UIMenu : MonoBehaviour
 {
     public System.Action<int> OnItemSelected;
-    public System.Action<UIMenuItemInfo> OnItemHighlighted;
+    public System.Action<UIMenuItem> OnItemHighlighted;
 
-    [SerializeField] private UIMenuItemInfo[] m_MenuItems;
+    [SerializeField] private string[] m_MenuLabels;
 
     [SerializeField] private Transform m_MenuContainer;
     [SerializeField] private GameObject m_MenuItemPrefab;
+
+    [SerializeField] private Color m_DefaultFrameColor;
+    [SerializeField] private Color m_DefaultTextColor;
+    [SerializeField] private Color m_HighlightFrameColor;
+    [SerializeField] private Color m_HighlightTextColor;
 
     private float m_ScrollDelay = 0.25f;
     private float m_CurrentTime = 0f;
@@ -22,15 +27,15 @@ public class UIMenu : MonoBehaviour
 
     public void PopulateMenu()
     {
-        m_ListItems = new UIMenuItem[m_MenuItems.Length];
-        for (int i = 0; i < m_MenuItems.Length; i++)
+        m_ListItems = new UIMenuItem[m_MenuLabels.Length];
+        for (int i = 0; i < m_MenuLabels.Length; i++)
         {
             GameObject itemObj = (GameObject)Instantiate(m_MenuItemPrefab, m_MenuContainer);
             UIMenuItem item = itemObj.GetComponent<UIMenuItem>();
             if (item != null)
             {
-                item.SetIcon(m_MenuItems[i].m_IconSprite);
-                item.SetLabel(m_MenuItems[i].m_LabelText);
+                item.DefaultItem(m_DefaultFrameColor, m_DefaultTextColor, m_HighlightFrameColor, m_HighlightTextColor);
+                item.SetLabel(m_MenuLabels[i]);
 
                 m_ListItems[i] = item;
             }
@@ -38,46 +43,6 @@ public class UIMenu : MonoBehaviour
 
         SetActiveItem(m_ListItems[m_ActiveIndex]);
     }
-
-    //public void PreSetMenuDataForModes(GameModeData[] data)
-    //{
-    //    m_MenuItems = new UIMenuItemInfo[data.Length];
-    //    for (int i = 0; i < data.Length; i++)
-    //    {
-    //        m_MenuItems[i] = new UIMenuItemInfo();
-    //        m_MenuItems[i].m_IconSprite = data[i].m_Icon;
-    //        m_MenuItems[i].m_LabelText = data[i].m_Name;
-    //        m_MenuItems[i].m_Description = data[i].m_Description;
-    //    }
-    //}
-
-    //public void PreSetMenuDataForSubModes(GameModeData data)
-    //{
-    //    GameSubModeData[] subModes = data.m_SubModes;
-    //    m_MenuItems = new UIMenuItemInfo[subModes.Length];
-    //    for (int i = 0; i < subModes.Length; i++)
-    //    {
-    //        m_MenuItems[i] = new UIMenuItemInfo();
-    //        m_MenuItems[i].m_IconSprite = data.m_Icon;
-    //        m_MenuItems[i].m_LabelText = subModes[i].m_Name;
-    //        m_MenuItems[i].m_Description = subModes[i].m_Description;
-    //    }
-    //}
-
-    //public void PreSetMenuDataForLocations(GameModeData data)
-    //{
-    //    LocationData[] locations = data.m_Locations;
-    //    m_MenuItems = new UIMenuItemInfo[locations.Length];
-
-    //    for (int i = 0; i < locations.Length; i++)
-    //    {
-    //        m_MenuItems[i] = new UIMenuItemInfo();
-    //        m_MenuItems[i].m_IconSprite = data.m_Icon;
-    //        m_MenuItems[i].m_LabelText = locations[i].m_Name;
-    //        m_MenuItems[i].m_Description = locations[i].m_Description;
-    //        m_MenuItems[i].m_ThumbnailSprite = locations[i].m_Thumbnail;
-    //    }
-    //}
 
     public void ClearMenu()
     {
@@ -101,7 +66,7 @@ public class UIMenu : MonoBehaviour
 
         if (OnItemHighlighted != null)
         {
-            OnItemHighlighted(m_MenuItems[m_ActiveIndex]);
+            OnItemHighlighted(item);
         }
     }
 
@@ -120,57 +85,64 @@ public class UIMenu : MonoBehaviour
         }
     }
 
-    public void HandleInput(Rewired.InputActionEventData data)
+    public bool HandleInput(Rewired.InputActionEventData data)
     {
-        //switch (data.actionId)
-        //{
-        //    case RewiredConsts.Action.UI_Horizontal:
-        //        float value = data.GetAxis();
-        //        if (value != 0f && m_MenuItems[m_ActiveIndex].m_Togglable)
-        //        {
-        //            // will need to figure out how to cut out of this. will likely need to change the switch to an if/else
+        bool handled = false;
+        switch (data.actionId)
+        {
+            //case RewiredConsts.Action.Navigate_Horizontal:
+            //    float value = data.GetAxis();
+            //    if (value != 0f && m_MenuItems[m_ActiveIndex].m_Togglable)
+            //    {
+            //        // will need to figure out how to cut out of this. will likely need to change the switch to an if/else
 
-        //            // audio
-        //            VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Navigate));
-        //        }
-        //        break;
+            //        // audio
+            //        VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Navigate));
+            //    }
+            //    break;
 
-        //    case RewiredConsts.Action.UI_Vertical:
-        //        value = data.GetAxis();
-        //        if (value != 0f && m_CurrentTime <= 0f)
-        //        {
-        //            if (value < 0f)
-        //            {
-        //                m_ActiveIndex = (m_ActiveIndex + 1) % m_MenuItems.Length;
-        //            }
-        //            else if (value > 0f)
-        //            {
-        //                if (m_ActiveIndex - 1 < 0)
-        //                {
-        //                    m_ActiveIndex = m_MenuItems.Length;
-        //                }
+            case RewiredConsts.Action.Navigate_Vertical:
+                float value = data.GetAxis();
+                if (value != 0f && m_CurrentTime <= 0f)
+                {
+                    if (value < 0f)
+                    {
+                        m_ActiveIndex = (m_ActiveIndex + 1) % m_MenuLabels.Length;
+                    }
+                    else if (value > 0f)
+                    {
+                        if (m_ActiveIndex - 1 < 0)
+                        {
+                            m_ActiveIndex = m_MenuLabels.Length;
+                        }
 
-        //                m_ActiveIndex -= 1;
-        //            }
+                        m_ActiveIndex -= 1;
+                    }
 
-        //            SetActiveItem(m_ListItems[m_ActiveIndex]);
-        //            m_CurrentTime = m_ScrollDelay;
+                    SetActiveItem(m_ListItems[m_ActiveIndex]);
+                    m_CurrentTime = m_ScrollDelay;
 
-        //            // audio
-        //            VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Navigate));
-        //        }
-        //        m_CurrentTime -= Time.deltaTime;
-        //        break;
+                    // audio
+                    //VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Navigate));
 
-        //    case RewiredConsts.Action.UI_Confirm:
-        //        if (data.GetButtonDown())
-        //        {
-        //            OnItemSelected(m_ActiveIndex);
+                    handled = true;
+                }
+                m_CurrentTime -= Time.deltaTime;
+                break;
 
-        //            // audio
-        //            VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Confirm));
-        //        }
-        //        break;
-        //}
+            case RewiredConsts.Action.Confirm:
+                if (data.GetButtonDown())
+                {
+                    OnItemSelected(m_ActiveIndex);
+
+                    // audio
+                    //VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Confirm));
+
+                    handled = true;
+                }
+                break;
+        }
+
+        return handled;
     }
 }

@@ -5,12 +5,18 @@ using UnityEngine.UI;
 
 public class UIMenuItem : MonoBehaviour
 {
-    [SerializeField] private Image m_Icon;
+    [SerializeField] private Image m_Frame;
     [SerializeField] private Text m_Label;
 
-    public void SetIcon(Sprite sprite)
+    private enum eStateColor { Default_Frame, Default_Text, Highlight_Frame, Highlight_Text };
+    private Color[] m_StateColors;
+
+    public void DefaultItem(Color dFrameColor, Color dTextColor, Color hFrameColor, Color hTextColor)
     {
-        m_Icon.sprite = sprite;
+        m_StateColors = new Color[] { dFrameColor, dTextColor, hFrameColor, hTextColor };
+
+        m_Frame.color = m_StateColors[(int)eStateColor.Default_Frame];
+        m_Label.color = m_StateColors[(int)eStateColor.Default_Text];
     }
 
     public void SetLabel(string text)
@@ -22,13 +28,13 @@ public class UIMenuItem : MonoBehaviour
     {
         if (highlight)
         {
-            m_Label.color = Color.yellow;
-            m_Icon.rectTransform.localScale = new Vector3(1.25f, 1.25f);
+            m_Frame.color = m_StateColors[(int)eStateColor.Highlight_Frame];
+            m_Label.color = m_StateColors[(int)eStateColor.Highlight_Text];
         }
         else
         {
-            m_Label.color = Color.white;
-            m_Icon.rectTransform.localScale = Vector3.one;
+            m_Frame.color = m_StateColors[(int)eStateColor.Default_Frame];
+            m_Label.color = m_StateColors[(int)eStateColor.Default_Text];
         }
     }
 }
