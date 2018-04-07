@@ -8,7 +8,8 @@
             Company,
             Legal,
             Title,
-            Main
+            Loading,
+			Lobby
         }
 
         public enum UIScreenAnimState

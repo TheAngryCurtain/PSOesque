@@ -12,6 +12,8 @@ public class TitleScreen : UIBaseScreen
     [SerializeField] private List<UIPromptInfo> m_ContentPromptInfo;
     [SerializeField] private UIMenu m_MainMenu;
 
+	private enum eMenuOption { Offline, Online, Settings, Exit };
+
     private enum eScreenState { Title, Menu };
     private eScreenState m_State;
 
@@ -41,18 +43,20 @@ public class TitleScreen : UIBaseScreen
 
     private void OnMenuItemSelected(int index)
     {
-        switch (index)
+		eMenuOption option = (eMenuOption)index;
+		switch (option)
         {
-            case 0:
+			case eMenuOption.Offline:
+			case eMenuOption.Online:
+				// TODO
+				// Load a new scene async and somehow remove the loading screen when the HUB level has loaded
+				UIManager.Instance.TransitionToScreen(ScreenId.Loading);
                 break;
 
-            case 1:
+			case eMenuOption.Settings:
                 break;
 
-            case 2:
-                break;
-
-            case 3:
+			case eMenuOption.Exit:
                 break;
         }
     }
