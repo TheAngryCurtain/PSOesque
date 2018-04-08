@@ -48,9 +48,8 @@ public class TitleScreen : UIBaseScreen
         {
 			case eMenuOption.Offline:
 			case eMenuOption.Online:
-				// TODO
-				// Load a new scene async and somehow remove the loading screen when the HUB level has loaded
-				UIManager.Instance.TransitionToScreen(ScreenId.Loading);
+                UIManager.Instance.TransitionToScreen(ScreenId.Loading);
+                SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Lobby);
                 break;
 
 			case eMenuOption.Settings:

@@ -121,6 +121,12 @@ public class CharacterStats
         }
     }
 
+    public int GetLevel()
+    {
+        // TODO some fancy formula here
+        return 1;
+    }
+
     // TODO this should be a listener for some xp added event
     private void OnXPEarned()
     {

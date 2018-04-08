@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneLoader : MonoBehaviour
+public class SceneLoader : Singleton<SceneLoader>
 {
     private AsyncOperation mAsyncOp = null;
+    private UIEvents.AsyncSceneLoadProgressEvent mProgressEvent;
 
-    private void Awake()
+    public override void Awake()
     {
+        base.Awake();
+
         SceneManager.sceneLoaded += OnSceneLoaded;
-    }
 
-    private void Start()
-    {
-        RequestSceneLoad(Enums.eScene.Main);
+        mProgressEvent = new UIEvents.AsyncSceneLoadProgressEvent();
     }
 
     public void RequestSceneLoad(Enums.eScene scene)
@@ -29,14 +29,13 @@ public class SceneLoader : MonoBehaviour
         mAsyncOp = SceneManager.LoadSceneAsync(buildIndex);
     }
 
-    public float QueryLoadProgress()
+    private void Update()
     {
-        if (mAsyncOp == null)
+        if (mAsyncOp != null)
         {
-            return -1f;
+            mProgressEvent.Progress = mAsyncOp.progress;
+            VSEventManager.Instance.TriggerEvent(mProgressEvent);
         }
-
-        return mAsyncOp.progress;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -44,6 +43,7 @@ public class SceneLoader : MonoBehaviour
         if (scene.buildIndex > (int)Enums.eScene.Boot)
         {
             VSEventManager.Instance.TriggerEvent(new UIEvents.SceneLoadedEvent((Enums.eScene)scene.buildIndex));
+            mAsyncOp = null;
         }
     }
 }

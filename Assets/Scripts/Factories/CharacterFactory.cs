@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class CharacterFactory : MonoBehaviour
 {
-    [SerializeField] private GameObject m_CameraPrefab;
+    [SerializeField] private GameObject m_CameraPrefab; // temp
     [SerializeField] private GameObject m_PlayerPrefab;
-    [SerializeField] private GameObject m_CompanionPrefab;
+    [SerializeField] private GameObject m_CompanionPrefab; // temp
 
     [Header("Misc.")]
     [SerializeField] private GameObject m_HitParticleObj;
@@ -26,7 +26,8 @@ public class CharacterFactory : MonoBehaviour
 
     private void OnDungeonBuilt(GameEvents.DungeonBuiltEvent e)
     {
-        Instantiate(m_CameraPrefab, null);
+        //Instantiate(m_CameraPrefab, null);
+        CameraManager.Instance.ToggleCameraSettings(true);
 
         // TODO
         // this should get moved to some other event when the item is equipped, so this is spawned

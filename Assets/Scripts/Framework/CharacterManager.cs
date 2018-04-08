@@ -6,6 +6,7 @@ using UnityEditor;
 public class CharacterManager : Singleton<CharacterManager>
 {
     public Character PlayerCharacter { get { return m_RegisteredCharacters[0]; } }
+    public CharacterProgress PlayerCharacterProgress { get { return m_CharacterProgress; } }
 
     public bool DebugGUI = false;
 

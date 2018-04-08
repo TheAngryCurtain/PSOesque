@@ -13,4 +13,11 @@ public class UIEvents
             LoadedScene = scene;
         }
     }
+
+    public class AsyncSceneLoadProgressEvent : VSGameEvent
+    {
+        public float Progress;
+
+        public AsyncSceneLoadProgressEvent() { }
+    }
 }

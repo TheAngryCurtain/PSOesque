@@ -24,7 +24,8 @@ public class GameManager : Singleton<GameManager>
     {
         VSEventManager.Instance.AddListener<UIEvents.SceneLoadedEvent>(OnSceneLoaded);
 
-        //VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed, Enums.eLevelTheme.Forest)); // TEST for now, until other prefabs are finished
+        // start the flow
+        SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Main);
     }
 
     private void OnSceneLoaded(UIEvents.SceneLoadedEvent e)
@@ -33,6 +34,12 @@ public class GameManager : Singleton<GameManager>
         {
             case Enums.eScene.Main:
                 UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Company);
+                break;
+
+            case Enums.eScene.Lobby:
+                //UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Lobby);
+
+                //VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed, Enums.eLevelTheme.Forest));
                 break;
 
             default:

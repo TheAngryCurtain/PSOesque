@@ -23,7 +23,7 @@ public class CameraController : MonoBehaviour
     private Transform m_PlayerTransform;
     private float m_LerpSpeed = 1f;
 
-    private void Awake()
+    private void OnEnable()
     {
         InputManager.Instance.AddInputEventDelegate(OnInputUpdate, Rewired.UpdateLoopType.Update);
         VSEventManager.Instance.AddListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
@@ -31,7 +31,7 @@ public class CameraController : MonoBehaviour
         VSEventManager.Instance.AddListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         VSEventManager.Instance.RemoveListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
         VSEventManager.Instance.RemoveListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
