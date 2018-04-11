@@ -36,12 +36,6 @@ public class GameManager : Singleton<GameManager>
                 UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Company);
                 break;
 
-            case Enums.eScene.Lobby:
-                //UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Lobby);
-
-                //VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed, Enums.eLevelTheme.Forest));
-                break;
-
             default:
                 Debug.LogWarningFormat("Unanticipated Scene Loaded: {0}", e.LoadedScene.ToString());
                 break;

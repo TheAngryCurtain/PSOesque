@@ -49,7 +49,7 @@ public class TitleScreen : UIBaseScreen
 			case eMenuOption.Offline:
 			case eMenuOption.Online:
                 UIManager.Instance.TransitionToScreen(ScreenId.Loading);
-                SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Lobby);
+                SceneLoader.Instance.RequestSceneLoadAsync(Enums.eScene.Lobby);
                 break;
 
 			case eMenuOption.Settings:
