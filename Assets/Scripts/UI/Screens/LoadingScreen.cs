@@ -24,7 +24,7 @@ public class LoadingScreen : UIBaseScreen
     private bool m_PlayerControlEnabled = true;
 
     // should make these serializable for editing
-    private float m_EnemySpawnInterval = 4f;
+    private float m_EnemySpawnInterval = 3.5f;
     private float m_MinEnemySpawnInterval = 0.5f;
     private int m_EnemySpawnCount = 0;
     private float m_SpawnTime = 0f;

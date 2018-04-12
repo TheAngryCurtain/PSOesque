@@ -53,7 +53,8 @@ public class LobbyManager : Singleton<LobbyManager>
         // TODO
         // spawn character on pad
         GameObject temp = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-        temp.transform.position = data.m_PadTransform.position;
+        temp.transform.position = data.m_PadTransform.position + Vector3.up;
+        // add some sort of cool teleport effect or something
 
         // change pad color
         m_PlayerRings[data.m_PlayerIndex].color = data.m_PlayerColor;

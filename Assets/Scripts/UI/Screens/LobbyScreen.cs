@@ -10,8 +10,43 @@ public class LobbyScreen : UIBaseScreen
     public override void Initialize()
     {
         base.Initialize();
+
+        LobbyManager.Instance.OnPlayerAdded += OnPlayerAdded;
     }
 
+    public override void Shutdown()
+    {
+        LobbyManager.Instance.OnPlayerAdded -= OnPlayerAdded;
+
+        base.Shutdown();
+    }
+
+    private void OnPlayerAdded(PlayerLobbyData playerData)
+    {
+        // TODO
+        // update a player name bar
+    }
+
+    protected override void OnInputUpdate(InputActionEventData data)
+    {
+        if (InputLocked()) return;
+
+        bool handled = false;
+        switch (data.actionId)
+        {
+            case RewiredConsts.Action.Confirm:
+                handled = true;
+                break;
+        }
+
+        // pass to base
+        if (!handled)
+        {
+            base.OnInputUpdate(data);
+        }
+    }
+
+    // receive the event from the screen content animator and pass it on
     public override void OnUIScreenAnimEvent(UIScreenAnimEvent animEvent)
     {
         base.OnUIScreenAnimEvent(animEvent);
@@ -22,43 +57,13 @@ public class LobbyScreen : UIBaseScreen
                 break;
 
             case UIScreenAnimEvent.End:
-                break;
-
-            case UIScreenAnimEvent.None:
-            default:
+                LobbyManager.Instance.Init();
                 break;
         }
     }
 
-    protected override void OnInputUpdate(InputActionEventData data)
-    {
-        if (InputLocked()) return;
-
-        bool handled = false;
-        switch (data.actionId)
-        {
-#if UNITY_EDITOR
-            case RewiredConsts.Action.Confirm:
-                if (data.GetButtonDown())
-                {
-                    CancelInvoke("ContinueFlow");
-                    ContinueFlow();
-
-                    handled = true;
-                }
-                break;
-#endif
-        }
-
-        // pass to base
-        if (!handled)
-        {
-            base.OnInputUpdate(data);
-        }
-    }
-
-    private void ContinueFlow()
-    {
-        UIManager.Instance.TransitionToScreen(ScreenId.Title);
-    }
+    //private void ContinueFlow()
+    //{
+    //    UIManager.Instance.TransitionToScreen(ScreenId.Title);
+    //}
 }
