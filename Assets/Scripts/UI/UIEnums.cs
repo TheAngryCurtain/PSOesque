@@ -9,7 +9,8 @@
             Legal,
             Title,
             Loading,
-			Lobby
+			Lobby,
+            CollectionMiniGame
         }
 
         public enum UIScreenAnimState

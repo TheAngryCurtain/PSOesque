@@ -9,18 +9,23 @@ public class PlayerLobbyData
     public Transform m_PadTransform;
     public Color m_PlayerColor;
 
+    public bool m_Confirmed;
+
     public PlayerLobbyData(int index, string name, Transform pad, Color color)
     {
         m_PlayerIndex = index;
         m_PlayerName = name;
         m_PadTransform = pad;
         m_PlayerColor = color;
+
+        m_Confirmed = false;
     }
 }
 
 public class LobbyManager : Singleton<LobbyManager>
 {
-    private int MAX_PLAYERS = 4;
+    public int MAX_PLAYERS = 4;
+    public bool AllPlayersReady { get { return  m_ReadyPlayerCount == m_ConnectedPlayerCount; } }
 
     public System.Action<PlayerLobbyData> OnPlayerAdded;
 
@@ -30,6 +35,8 @@ public class LobbyManager : Singleton<LobbyManager>
     [SerializeField] private Color m_DefaultColor;
 
     private PlayerLobbyData[] m_PlayerData;
+    private int m_ConnectedPlayerCount = 0;
+    private int m_ReadyPlayerCount = 0;
 
     public override void Awake()
     {
@@ -46,9 +53,16 @@ public class LobbyManager : Singleton<LobbyManager>
         SetPlayerData(data);
     }
 
+    public void SetConfirmed(int playerID, bool confirmed)
+    {
+        m_PlayerData[playerID].m_Confirmed = confirmed;
+        m_ReadyPlayerCount += (confirmed ? 1 : -1);
+    }
+
     public void SetPlayerData(PlayerLobbyData data)
     {
         m_PlayerData[data.m_PlayerIndex] = data;
+        m_ConnectedPlayerCount += 1;
 
         // TODO
         // spawn character on pad

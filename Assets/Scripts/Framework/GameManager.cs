@@ -37,7 +37,7 @@ public class GameManager : Singleton<GameManager>
                 break;
 
             default:
-                Debug.LogWarningFormat("Unanticipated Scene Loaded: {0}", e.LoadedScene.ToString());
+                //Debug.LogWarningFormat("Unanticipated Scene Loaded: {0}", e.LoadedScene.ToString());
                 break;
         }
     }

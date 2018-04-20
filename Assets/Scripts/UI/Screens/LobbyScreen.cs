@@ -7,11 +7,20 @@ using Rewired;
 
 public class LobbyScreen : UIBaseScreen
 {
+    [SerializeField] private UILobbyPlayerLabel[] m_PlayerLabels;
+
     public override void Initialize()
     {
         base.Initialize();
 
         LobbyManager.Instance.OnPlayerAdded += OnPlayerAdded;
+    }
+
+    private void UpdateConfirmed(int index, bool confirmed)
+    {
+        // TODO update player name bar things
+
+        LobbyManager.Instance.SetConfirmed(index, confirmed);
     }
 
     public override void Shutdown()
@@ -25,17 +34,35 @@ public class LobbyScreen : UIBaseScreen
     {
         // TODO
         // update a player name bar
+        m_PlayerLabels[playerData.m_PlayerIndex].Init(playerData);
     }
 
     protected override void OnInputUpdate(InputActionEventData data)
     {
         if (InputLocked()) return;
 
+        // TODO
+        // if all are confirmed, update the callout to say advance
+
         bool handled = false;
         switch (data.actionId)
         {
             case RewiredConsts.Action.Confirm:
-                handled = true;
+                if (data.GetButtonDown())
+                {
+                    if (data.playerId == 0 && LobbyManager.Instance.AllPlayersReady) // only player 1 advances
+                    {
+                        // TODO advance to next screen
+                        Debug.Log("CONTINUE");
+                    }
+                    else
+                    {
+                        LobbyManager.Instance.SetConfirmed(data.playerId, true);
+                        Debug.LogFormat("P{0} Confirmed", data.playerId);
+                    }
+
+                    handled = true;
+                }
                 break;
         }
 
