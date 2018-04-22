@@ -17,9 +17,9 @@ public class TitleScreen : UIBaseScreen
     private enum eScreenState { Title, Menu };
     private eScreenState m_State;
 
-    public override void Initialize()
+    public override void Initialize(object[] screenParams)
     {
-        base.Initialize();
+        base.Initialize(screenParams);
 
         // TODO
         // perhaps start some kind of gentle space audio track
@@ -48,10 +48,16 @@ public class TitleScreen : UIBaseScreen
         {
 			case eMenuOption.Offline:
 			case eMenuOption.Online:
-                UIManager.Instance.ScreenAfterLoadID = ScreenId.Lobby;
-                UIManager.Instance.TransitionToScreen(ScreenId.Loading);
+                object[] screenParams = new object[]
+                {
+                    UI.Enums.ScreenId.Lobby,
+                    Enums.eScene.Lobby,
+                    true // async load?
+                };
 
-                SceneLoader.Instance.RequestSceneLoadAsync(Enums.eScene.Lobby);
+                UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
+
+                //SceneLoader.Instance.RequestSceneLoadAsync(Enums.eScene.Lobby);
                 break;
 
 			case eMenuOption.Settings:

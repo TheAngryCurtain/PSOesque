@@ -31,9 +31,9 @@ public class CollectionMiniGameScreen : UIBaseScreen
     private float m_MaxGameTime = 90f; // seconds
     private float m_CurrentGameTime = 0f;
 
-    public override void Initialize()
+    public override void Initialize(object[] screenParams)
     {
-        base.Initialize();
+        base.Initialize(screenParams);
 
         m_Reticle.OnCollected += OnCollectibleCollected;
         m_Reticle.OnDelivered += OnCollectiableDelivered;

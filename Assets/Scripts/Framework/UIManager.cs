@@ -30,7 +30,7 @@ public class UIManager : Singleton<UIManager>
     public bool IsAnimationLocked { get { return m_AnimationLock; } set { m_AnimationLock = value; } }
     public bool IsInputLocked { get { return m_InputLock; } set { m_InputLock = value; } }
     public bool IsPrefabLoadingLocked { get { return m_PrefabLoadingLock; } set { m_PrefabLoadingLock = value; } }
-    public UI.Enums.ScreenId ScreenAfterLoadID = ScreenId.None;
+    private object[] m_ScreenParams;
 
     public override void Awake()
     {
@@ -131,7 +131,7 @@ public class UIManager : Singleton<UIManager>
                 if (screen != null)
                 {
                     // Call set defaults and assign the current screen.
-                    screen.Initialize();
+                    screen.Initialize(m_ScreenParams);
 
                     // make sure prompts bar is last in the hierarchy
                     m_PromptsBar.SetAsLastSibling();
@@ -179,8 +179,13 @@ public class UIManager : Singleton<UIManager>
     /// Transition to a screen by id.
     /// </summary>
     /// <param name="screenId"></param>
-    public void TransitionToScreen(ScreenId screenId)
+    public void TransitionToScreen(ScreenId screenId, object[] screenParams = null)
     {
+        if (screenParams != null)
+        {
+            m_ScreenParams = screenParams;
+        }
+
         StartCoroutine(DoScreenTransition(screenId));
     }
 

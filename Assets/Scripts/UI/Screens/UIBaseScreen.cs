@@ -97,7 +97,7 @@ namespace UI
         /// <summary>
         /// Set up any initial data or state information.
         /// </summary>
-        public virtual void Initialize()
+        public virtual void Initialize(object[] screenParams)
         {
             // Do this because sometimes parenting screens to nodes can cause them to break their desired scale/rot/pos.
             transform.localPosition = m_ScreenPos;

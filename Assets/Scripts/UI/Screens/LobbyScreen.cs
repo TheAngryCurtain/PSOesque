@@ -9,9 +9,9 @@ public class LobbyScreen : UIBaseScreen
 {
     [SerializeField] private UILobbyPlayerLabel[] m_PlayerLabels;
 
-    public override void Initialize()
+    public override void Initialize(object[] screenParams)
     {
-        base.Initialize();
+        base.Initialize(screenParams);
 
         LobbyManager.Instance.OnPlayerAdded += OnPlayerAdded;
         LobbyManager.Instance.OnPlayerRemoved += OnPlayerRemoved;
@@ -131,8 +131,8 @@ public class LobbyScreen : UIBaseScreen
     {
         if (result)
         {
-            UIManager.Instance.ScreenAfterLoadID = ScreenId.None;
-            UIManager.Instance.TransitionToScreen(ScreenId.Loading);
+            //object[] screenParams = new object[] { UI.Enums.ScreenId.HUD };
+            UIManager.Instance.TransitionToScreen(ScreenId.Loading); // put screen params in here
 
             SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Game);
         }
@@ -144,10 +144,16 @@ public class LobbyScreen : UIBaseScreen
     {
         if (result)
         {
-            UIManager.Instance.ScreenAfterLoadID = ScreenId.Title;
-            UIManager.Instance.TransitionToScreen(ScreenId.Loading);
+            object[] screenParams = new object[]
+            {
+                UI.Enums.ScreenId.Title,
+                Enums.eScene.Main,
+                false // async load?
+            };
 
-            SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Main);
+            UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
+
+            //SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Main);
         }
 
         PopupManager.Instance.ClosePopup();
@@ -167,11 +173,6 @@ public class LobbyScreen : UIBaseScreen
                 if (m_ActiveState == UIScreenAnimState.Intro)
                 {
                     LobbyManager.Instance.Init();
-                }
-                else
-                {
-                    // need to clear the lobby manager going back
-                    //Destroy(LobbyManager.Instance.gameObject);
                 }
                 break;
         }

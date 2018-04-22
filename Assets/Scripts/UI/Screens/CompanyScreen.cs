@@ -9,9 +9,9 @@ public class CompanyScreen : UIBaseScreen
 {
     [SerializeField] private float mLogoScreenTime = 2f;
 
-    public override void Initialize()
+    public override void Initialize(object[] screenParams)
     {
-        base.Initialize();
+        base.Initialize(screenParams);
     }
 
     public override void OnUIScreenAnimEvent(UIScreenAnimEvent animEvent)

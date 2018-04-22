@@ -43,16 +43,16 @@ public class LobbyManager : Singleton<LobbyManager>
     public override void Awake()
     {
         m_PlayerData = new PlayerLobbyData[MAX_PLAYERS];
+    }
 
+    public void Init()
+    {
         // default ring colors
         for (int i = 0; i < m_PlayerRings.Length; i++)
         {
             m_PlayerRings[i].color = m_DefaultColor;
         }
-    }
 
-    public void Init()
-    {
         // TODO if you're the server, request yourself
         RequestAddPlayer(0);
     }
