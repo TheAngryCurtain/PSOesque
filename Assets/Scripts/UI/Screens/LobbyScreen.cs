@@ -144,6 +144,13 @@ public class LobbyScreen : UIBaseScreen
     {
         if (result)
         {
+            // clear all players
+            int playerCount = LobbyManager.Instance.ConnectedPlayerCount;
+            for (int i = 0; i < playerCount; i++)
+            {
+                LobbyManager.Instance.RequestRemovePlayer(i);
+            }
+
             object[] screenParams = new object[]
             {
                 UI.Enums.ScreenId.Title,
@@ -152,8 +159,6 @@ public class LobbyScreen : UIBaseScreen
             };
 
             UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
-
-            //SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Main);
         }
 
         PopupManager.Instance.ClosePopup();

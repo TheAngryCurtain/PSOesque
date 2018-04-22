@@ -56,8 +56,6 @@ public class TitleScreen : UIBaseScreen
                 };
 
                 UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
-
-                //SceneLoader.Instance.RequestSceneLoadAsync(Enums.eScene.Lobby);
                 break;
 
 			case eMenuOption.Settings:

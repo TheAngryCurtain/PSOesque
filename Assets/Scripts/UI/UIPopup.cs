@@ -8,6 +8,7 @@ public class UIPopup : MonoBehaviour
     [SerializeField] private Text m_TitleLabel;
     [SerializeField] private Text m_ContentText;
     [SerializeField] private Transform m_PromptsBar;
+    [SerializeField] private Animator m_Animator;
     [SerializeField] private GameObject m_PromptPrefab;
 
     public void SetData(string title, string content, List<UIPromptInfo> promptInfo)
@@ -27,19 +28,14 @@ public class UIPopup : MonoBehaviour
         }
     }
 
-    private void Enable(bool enable)
-    {
-        // TODO refactor this to use an animator and animate in/out
-        this.gameObject.SetActive(enable);
-    }
-
     public void Show()
     {
-        Enable(true);
+        this.gameObject.SetActive(true); // gross
+        m_Animator.SetTrigger("Intro");
     }
 
     public void Hide()
     {
-        Enable(false);
+        m_Animator.SetTrigger("Outro");
     }
 }

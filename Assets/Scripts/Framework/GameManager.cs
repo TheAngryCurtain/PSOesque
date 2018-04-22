@@ -31,15 +31,6 @@ public class GameManager : Singleton<GameManager>
 
     private void OnSceneLoaded(UIEvents.SceneLoadedEvent e)
     {
-        switch (e.LoadedScene)
-        {
-            case Enums.eScene.Main:
-                //UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Company);
-                break;
-
-            default:
-                //Debug.LogWarningFormat("Unanticipated Scene Loaded: {0}", e.LoadedScene.ToString());
-                break;
-        }
+        // probably don't need this
     }
 }

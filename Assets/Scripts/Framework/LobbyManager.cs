@@ -38,6 +38,7 @@ public class LobbyManager : Singleton<LobbyManager>
 
     private PlayerLobbyData[] m_PlayerData;
     private int m_ConnectedPlayerCount = 0;
+    public int ConnectedPlayerCount { get { return m_ConnectedPlayerCount; } }
     private int m_ReadyPlayerCount = 0;
 
     public override void Awake()
@@ -47,12 +48,6 @@ public class LobbyManager : Singleton<LobbyManager>
 
     public void Init()
     {
-        // default ring colors
-        for (int i = 0; i < m_PlayerRings.Length; i++)
-        {
-            m_PlayerRings[i].color = m_DefaultColor;
-        }
-
         // TODO if you're the server, request yourself
         RequestAddPlayer(0);
     }
@@ -133,6 +128,7 @@ public class LobbyManager : Singleton<LobbyManager>
         // TODO
         // remove character
         // some sort of cool particle or shader effect here
+        // for networking, will need to disconnect a player
         Destroy(data.m_PlayerModelObj);
 
         m_PlayerRings[playerIndex].color = m_DefaultColor;

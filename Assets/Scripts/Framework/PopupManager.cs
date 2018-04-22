@@ -20,6 +20,7 @@ public class PopupManager : Singleton<PopupManager>
     public void ShowPopup(ePopupType type, string title, string content, System.Action<bool> callback)
     {
         GameObject popupObj = (GameObject)Instantiate(m_PopupPrefab, m_Canvas.transform);
+        popupObj.transform.SetSiblingIndex(0); // make sure it doesn't show up over the Fade Scrim
         m_CurrentPopup = popupObj.GetComponent<UIPopup>(); // TODO should probably use a stack for easily managing multiple popups
         m_CurrentPopupType = type;
         m_CloseCallback = callback;
@@ -51,7 +52,7 @@ public class PopupManager : Singleton<PopupManager>
 
         m_CurrentPopup.Hide();
 
-        Destroy(m_CurrentPopup.gameObject);
+        Destroy(m_CurrentPopup.gameObject, 1f); // awful! need a delay based on the animation finishing
         m_CurrentPopup = null;
         m_CloseCallback = null;
     }
