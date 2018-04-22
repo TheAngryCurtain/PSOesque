@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Rewired;
-using RewiredConsts;
 using UI.Enums;
 using UI.Constants;
 
@@ -14,26 +13,17 @@ namespace UI
         /// Inspector Serialized Fields
         ///////////////////////////////////////////////////////////////////
 
-        [SerializeField]
-        private ScreenId m_ScreenId = ScreenId.None;                    //! Screen ID for this Screen. Editable in Inspector, do not modify at run time.
+        [SerializeField] private ScreenId m_ScreenId = ScreenId.None;                    //! Screen ID for this Screen. Editable in Inspector, do not modify at run time.
         public ScreenId ScreenId { get { return m_ScreenId; } }
 
-        [SerializeField]
-        private Vector3 m_ScreenPos = Vector3.zero;                     //! Initial Screen Position within the Canvas
-
-        [SerializeField]
-        private Vector3 m_ScreenScale = Vector3.one;                   //! Initial Screen Scale within the Canvas
-
-        [SerializeField]
-        private Quaternion m_ScreenRotation = Quaternion.identity;      //! Initial Screen Rotation within the Canvas
-
-        [SerializeField]
-        private Animator m_Animator;                                    //! Animator for this screen, should control intro, outro, etc.
-
-        [SerializeField]
-        private bool m_CanBack;                                         //! Can this screen navigate backwards?
+        [SerializeField] private Vector3 m_ScreenPos = Vector3.zero;                     //! Initial Screen Position within the Canvas
+        [SerializeField] private Vector3 m_ScreenScale = Vector3.one;                   //! Initial Screen Scale within the Canvas
+        [SerializeField] private Quaternion m_ScreenRotation = Quaternion.identity;      //! Initial Screen Rotation within the Canvas
+        [SerializeField] private Animator m_Animator;                                    //! Animator for this screen, should control intro, outro, etc.
+        [SerializeField] private bool m_CanBack;                                         //! Can this screen navigate backwards?
         public bool CanNavigateBack { get { return m_CanBack; } }
 
+        [SerializeField] protected bool m_ControlledBySinglePlayer = true;                //! Should the screen navigation only be controlled by a single player?
         [SerializeField] protected List<UIPromptInfo> m_PromptInfo;
 
         protected UIScreenAnimState m_ActiveState;
@@ -135,7 +125,7 @@ namespace UI
         /// <param name="data"></param>
         protected virtual void OnInputUpdate(InputActionEventData data)
         {
-            if (InputLocked()) return;
+            if (ScreenInputLocked() || (m_ControlledBySinglePlayer && data.playerId != 0)) return;
 
             switch (data.actionId)
             {
@@ -243,9 +233,9 @@ namespace UI
             return param;
         }
 
-        protected bool InputLocked()
+        protected bool ScreenInputLocked()
         {
-            return UIManager.Instance.IsInputLocked || UIManager.Instance.IsAnimationLocked;
+            return UIManager.Instance.IsInputLocked || UIManager.Instance.IsAnimationLocked || PopupManager.Instance.PopupOpen;
         }
     }
 }

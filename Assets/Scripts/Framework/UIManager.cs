@@ -30,6 +30,7 @@ public class UIManager : Singleton<UIManager>
     public bool IsAnimationLocked { get { return m_AnimationLock; } set { m_AnimationLock = value; } }
     public bool IsInputLocked { get { return m_InputLock; } set { m_InputLock = value; } }
     public bool IsPrefabLoadingLocked { get { return m_PrefabLoadingLock; } set { m_PrefabLoadingLock = value; } }
+    public UI.Enums.ScreenId ScreenAfterLoadID = ScreenId.None;
 
     public override void Awake()
     {

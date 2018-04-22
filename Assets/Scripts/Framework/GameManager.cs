@@ -26,6 +26,7 @@ public class GameManager : Singleton<GameManager>
 
         // start the flow
         SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Main);
+        UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Company);
     }
 
     private void OnSceneLoaded(UIEvents.SceneLoadedEvent e)
@@ -33,7 +34,7 @@ public class GameManager : Singleton<GameManager>
         switch (e.LoadedScene)
         {
             case Enums.eScene.Main:
-                UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Company);
+                //UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Company);
                 break;
 
             default:

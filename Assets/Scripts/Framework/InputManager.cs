@@ -11,7 +11,7 @@ public class InputManager : Singleton<InputManager>
     /// Constants
     ///////////////////////////////////////////////////////////////////
     public static readonly string Identifier = "InputManager";
-
+    public static readonly int MaxPlayerCount = 4;
     public static readonly int PrimaryPlayerId = 0;
 
     ///////////////////////////////////////////////////////////////////
@@ -22,9 +22,7 @@ public class InputManager : Singleton<InputManager>
     /// Private Member Variables
     ///////////////////////////////////////////////////////////////////
 
-    private Rewired.Player m_RewiredPlayer;                                     //! Reference of the main player.
-    public Rewired.Player RewiredPlayer { get { return m_RewiredPlayer; } }
-
+    private List<Rewired.Player> m_RewiredPlayers;
     private List<Action<InputActionEventData>> m_InputDelegateCache;    //! Use this to ensure we clear all delegates if the input manager is shut down before they are removed from the player.
 
     ///////////////////////////////////////////////////////////////////
@@ -33,7 +31,16 @@ public class InputManager : Singleton<InputManager>
 
     public override void Awake()
     {
-        m_RewiredPlayer = ReInput.players.GetPlayer(InputManager.PrimaryPlayerId);
+        m_RewiredPlayers = new List<Rewired.Player>(MaxPlayerCount);
+        for (int i = 0; i < MaxPlayerCount; i++)
+        {
+            Rewired.Player p = ReInput.players.GetPlayer(i);
+            if (p != null)
+            {
+                m_RewiredPlayers.Add(p);
+            }
+        }
+
         m_InputDelegateCache = new List<Action<InputActionEventData>>();
 
         Debug.AssertFormat(ValidateManager() != false, "{0} : Failed to validate, please ensure that all required components are set and not null.", InputManager.Identifier);
@@ -46,11 +53,14 @@ public class InputManager : Singleton<InputManager>
         //m_RewiredPlayer.RemoveInputEventDelegate(OnMouseInput);
 
         // When we shut down, let's take care of all this junk.
-        if (m_RewiredPlayer != null && m_InputDelegateCache != null && m_InputDelegateCache.Count > 0)
+        if (m_RewiredPlayers.Count > 0 && m_InputDelegateCache != null && m_InputDelegateCache.Count > 0)
         {
             for (int i = 0; i < m_InputDelegateCache.Count; ++i)
             {
-                m_RewiredPlayer.RemoveInputEventDelegate(m_InputDelegateCache[i]);
+                for (int j = 0; j < m_RewiredPlayers.Count; j++)
+                {
+                    m_RewiredPlayers[i].RemoveInputEventDelegate(m_InputDelegateCache[i]);
+                }
             }
             m_InputDelegateCache.Clear();
         }
@@ -71,7 +81,7 @@ public class InputManager : Singleton<InputManager>
     {
         bool isValid = true;
 
-        isValid = isValid && (m_RewiredPlayer != null);
+        isValid = isValid && (m_RewiredPlayers.Count > 0);
         isValid = isValid && base.ValidateManager();
 
         return isValid;
@@ -89,11 +99,14 @@ public class InputManager : Singleton<InputManager>
     /// <param name="updateType"></param>
     public void AddInputEventDelegate(Action<InputActionEventData> inputDelegate, UpdateLoopType updateType)
     {
-        Debug.Assert(m_RewiredPlayer != null, "Rewired Player is null, cannot add input delegate!");
+        Debug.Assert(m_RewiredPlayers.Count > 0 && m_InputDelegateCache != null, "No Rewired players found, cannot add input delegate!");
 
-        if(m_RewiredPlayer != null)
+        if (m_InputDelegateCache != null)
         {
-            m_RewiredPlayer.AddInputEventDelegate(inputDelegate, updateType);
+            for (int i = 0; i < m_RewiredPlayers.Count; i++)
+            {
+                m_RewiredPlayers[i].AddInputEventDelegate(inputDelegate, updateType);
+            }
 
             m_InputDelegateCache.Add(inputDelegate);
         }
@@ -105,11 +118,14 @@ public class InputManager : Singleton<InputManager>
     /// <param name="inputDelegate"></param>
     public void RemoveInputEventDelegate(Action<InputActionEventData> inputDelegate)
     {
-        Debug.Assert(m_RewiredPlayer != null && m_InputDelegateCache != null, "Rewired Player is null, or input cache is null cannot add input delegate!");
+        Debug.Assert(m_RewiredPlayers.Count > 0 && m_InputDelegateCache != null, "Rewired Player is null, or input cache is null cannot add input delegate!");
 
-        if (m_RewiredPlayer != null && m_InputDelegateCache != null)
+        if (m_InputDelegateCache != null)
         {
-            m_RewiredPlayer.RemoveInputEventDelegate(inputDelegate);
+            for (int i = 0; i < m_RewiredPlayers.Count; i++)
+            {
+                m_RewiredPlayers[i].RemoveInputEventDelegate(inputDelegate);
+            }
 
             bool didRemove = m_InputDelegateCache.Remove(inputDelegate);
 

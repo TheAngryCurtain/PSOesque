@@ -48,7 +48,9 @@ public class TitleScreen : UIBaseScreen
         {
 			case eMenuOption.Offline:
 			case eMenuOption.Online:
+                UIManager.Instance.ScreenAfterLoadID = ScreenId.Lobby;
                 UIManager.Instance.TransitionToScreen(ScreenId.Loading);
+
                 SceneLoader.Instance.RequestSceneLoadAsync(Enums.eScene.Lobby);
                 break;
 
@@ -62,7 +64,7 @@ public class TitleScreen : UIBaseScreen
 
     protected override void OnInputUpdate(InputActionEventData data)
     {
-        if (InputLocked()) return;
+        if (ScreenInputLocked() || (m_ControlledBySinglePlayer && data.playerId != 0 )) return;
 
         bool handled = false;
         if (m_State == eScreenState.Title)

@@ -38,7 +38,7 @@ public class LegalScreen : UIBaseScreen
 
     protected override void OnInputUpdate(InputActionEventData data)
     {
-        if (InputLocked()) return;
+        if (ScreenInputLocked() || (m_ControlledBySinglePlayer && data.playerId != 0)) return;
 
         bool handled = false;
         switch (data.actionId)

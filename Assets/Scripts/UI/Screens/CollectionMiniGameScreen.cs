@@ -229,7 +229,7 @@ public class CollectionMiniGameScreen : UIBaseScreen
 
     protected override void OnInputUpdate(InputActionEventData data)
 	{
-		if (InputLocked()) return;
+		if (ScreenInputLocked()) return;
 
 		bool handled = false;
 

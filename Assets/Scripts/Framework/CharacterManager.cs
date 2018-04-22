@@ -5,14 +5,17 @@ using UnityEditor;
 
 public class CharacterManager : Singleton<CharacterManager>
 {
+    // TODO
+    // will need to store multiple character saves for offline multiplayer
+
     public Character PlayerCharacter { get { return m_RegisteredCharacters[0]; } }
-    public CharacterProgress PlayerCharacterProgress { get { return m_CharacterProgress; } }
 
     public bool DebugGUI = false;
 
     private List<Character> m_RegisteredCharacters;
 
     private CharacterProgress m_CharacterProgress;
+    private List<CharacterProgress> m_GuestCharacterProgress; // temporary?
 
     private Dictionary<int, CharacterClassStatsPreset> m_ClassPresets;
     private Dictionary<int, CharacterRaceStatsPreset> m_RacePresets;
@@ -34,6 +37,7 @@ public class CharacterManager : Singleton<CharacterManager>
     public override void Awake()
     {
         m_RegisteredCharacters = new List<Character>();
+        m_GuestCharacterProgress = new List<CharacterProgress>();
 
         LoadClassPresets();
         LoadRacePresets();
@@ -117,6 +121,33 @@ public class CharacterManager : Singleton<CharacterManager>
         e.AddedCallback(successful);
 
         Debug.LogFormat("Adding {0} successful? {1}", e.Item.Name, successful);
+    }
+
+    // for testing local multiplayer
+    private void GenerateGuestCharacter()
+    {
+        CharacterProgress guestProgress = new CharacterProgress();
+        guestProgress.Init();
+
+        m_GuestCharacterProgress.Add(guestProgress);
+    }
+
+    // also for testing local multiplayer
+    public CharacterProgress GetProgressForCharacterWithID(int id)
+    {
+        if (id == 0)
+        {
+            return m_CharacterProgress;
+        }
+        else
+        {
+            if (m_GuestCharacterProgress.Count < id)
+            {
+                GenerateGuestCharacter();
+            }
+
+            return m_GuestCharacterProgress[id - 1];
+        }
     }
 
     #region Test Names

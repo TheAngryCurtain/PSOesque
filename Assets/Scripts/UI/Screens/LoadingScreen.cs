@@ -10,12 +10,15 @@ public class LoadingScreen : UIBaseScreen
     [SerializeField] private Transform m_ReticleTransform;
     [SerializeField] private float m_MoveSpeed = 8f;
 
+    private UI.Enums.ScreenId m_PostLoadScreenId;
     private float m_Horizontal;
     private float m_Vertical;
 
     public override void Initialize()
     {
         base.Initialize();
+
+        m_PostLoadScreenId = UIManager.Instance.ScreenAfterLoadID;
 
         // for now, wait 2 seconds and move to the next screen. Will likely need to change this to an async load later
         Invoke("Advance", 2f);
@@ -28,7 +31,7 @@ public class LoadingScreen : UIBaseScreen
 
     protected override void OnInputUpdate(InputActionEventData data)
 	{
-		if (InputLocked()) return;
+		if (ScreenInputLocked()) return; // can be controlled by any player
 
 		bool handled = false;
 
@@ -60,6 +63,12 @@ public class LoadingScreen : UIBaseScreen
 
     private void Advance()
     {
-        UIManager.Instance.TransitionToScreen(UI.Enums.ScreenId.Lobby);
+        if (m_PostLoadScreenId != UI.Enums.ScreenId.None)
+        {
+            UIManager.Instance.TransitionToScreen(m_PostLoadScreenId);
+
+            // clear
+            UIManager.Instance.ScreenAfterLoadID = UI.Enums.ScreenId.None;
+        }
     }
 }
