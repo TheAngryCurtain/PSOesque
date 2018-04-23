@@ -14,6 +14,10 @@ public class LoadingScreen : UIBaseScreen
     private float m_Horizontal;
     private float m_Vertical;
 
+    private float m_MinLoadTime = 1f;
+    private float m_LoadStartTime = 0f;
+    private float m_TotalLoadTime = 0f;
+
     public override void Initialize(object[] screenParams)
     {
         base.Initialize(screenParams);
@@ -23,25 +27,36 @@ public class LoadingScreen : UIBaseScreen
         {
             // check for an scene to load while in this screen
             Enums.eScene scene = (Enums.eScene)screenParams[1];
-            bool loadAsync = (bool)screenParams[2];
 
-            if (loadAsync)
+            VSEventManager.Instance.AddListener<UIEvents.AsyncSceneLoadProgressEvent>(OnLoadProgress);
+
+            m_LoadStartTime = Time.time;
+            SceneLoader.Instance.RequestSceneLoadAsync(scene);
+        }
+    }
+
+    private void OnLoadProgress(UIEvents.AsyncSceneLoadProgressEvent e)
+    {
+        if (e.Progress >= 0.9f)
+        {
+            m_TotalLoadTime = Time.time - m_LoadStartTime;
+            if (m_TotalLoadTime < m_MinLoadTime)
             {
-                SceneLoader.Instance.RequestSceneLoadAsync(scene);
+                float deltaTime = m_MinLoadTime - m_TotalLoadTime;
+                Invoke("Advance", deltaTime);
             }
             else
             {
-                SceneLoader.Instance.RequestSceneLoad(scene);
+                Advance();
             }
         }
-
-        // for now, wait 2 seconds and move to the next screen. Will likely need to change this to an async load later
-        Invoke("Advance", 2f);
     }
 
     public override void Shutdown()
     {
         base.Shutdown();
+
+        VSEventManager.Instance.RemoveListener<UIEvents.AsyncSceneLoadProgressEvent>(OnLoadProgress);
     }
 
     protected override void OnInputUpdate(InputActionEventData data)

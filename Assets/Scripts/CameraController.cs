@@ -29,12 +29,19 @@ public class CameraController : MonoBehaviour
         VSEventManager.Instance.AddListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
 
         VSEventManager.Instance.AddListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
+
+        // TODO
+        // remove this later when a skybox actually goes in
+        Camera.main.clearFlags = CameraClearFlags.SolidColor;
     }
 
     private void OnDisable()
     {
         VSEventManager.Instance.RemoveListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
         VSEventManager.Instance.RemoveListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
+
+        // also remove this
+        Camera.main.clearFlags = CameraClearFlags.Skybox;
     }
 
     private void OnDoorOpened(GameEvents.DoorOpenedEvent e)

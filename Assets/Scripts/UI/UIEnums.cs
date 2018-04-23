@@ -10,6 +10,7 @@
             Title,
             Loading,
 			Lobby,
+            HUD,
             CollectionMiniGame
         }
 

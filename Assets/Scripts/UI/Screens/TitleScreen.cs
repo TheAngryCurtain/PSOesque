@@ -51,8 +51,7 @@ public class TitleScreen : UIBaseScreen
                 object[] screenParams = new object[]
                 {
                     UI.Enums.ScreenId.Lobby,
-                    Enums.eScene.Lobby,
-                    true // async load?
+                    Enums.eScene.Lobby
                 };
 
                 UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);

@@ -19,8 +19,6 @@ public class LobbyScreen : UIBaseScreen
 
     private void UpdateConfirmed(int index, bool confirmed)
     {
-        // TODO update player name bar things
-
         LobbyManager.Instance.SetConfirmed(index, confirmed);
     }
 
@@ -131,10 +129,13 @@ public class LobbyScreen : UIBaseScreen
     {
         if (result)
         {
-            //object[] screenParams = new object[] { UI.Enums.ScreenId.HUD };
-            UIManager.Instance.TransitionToScreen(ScreenId.Loading); // put screen params in here
+            object[] screenParams = new object[]
+            {
+                UI.Enums.ScreenId.HUD,
+                Enums.eScene.Game
+            };
 
-            SceneLoader.Instance.RequestSceneLoad(Enums.eScene.Game);
+            UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
         }
 
         PopupManager.Instance.ClosePopup();
@@ -154,8 +155,7 @@ public class LobbyScreen : UIBaseScreen
             object[] screenParams = new object[]
             {
                 UI.Enums.ScreenId.Title,
-                Enums.eScene.Main,
-                false // async load?
+                Enums.eScene.Main
             };
 
             UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);

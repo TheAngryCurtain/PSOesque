@@ -279,13 +279,4 @@ public class UIManager : Singleton<UIManager>
 
         m_PromptsBarAnimator.SetTrigger("Intro");
     }
-
-    public void LoadLevelWithScreen(int locationIndex, UI.Enums.ScreenId screenToLoad)
-    {
-        ClearScreenStack();
-
-        //GameManager.Instance.m_LocationIndex = locationIndex;
-        //GameManager.Instance.m_ScreenIDToLoad = screenToLoad;
-        //TransitionToScreen(UI.Enums.ScreenId.Loading);
-    }
 }

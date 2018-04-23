@@ -10,16 +10,6 @@ public class GameManager : Singleton<GameManager>
     // build some game save class that stores a world seed, and then spawns dungeon seeds from that
     private int dungeonSeed = 0;
 
-    public override void Awake()
-    {
-        base.Awake();
-
-        for (int i = 0; i < m_FactoryPrefabs.Length; i++)
-        {
-            Instantiate(m_FactoryPrefabs[i], null);
-        }
-    }
-
     private void Start()
     {
         VSEventManager.Instance.AddListener<UIEvents.SceneLoadedEvent>(OnSceneLoaded);
@@ -31,6 +21,16 @@ public class GameManager : Singleton<GameManager>
 
     private void OnSceneLoaded(UIEvents.SceneLoadedEvent e)
     {
-        // probably don't need this
+        switch (e.LoadedScene)
+        {
+            case Enums.eScene.Game:
+                for (int i = 0; i < m_FactoryPrefabs.Length; i++)
+                {
+                    Instantiate(m_FactoryPrefabs[i], null);
+                }
+
+                VSEventManager.Instance.TriggerEvent(new GameEvents.RequestDungeonEvent(dungeonSeed, Enums.eLevelTheme.Forest));
+                break;
+        }
     }
 }
