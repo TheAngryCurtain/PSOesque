@@ -11,4 +11,9 @@ public class Player : PlayableCharacter
         SetActive(true);
         VSEventManager.Instance.TriggerEvent(new GameEvents.PlayerSpawnedEvent(this.gameObject));
     }
+
+    public void Init(int playerId)
+    {
+        m_PlayerId = playerId;
+    }
 }

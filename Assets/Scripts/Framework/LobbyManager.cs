@@ -43,6 +43,8 @@ public class LobbyManager : Singleton<LobbyManager>
 
     public override void Awake()
     {
+        base.Awake();
+
         m_PlayerData = new PlayerLobbyData[MAX_PLAYERS];
     }
 

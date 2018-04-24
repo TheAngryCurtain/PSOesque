@@ -3,9 +3,9 @@ using Rewired;
 
 public class PlayableCharacter : Character
 {
-    [SerializeField]
-    private WorldSpaceCallout m_Callout;
+    [SerializeField] private WorldSpaceCallout m_Callout;
 
+    protected int m_PlayerId;
     protected Vector3 m_Movement = Vector3.zero;
 
     protected float m_Horizontal = 0f;
@@ -43,34 +43,37 @@ public class PlayableCharacter : Character
 
     protected virtual void OnInputUpdate(InputActionEventData data)
     {
-        switch (data.actionId)
+        if (data.playerId == m_PlayerId)
         {
-            case RewiredConsts.Action.Move_Horizontal:
-                m_Horizontal = data.GetAxis();
-                break;
+            switch (data.actionId)
+            {
+                case RewiredConsts.Action.Move_Horizontal:
+                    m_Horizontal = data.GetAxis();
+                    break;
 
-            case RewiredConsts.Action.Move_Vertical:
-                m_Vertical = data.GetAxis();
-                break;
+                case RewiredConsts.Action.Move_Vertical:
+                    m_Vertical = data.GetAxis();
+                    break;
 
-            case RewiredConsts.Action.Interact:
-                if (data.GetButtonDown())
-                {
-                    if (m_CurrentInteractable != null)
+                case RewiredConsts.Action.Interact:
+                    if (data.GetButtonDown())
                     {
-                        m_CurrentInteractable.Interact(m_Callout);
-                        m_CurrentInteractable = null;
+                        if (m_CurrentInteractable != null)
+                        {
+                            m_CurrentInteractable.Interact(m_Callout);
+                            m_CurrentInteractable = null;
+                        }
                     }
-                }
-                break;
+                    break;
+            }
+
+            m_Movement = m_CamTransform.forward * m_Vertical + m_CamTransform.right * m_Horizontal;
+            m_Movement.y = 0f;
         }
     }
 
     protected virtual void FixedUpdate()
     {
-        m_Movement = m_CamTransform.forward * m_Vertical + m_CamTransform.right * m_Horizontal;
-        m_Movement.y = 0f;
-
         Move(m_Movement.normalized);
     }
 

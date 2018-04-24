@@ -33,7 +33,15 @@ public class CharacterFactory : MonoBehaviour
         // this should get moved to some other event when the item is equipped, so this is spawned
         Instantiate(m_CompanionPrefab, null);
 
-        Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
+        int connectedPlayerCount = LobbyManager.Instance.ConnectedPlayerCount;
+        for (int i = 0; i < connectedPlayerCount; i++)
+        {
+            GameObject playerObj = (GameObject)Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
+            Player p = playerObj.GetComponent<Player>();
+            p.Init(i);
+
+            // need to do something about the camera for splitscreen, if an offline game
+        }
     }
 
     private void OnAttackLanded(GameEvents.AttackLandedEvent e)

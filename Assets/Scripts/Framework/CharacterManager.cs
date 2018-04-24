@@ -36,6 +36,8 @@ public class CharacterManager : Singleton<CharacterManager>
 
     public override void Awake()
     {
+        base.Awake();
+
         m_RegisteredCharacters = new List<Character>();
         m_GuestCharacterProgress = new List<CharacterProgress>();
 

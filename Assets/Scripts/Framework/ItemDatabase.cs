@@ -9,10 +9,9 @@ public class ItemDatabase : Singleton<ItemDatabase>
 
     public override void Awake()
     {
-        itemDataXMLPath = Application.streamingAssetsPath + "/XML/ItemDatabase.xml";
-
         base.Awake();
 
+        itemDataXMLPath = Application.streamingAssetsPath + "/XML/ItemDatabase.xml";
         LoadItems();
     }
 
