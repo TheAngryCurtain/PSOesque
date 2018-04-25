@@ -27,20 +27,42 @@ public class CharacterFactory : MonoBehaviour
     private void OnDungeonBuilt(GameEvents.DungeonBuiltEvent e)
     {
         //Instantiate(m_CameraPrefab, null);
-        CameraManager.Instance.ToggleCameraSettings(true);
+        //CameraManager.Instance.ToggleCameraSettings(true);
 
         // TODO
         // this should get moved to some other event when the item is equipped, so this is spawned
         Instantiate(m_CompanionPrefab, null);
 
-        int connectedPlayerCount = LobbyManager.Instance.ConnectedPlayerCount;
-        for (int i = 0; i < connectedPlayerCount; i++)
+        if (LobbyManager.Instance.OfflineGame)
         {
-            GameObject playerObj = (GameObject)Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
-            Player p = playerObj.GetComponent<Player>();
-            p.Init(i);
+            int connectedPlayerCount = LobbyManager.Instance.ConnectedPlayerCount;
+            for (int i = 0; i < connectedPlayerCount; i++)
+            {
+                GameObject playerObj = (GameObject)Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
+                GameObject playerCam = (GameObject)Instantiate(m_CameraPrefab, CameraManager.Instance.MainCamera.transform);
 
-            // need to do something about the camera for splitscreen, if an offline game
+                CameraController camController = playerCam.GetComponent<CameraController>();
+                if (camController != null)
+                {
+                    camController.SetPlayerInfo(i, playerObj.transform);
+                    if (connectedPlayerCount > 1)
+                    {
+                        Camera camera = playerCam.GetComponent<Camera>();
+                        if (camera != null)
+                        {
+                            PlayerCameraData camData = CameraManager.Instance.GetCameraDataForPlayer(i, connectedPlayerCount - 1);
+                            camera.rect = new Rect(camData.X, camData.Y, camData.W, camData.H);
+                        }
+                    }
+                }
+
+                Player p = playerObj.GetComponent<Player>();
+                if (p != null)
+                {
+                    p.Init(i);
+                    p.AssignCamera(playerCam.transform);
+                }
+            }
         }
     }
 

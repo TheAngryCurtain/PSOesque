@@ -27,6 +27,8 @@ public class LobbyManager : Singleton<LobbyManager>
 {
     public int MAX_PLAYERS = 4;
     public bool AllPlayersReady { get { return  m_ConnectedPlayerCount > 0 &&  m_ReadyPlayerCount == m_ConnectedPlayerCount; } }
+    public int ConnectedPlayerCount { get { return m_ConnectedPlayerCount; } }
+    public bool OfflineGame = true; // TODO this will need to be changed when networking happens
 
     public System.Action<PlayerLobbyData> OnPlayerAdded;
     public System.Action<PlayerLobbyData> OnPlayerRemoved;
@@ -38,7 +40,6 @@ public class LobbyManager : Singleton<LobbyManager>
 
     private PlayerLobbyData[] m_PlayerData;
     private int m_ConnectedPlayerCount = 0;
-    public int ConnectedPlayerCount { get { return m_ConnectedPlayerCount; } }
     private int m_ReadyPlayerCount = 0;
 
     public override void Awake()
@@ -115,6 +116,7 @@ public class LobbyManager : Singleton<LobbyManager>
         // some sort of cool particle or shader effect here
         GameObject temp = GameObject.CreatePrimitive(PrimitiveType.Capsule);
         temp.transform.position = data.m_PadTransform.position + Vector3.up;
+        temp.layer = LayerMask.NameToLayer("UI");
         data.m_PlayerModelObj = temp;
 
         // change pad color

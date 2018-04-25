@@ -21,12 +21,12 @@ public class CameraController : MonoBehaviour
     private eCameraMode m_CameraMode = eCameraMode.Free;
 
     private Transform m_PlayerTransform;
+    private int m_PlayerId;
     private float m_LerpSpeed = 1f;
 
     private void OnEnable()
     {
         InputManager.Instance.AddInputEventDelegate(OnInputUpdate, Rewired.UpdateLoopType.Update);
-        VSEventManager.Instance.AddListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
 
         VSEventManager.Instance.AddListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
 
@@ -37,11 +37,18 @@ public class CameraController : MonoBehaviour
 
     private void OnDisable()
     {
-        VSEventManager.Instance.RemoveListener<GameEvents.PlayerSpawnedEvent>(OnPlayerSpawned);
         VSEventManager.Instance.RemoveListener<GameEvents.DoorOpenedEvent>(OnDoorOpened);
 
         // also remove this
         Camera.main.clearFlags = CameraClearFlags.Skybox;
+    }
+
+    public void SetPlayerInfo(int id, Transform t)
+    {
+        m_PlayerId = id;
+        m_PlayerTransform = t;
+
+        m_Target = m_PlayerTransform;
     }
 
     private void OnDoorOpened(GameEvents.DoorOpenedEvent e)
@@ -64,12 +71,6 @@ public class CameraController : MonoBehaviour
         m_Target = target;
     }
 
-    private void OnPlayerSpawned(GameEvents.PlayerSpawnedEvent e)
-    {
-        m_PlayerTransform = e.PlayerObj.transform;
-        m_Target = m_PlayerTransform;
-    }
-
     public void SetLockTarget(Transform lockObj)
     {
         m_LockObject = lockObj;
@@ -77,30 +78,33 @@ public class CameraController : MonoBehaviour
 
     private void OnInputUpdate(InputActionEventData data)
     {
-        if (m_CameraMode == eCameraMode.Free)
+        if (m_PlayerId == data.playerId)
         {
-            float horizontal = 0f;
-            float vertical = 0f;
-
-            switch (data.actionId)
+            if (m_CameraMode == eCameraMode.Free)
             {
-                case RewiredConsts.Action.Camera_Horizontal:
-                    horizontal = data.GetAxis();
-                    break;
+                float horizontal = 0f;
+                float vertical = 0f;
 
-                case RewiredConsts.Action.Camera_Vertical:
-                    vertical = data.GetAxis();
-                    break;
+                switch (data.actionId)
+                {
+                    case RewiredConsts.Action.Camera_Horizontal:
+                        horizontal = data.GetAxis();
+                        break;
+
+                    case RewiredConsts.Action.Camera_Vertical:
+                        vertical = data.GetAxis();
+                        break;
+                }
+
+                m_CurrentYaw += horizontal * m_YawSpeed * Time.deltaTime;
+
+                m_Offset.y += vertical * -1f * Time.deltaTime;
+                m_Offset.y = Mathf.Clamp(m_Offset.y, -3f, -0.75f);
             }
-
-            m_CurrentYaw += horizontal * m_YawSpeed * Time.deltaTime;
-
-            m_Offset.y += vertical * -1f * Time.deltaTime;
-            m_Offset.y = Mathf.Clamp(m_Offset.y, -3f, -0.75f);
-        }
-        else
-        {
-            m_CurrentYaw = 0f;
+            else
+            {
+                m_CurrentYaw = 0f;
+            }
         }
     }
 

@@ -19,9 +19,11 @@ public class PlayableCharacter : Character
         base.Awake();
 
         CharacterManager.Instance.RegisterCharacter(this);
+    }
 
-        // TODO do this better
-        m_CamTransform = Camera.main.transform;
+    public void AssignCamera(Transform cam)
+    {
+        m_CamTransform = cam;
     }
 
     public void SetActive(bool active)

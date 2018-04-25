@@ -50,7 +50,7 @@ public class TimeKeeper : MonoBehaviour
 #if UNITY_EDITOR
     private void OnGUI()
     {
-        //GUI.Label(new Rect(10, 10, 200, 200), "Current Time: " + m_Time.ToString());
+        GUI.Label(new Rect(10, 10, 200, 200), "Current Time: " + m_Time.ToString());
     }
 #endif
 
@@ -64,8 +64,7 @@ public class TimeKeeper : MonoBehaviour
     {
         // currentTime is in the range [0,1], so 0.25f increments represent 6 hours
         // 0 (0am) is midnight, 0.25 (6am) is sunrise, 0.5(12pm) is noon, 0.87(9pm) is sunset
-        //m_Time = DateTime.Now.TimeOfDay;
-        m_Time = new TimeSpan(14, 0, 0);
+        m_Time = DateTime.Now.TimeOfDay;
 
         float totalSeconds = (m_Time.Seconds + (m_Time.Minutes * 60f) + (m_Time.Hours * 60f * 60f));
         m_CurrentTime = (totalSeconds / m_SecondsInDay);// * m_TimeMultiplier;
