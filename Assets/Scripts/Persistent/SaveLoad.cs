@@ -19,7 +19,7 @@ public static class SaveLoad
         }
     }
 
-    public static void SaveCharacterProgress(CharacterProgress progress)
+    public static void SaveCharacterProgress(CharacterProgressData progress)
     {
         FileStream file = File.Create(Application.persistentDataPath + m_CharacterPath);
         m_Formatter.Serialize(file, progress);
@@ -33,12 +33,12 @@ public static class SaveLoad
         file.Close();
     }
 
-    public static CharacterProgress LoadCharacterProgress()
+    public static CharacterProgressData LoadCharacterProgress()
     {
         if (File.Exists(Application.persistentDataPath + m_CharacterPath))
         {
             FileStream file = File.Open(Application.persistentDataPath + m_CharacterPath, FileMode.Open);
-            CharacterProgress progress = (CharacterProgress)m_Formatter.Deserialize(file);
+            CharacterProgressData progress = (CharacterProgressData)m_Formatter.Deserialize(file);
             file.Close();
 
             return progress;

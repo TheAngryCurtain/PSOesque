@@ -77,14 +77,13 @@ public class Inventory
         return hasUsable;
     }
 
-    public void UseItem(InventoryItem i)
+    public void UseItem(InventoryItem i, Character target)
     {
         IUsable item = (IUsable)i;
-        PlayableCharacter player = (PlayableCharacter)CharacterManager.Instance.PlayerCharacter;
 
-        if (player != null)
+        if (target != null)
         {
-            item.Use(player);
+            item.Use(target);
         }
         else
         {

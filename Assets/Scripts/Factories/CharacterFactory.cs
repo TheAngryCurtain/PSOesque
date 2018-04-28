@@ -59,7 +59,7 @@ public class CharacterFactory : MonoBehaviour
                 Player p = playerObj.GetComponent<Player>();
                 if (p != null)
                 {
-                    p.Init(i);
+                    p.Init(i, LobbyManager.Instance.GetLobbyDataForPlayer(i).m_SaveSlot);
                     p.AssignCamera(playerCam.transform);
                 }
             }

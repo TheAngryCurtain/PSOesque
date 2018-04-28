@@ -30,7 +30,7 @@ public class Switch : RoomObject, IInteractable
         callout.Show(false);
     }
 
-    public void Interact(WorldSpaceCallout callout)
+    public void Interact(WorldSpaceCallout callout, int characterSaveSlot)
     {
         if (!m_Used)
         {

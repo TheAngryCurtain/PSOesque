@@ -156,12 +156,14 @@ public class GameEvents
     {
         public InventoryItem Item;
         public int Quantity;
+        public int SaveSlot;
         public System.Action<bool> AddedCallback;
 
-        public UpdateInventoryEvent(InventoryItem item, int quantity, System.Action<bool> callback)
+        public UpdateInventoryEvent(InventoryItem item, int quantity, int saveSlot, System.Action<bool> callback)
         {
             Item = item;
             Quantity = quantity;
+            SaveSlot = saveSlot;
             AddedCallback = callback;
         }
     }

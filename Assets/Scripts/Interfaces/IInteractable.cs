@@ -6,7 +6,7 @@ public interface IInteractable
 {
     void Highlight(WorldSpaceCallout callout);
     void Unhighlight(WorldSpaceCallout callout);
-    void Interact(WorldSpaceCallout callout);
+    void Interact(WorldSpaceCallout callout, int characterSaveSlot);
 }
 
 public interface IUsable

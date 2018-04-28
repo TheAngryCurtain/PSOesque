@@ -6,6 +6,8 @@ public class PlayableCharacter : Character
     [SerializeField] private WorldSpaceCallout m_Callout;
 
     protected int m_PlayerId;
+    protected int m_SaveSlot;
+
     protected Vector3 m_Movement = Vector3.zero;
 
     protected float m_Horizontal = 0f;
@@ -26,7 +28,7 @@ public class PlayableCharacter : Character
         m_CamTransform = cam;
     }
 
-    public void SetActive(bool active)
+    public void SetPlayerActive(bool active)
     {
         if (active)
         {
@@ -62,7 +64,7 @@ public class PlayableCharacter : Character
                     {
                         if (m_CurrentInteractable != null)
                         {
-                            m_CurrentInteractable.Interact(m_Callout);
+                            m_CurrentInteractable.Interact(m_Callout, m_SaveSlot);
                             m_CurrentInteractable = null;
                         }
                     }

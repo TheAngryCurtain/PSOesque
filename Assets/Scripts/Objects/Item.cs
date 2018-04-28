@@ -34,9 +34,9 @@ public class Item : MonoBehaviour, IInteractable
         callout.Show(false);
     }
 
-    public void Interact(WorldSpaceCallout callout)
+    public void Interact(WorldSpaceCallout callout, int characterSaveSlot)
     {
-        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateInventoryEvent(m_Item, 1, AddedItemResult));
+        VSEventManager.Instance.TriggerEvent(new GameEvents.UpdateInventoryEvent(m_Item, 1, characterSaveSlot, AddedItemResult));
 
         Unhighlight(callout);
     }

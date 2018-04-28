@@ -5,17 +5,12 @@ using UnityEditor;
 
 public class CharacterManager : Singleton<CharacterManager>
 {
-    // TODO
-    // will need to store multiple character saves for offline multiplayer
-
-    public Character PlayerCharacter { get { return m_RegisteredCharacters[0]; } }
-
     public bool DebugGUI = false;
 
     private List<Character> m_RegisteredCharacters;
 
-    private CharacterProgress m_CharacterProgress;
-    private List<CharacterProgress> m_GuestCharacterProgress; // temporary?
+    private CharacterProgressData m_CharacterData;
+    private List<CharacterProgress> m_ActivePlayerProgress;
 
     private Dictionary<int, CharacterClassStatsPreset> m_ClassPresets;
     private Dictionary<int, CharacterRaceStatsPreset> m_RacePresets;
@@ -38,8 +33,8 @@ public class CharacterManager : Singleton<CharacterManager>
     {
         base.Awake();
 
+        m_ActivePlayerProgress = new List<CharacterProgress>(LobbyManager.MAX_PLAYERS);
         m_RegisteredCharacters = new List<Character>();
-        m_GuestCharacterProgress = new List<CharacterProgress>();
 
         LoadClassPresets();
         LoadRacePresets();
@@ -88,11 +83,11 @@ public class CharacterManager : Singleton<CharacterManager>
 
     private void LoadCharacterProgress()
     {
-        m_CharacterProgress = SaveLoad.LoadCharacterProgress();
-        if (m_CharacterProgress == null)
+        m_CharacterData = SaveLoad.LoadCharacterProgress();
+        if (m_CharacterData == null)
         {
-            m_CharacterProgress = new CharacterProgress();
-            m_CharacterProgress.Init();
+            m_CharacterData = new CharacterProgressData();
+            m_CharacterData.Init();
 
             SaveCharacterProgress();
         }
@@ -109,7 +104,7 @@ public class CharacterManager : Singleton<CharacterManager>
 
     private void SaveCharacterProgress()
     {
-        SaveLoad.SaveCharacterProgress(m_CharacterProgress);
+        SaveLoad.SaveCharacterProgress(m_CharacterData);
     }
 
     private void OnCharacterStatUpdated(GameEvents.UpdateCharacterStatEvent e)
@@ -119,37 +114,23 @@ public class CharacterManager : Singleton<CharacterManager>
 
     private void OnInventoryUpdated(GameEvents.UpdateInventoryEvent e)
     {
-        bool successful = m_CharacterProgress.m_Inventory.Add(e.Item);
+        Inventory inventory = m_CharacterData.GetCharacterProgressInSlot(e.SaveSlot).m_Inventory;
+        bool successful = inventory.Add(e.Item);
         e.AddedCallback(successful);
 
         Debug.LogFormat("Adding {0} successful? {1}", e.Item.Name, successful);
     }
 
-    // for testing local multiplayer
-    private void GenerateGuestCharacter()
+    // also for testing local multiplayer
+    public CharacterProgress GetProgressForCharacterInSlot(int slot)
     {
-        CharacterProgress guestProgress = new CharacterProgress();
-        guestProgress.Init();
-
-        m_GuestCharacterProgress.Add(guestProgress);
+        return m_CharacterData.GetCharacterProgressInSlot(slot);
     }
 
     // also for testing local multiplayer
-    public CharacterProgress GetProgressForCharacterWithID(int id)
+    public void AddCharacterProgressInSlot(CharacterProgress progress)
     {
-        if (id == 0)
-        {
-            return m_CharacterProgress;
-        }
-        else
-        {
-            if (m_GuestCharacterProgress.Count < id)
-            {
-                GenerateGuestCharacter();
-            }
-
-            return m_GuestCharacterProgress[id - 1];
-        }
+        m_CharacterData.AddCharacterProgress(progress);
     }
 
     #region Test Names
@@ -204,105 +185,116 @@ public class CharacterManager : Singleton<CharacterManager>
     private int itemID = -1;
     private int itemQuantity = 1;
     private string itemName = string.Empty;
+    private int currentPlayerID = 0;
 
     private void OnGUI()
     {
-        if (DebugGUI && m_CharacterProgress != null)
+        if (DebugGUI && m_CharacterData != null)
         {
-            // Inventory --------------------------------------------------------
-            int count = m_CharacterProgress.m_Inventory.Count;
-            GUI.Label(new Rect(10f, 40f, 300f, 30f), string.Format("-- Inventory -- Count: {0}, Capacity: {1}", count, m_CharacterProgress.m_Inventory.Capacity));
-
-            for (int i = 0; i < count; i++)
+            GUI.Label(new Rect(10f, 10f, 60f, 30f), "Player ID: ");
+            if (int.TryParse(GUI.TextField(new Rect(40f, 10f, 30f, 30f), currentPlayerID.ToString(), 1), out currentPlayerID))
             {
+                currentPlayerID = Mathf.Clamp(currentPlayerID, 0, m_RegisteredCharacters.Count - 1);
+                Player currentPlayer = (Player)m_RegisteredCharacters[currentPlayerID];
+                Inventory currentInv = m_CharacterData.GetCharacterProgressInSlot(currentPlayer.SaveSlot).m_Inventory;
+
+                // Inventory --------------------------------------------------------
+                int count = currentInv.Count;
+                GUI.Label(new Rect(10f, 40f, 300f, 30f), string.Format("-- Inventory -- Count: {0}, Capacity: {1}", count, currentInv.Capacity));
+
+                for (int i = 0; i < count; i++)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUI.Label(new Rect(10f, 60f + (i * 20f), 300f, 30f), currentInv.ItemNameAt(i) + ", Quantity: " + currentInv.QuantityAt(i).ToString());
+                    if (currentInv.IsItemUsable(i) && GUI.Button(new Rect(10f, 60f + (i * 20f), 300f, 30f), "USE"))
+                    {
+                        InventoryItem item = currentInv.GetItemAt(i);
+                        currentInv.UseItem(item, currentPlayer);
+                    }
+                    GUILayout.EndHorizontal();
+                }
+
+                GUI.Label(new Rect(10f, 300f, 300f, 30f), string.Format("Money: {0}", currentInv.Money));
+
+
+                // Save Character ---------------------------------------------------
+                if (GUI.Button(new Rect(10f, 330f, 200f, 30f), "Save Character"))
+                {
+                    SaveCharacterProgress();
+                }
+
+
+                // Give Item --------------------------------------------------------
                 GUILayout.BeginHorizontal();
-                GUI.Label(new Rect(10f, 60f + (i * 20f), 300f, 30f), m_CharacterProgress.m_Inventory.ItemNameAt(i) + ", Quantity: " + m_CharacterProgress.m_Inventory.QuantityAt(i).ToString());
-                if (m_CharacterProgress.m_Inventory.IsItemUsable(i) && GUI.Button(new Rect(10f, 60f + (i * 20f), 300f, 30f), "USE"))
+
+                GUI.Label(new Rect(10f, 380f, 100f, 30f), "Item ID:");
+                IdString = GUI.TextField(new Rect(10f, 400f, 100f, 30f), IdString);
+                if (IdString != string.Empty)
                 {
-                    InventoryItem item = m_CharacterProgress.m_Inventory.GetItemAt(i);
-                    m_CharacterProgress.m_Inventory.UseItem(item);
+                    try
+                    {
+                        itemID = System.Convert.ToInt32(IdString);
+                    }
+                    catch (System.Exception e) { }
+
+                    try
+                    {
+                        itemName = ItemDatabase.Instance.GetItemFromID(itemID).Name;
+                    }
+                    catch (System.Exception e) { }
                 }
+
+                GUI.Label(new Rect(120f, 380f, 100f, 30f), "Quantity:");
+                quantityString = GUI.TextField(new Rect(120f, 400f, 100f, 30f), quantityString);
+                if (quantityString != string.Empty)
+                {
+                    try
+                    {
+                        itemQuantity = System.Convert.ToInt32(quantityString);
+                    }
+                    catch (System.Exception e) { }
+                }
+
+                GUI.Label(new Rect(10f, 430f, 200f, 30f), "Name: " + itemName);
+
+                if (GUI.Button(new Rect(10f, 460f, 200f, 30f), "Get Item"))
+                {
+                    Tuple<int, int> itemIdQuantity = new Tuple<int, int>(itemID, itemQuantity);
+                    InventoryItem item = ItemDatabase.Instance.GetItemFromIDWithQuantity(itemIdQuantity);
+                    if (item != null)
+                    {
+                        currentInv.Add(item);
+                        IdString = string.Empty;
+                        quantityString = string.Empty;
+                    }
+                }
+
                 GUILayout.EndHorizontal();
-            }
 
-            GUI.Label(new Rect(10f, 300f, 300f, 30f), string.Format("Money: {0}", m_CharacterProgress.m_Inventory.Money));
+                // Character Stats ------------------------------------------------
+                CharacterStats currentStats = m_CharacterData.GetCharacterProgressInSlot(currentPlayerID).m_Stats;
 
+                float leftStart = Screen.width - 10f - 200f;
+                GUI.Label(new Rect(leftStart, 10f, 200f, 30f), "- CHARACTER -");
+                GUI.Label(new Rect(leftStart, 30f, 200f, 30f), "Gender: " + currentStats.Gender + "   " + "Name: " + currentStats.PlayerName);
+                GUI.Label(new Rect(leftStart, 50f, 200f, 30f), "Race: " + currentStats.Race + "   " + "Class: " + currentStats.Class);
 
-            // Save Character ---------------------------------------------------
-            if (GUI.Button(new Rect(10f, 330f, 200f, 30f), "Save Character"))
-            {
-                SaveCharacterProgress();
-            }
+                GUI.Label(new Rect(leftStart, 90f, 200f, 30f), "- STATS -");
+                GUI.Label(new Rect(leftStart, 110f, 200f, 30f), "HP: " + currentStats.HP);
+                GUI.Label(new Rect(leftStart, 130f, 200f, 30f), "MP: " + currentStats.MP);
+                GUI.Label(new Rect(leftStart, 150f, 200f, 30f), "ATT: " + currentStats.ATT);
+                GUI.Label(new Rect(leftStart, 170f, 200f, 30f), "DEF: " + currentStats.DEF);
+                GUI.Label(new Rect(leftStart, 190f, 200f, 30f), "ACC: " + currentStats.ACC);
+                GUI.Label(new Rect(leftStart, 210f, 200f, 30f), "MGC: " + currentStats.MGC);
+                GUI.Label(new Rect(leftStart, 230f, 200f, 30f), "EVN: " + currentStats.EVN);
+                GUI.Label(new Rect(leftStart, 250f, 200f, 30f), "SPD: " + currentStats.SPD);
+                GUI.Label(new Rect(leftStart, 270f, 200f, 30f), "LCK: " + currentStats.LCK);
 
-
-            // Give Item --------------------------------------------------------
-            GUILayout.BeginHorizontal();
-
-            GUI.Label(new Rect(10f, 380f, 100f, 30f), "Item ID:");
-            IdString = GUI.TextField(new Rect(10f, 400f, 100f, 30f), IdString);
-            if (IdString != string.Empty)
-            {
-                try
+                if (GUI.Button(new Rect(leftStart, 300f, 200f, 30f), "Randomize"))
                 {
-                    itemID = System.Convert.ToInt32(IdString);
+                    currentStats.Init();
+                    SaveCharacterProgress();
                 }
-                catch (System.Exception e) { }
-
-                try
-                {
-                    itemName = ItemDatabase.Instance.GetItemFromID(itemID).Name;
-                }
-                catch (System.Exception e) { }
-            }
-
-            GUI.Label(new Rect(120f, 380f, 100f, 30f), "Quantity:");
-            quantityString = GUI.TextField(new Rect(120f, 400f, 100f, 30f), quantityString);
-            if (quantityString != string.Empty)
-            {
-                try
-                {
-                    itemQuantity = System.Convert.ToInt32(quantityString);
-                }
-                catch (System.Exception e) { }
-            }
-
-            GUI.Label(new Rect(10f, 430f, 200f, 30f), "Name: " + itemName);
-
-            if (GUI.Button(new Rect(10f, 460f, 200f, 30f), "Get Item"))
-            {
-                Tuple<int, int> itemIdQuantity = new Tuple<int, int>(itemID, itemQuantity);
-                InventoryItem item = ItemDatabase.Instance.GetItemFromIDWithQuantity(itemIdQuantity);
-                if (item != null)
-                {
-                    m_CharacterProgress.m_Inventory.Add(item);
-                    IdString = string.Empty;
-                    quantityString = string.Empty;
-                }
-            }
-
-            GUILayout.EndHorizontal();
-
-            // Character Stats ------------------------------------------------
-            float leftStart = Screen.width - 10f - 200f;
-            GUI.Label(new Rect(leftStart, 10f, 200f, 30f), "- CHARACTER -");
-            GUI.Label(new Rect(leftStart, 30f, 200f, 30f), "Gender: " + m_CharacterProgress.m_Stats.Gender + "   " + "Name: " + m_CharacterProgress.m_Stats.PlayerName);
-            GUI.Label(new Rect(leftStart, 50f, 200f, 30f), "Race: " + m_CharacterProgress.m_Stats.Race + "   " + "Class: " + m_CharacterProgress.m_Stats.Class);
-
-            GUI.Label(new Rect(leftStart, 90f, 200f, 30f), "- STATS -");
-            GUI.Label(new Rect(leftStart, 110f, 200f, 30f), "HP: " + m_CharacterProgress.m_Stats.HP);
-            GUI.Label(new Rect(leftStart, 130f, 200f, 30f), "MP: " + m_CharacterProgress.m_Stats.MP);
-            GUI.Label(new Rect(leftStart, 150f, 200f, 30f), "ATT: " + m_CharacterProgress.m_Stats.ATT);
-            GUI.Label(new Rect(leftStart, 170f, 200f, 30f), "DEF: " + m_CharacterProgress.m_Stats.DEF);
-            GUI.Label(new Rect(leftStart, 190f, 200f, 30f), "ACC: " + m_CharacterProgress.m_Stats.ACC);
-            GUI.Label(new Rect(leftStart, 210f, 200f, 30f), "MGC: " + m_CharacterProgress.m_Stats.MGC);
-            GUI.Label(new Rect(leftStart, 230f, 200f, 30f), "EVN: " + m_CharacterProgress.m_Stats.EVN);
-            GUI.Label(new Rect(leftStart, 250f, 200f, 30f), "SPD: " + m_CharacterProgress.m_Stats.SPD);
-            GUI.Label(new Rect(leftStart, 270f, 200f, 30f), "LCK: " + m_CharacterProgress.m_Stats.LCK);
-
-            if (GUI.Button(new Rect(leftStart, 300f, 200f, 30f), "Randomize"))
-            {
-                m_CharacterProgress.m_Stats.Init();
-                SaveCharacterProgress();
             }
         }
     }

@@ -15,7 +15,7 @@ public class Teleporter : RoomObject, IInteractable
         callout.Show(true);
     }
 
-    public void Interact(WorldSpaceCallout callout)
+    public void Interact(WorldSpaceCallout callout, int characterSaveSlot)
     {
         string test = (m_End ? "to the next level!" : "back to hub world!");
         Debug.LogFormat("Teleport {0}", test);

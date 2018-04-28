@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerLobbyData
 {
     public int m_PlayerIndex = -1;
+    public int m_SaveSlot = -1;
     public string m_PlayerName;
     public Transform m_PadTransform;
     public Color m_PlayerColor;
@@ -12,9 +13,10 @@ public class PlayerLobbyData
 
     public bool m_Confirmed;
 
-    public PlayerLobbyData(int index, string name, Transform pad, Color color)
+    public PlayerLobbyData(int index, int slot, string name, Transform pad, Color color)
     {
         m_PlayerIndex = index;
+        m_SaveSlot = slot;
         m_PlayerName = name;
         m_PadTransform = pad;
         m_PlayerColor = color;
@@ -25,7 +27,7 @@ public class PlayerLobbyData
 
 public class LobbyManager : Singleton<LobbyManager>
 {
-    public int MAX_PLAYERS = 4;
+    public static int MAX_PLAYERS = 4;
     public bool AllPlayersReady { get { return  m_ConnectedPlayerCount > 0 &&  m_ReadyPlayerCount == m_ConnectedPlayerCount; } }
     public int ConnectedPlayerCount { get { return m_ConnectedPlayerCount; } }
     public bool OfflineGame = true; // TODO this will need to be changed when networking happens
@@ -52,7 +54,7 @@ public class LobbyManager : Singleton<LobbyManager>
     public void Init()
     {
         // TODO if you're the server, request yourself
-        RequestAddPlayer(0);
+        //RequestAddPlayer(0);
     }
 
     public void SetConfirmed(int playerID, bool confirmed)
@@ -63,7 +65,7 @@ public class LobbyManager : Singleton<LobbyManager>
         m_ReadyPlayerCount += (confirmed ? 1 : -1);
     }
 
-    public void RequestAddPlayer(int playerId)
+    public void RequestAddPlayer(int playerId, int saveSlot)
     {
         // TODO
         // when the networking stuff goes in...
@@ -72,9 +74,9 @@ public class LobbyManager : Singleton<LobbyManager>
 
         // for local multiplayer, will need to load all existing player saves and allow them to pick one. That will get populated below.
 
-        CharacterProgress progress = CharacterManager.Instance.GetProgressForCharacterWithID(playerId);
+        CharacterProgress progress = CharacterManager.Instance.GetProgressForCharacterInSlot(saveSlot);
         string playerName = progress.m_Stats.PlayerName;
-        PlayerLobbyData data = new PlayerLobbyData(playerId, playerName, m_TeleportTransforms[playerId], m_PlayerColors[playerId]);
+        PlayerLobbyData data = new PlayerLobbyData(playerId, saveSlot, playerName, m_TeleportTransforms[playerId], m_PlayerColors[playerId]);
         AddPlayer(data); // send me to everyone!
     }
 

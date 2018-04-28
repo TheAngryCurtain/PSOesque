@@ -8,6 +8,9 @@ using Rewired;
 public class LobbyScreen : UIBaseScreen
 {
     [SerializeField] private UILobbyPlayerLabel[] m_PlayerLabels;
+    [SerializeField] private UICharacterSelector[] m_CharacterSelectors;
+
+    private List<CharacterProgress> m_CharacterList;
 
     public override void Initialize(object[] screenParams)
     {
@@ -15,6 +18,48 @@ public class LobbyScreen : UIBaseScreen
 
         LobbyManager.Instance.OnPlayerAdded += OnPlayerAdded;
         LobbyManager.Instance.OnPlayerRemoved += OnPlayerRemoved;
+
+        // TEST for now, create 4 temp players
+        for (int i = 0; i < LobbyManager.MAX_PLAYERS; i++)
+        {
+            CharacterProgress playerProgress = new CharacterProgress();
+            playerProgress.Init();
+
+            CharacterManager.Instance.AddCharacterProgressInSlot(playerProgress);
+        }
+
+        // populate character list
+        int totalSlots = CharacterProgressData.MAX_CHARACTER_SLOTS;
+        m_CharacterList = new List<CharacterProgress>(totalSlots);
+        for (int i = 0; i < totalSlots; i++)
+        {
+            CharacterProgress progress = CharacterManager.Instance.GetProgressForCharacterInSlot(i);
+            if (progress != null)
+            {
+                m_CharacterList.Add(progress);
+            }
+        }
+
+        for (int i = 0; i < m_CharacterSelectors.Length; i++)
+        {
+            m_CharacterSelectors[i].Init();
+            m_CharacterSelectors[i].m_PlayerIndex = i;
+            m_CharacterSelectors[i].SetData(m_CharacterList);
+            m_CharacterSelectors[i].OnCharacterSelected += OnCharacterSelected;
+        }
+    }
+
+    private void OnCharacterSelected(int playerIndex, int selectedIndex)
+    {
+        m_CharacterSelectors[playerIndex].SetIsActive(false);
+
+        if (selectedIndex > -1)
+        {
+            LobbyManager.Instance.RequestAddPlayer(playerIndex, selectedIndex);
+
+            // remove that character from the list
+            UpdateCharacterList(selectedIndex);
+        }
     }
 
     private void UpdateConfirmed(int index, bool confirmed)
@@ -52,6 +97,17 @@ public class LobbyScreen : UIBaseScreen
         // if all are confirmed, update the callout to say advance?
 
         bool handled = false;
+
+        // this is ugly
+        if (m_CharacterSelectors[data.playerId].m_IsActive)
+        {
+            handled = m_CharacterSelectors[data.playerId].OnInputUpdate(data);
+            if (handled)
+            {
+                return;
+            }
+        }
+
         switch (data.actionId)
         {
             case RewiredConsts.Action.Confirm:
@@ -77,7 +133,13 @@ public class LobbyScreen : UIBaseScreen
                         else
                         {
                             // no player exists, request them
-                            LobbyManager.Instance.RequestAddPlayer(playerId);
+                            if (!m_CharacterSelectors[data.playerId].m_IsActive)
+                            {
+                                m_CharacterSelectors[data.playerId].SetIsActive(true);
+                            }
+
+                            //int saveSlot = 0;
+                            //LobbyManager.Instance.RequestAddPlayer(playerId, saveSlot);
                         }
                     }
 
@@ -114,6 +176,8 @@ public class LobbyScreen : UIBaseScreen
                             }
                         }
                     }
+
+                    handled = true;
                 }
                 break;
         }
@@ -122,6 +186,19 @@ public class LobbyScreen : UIBaseScreen
         if (!handled)
         {
             base.OnInputUpdate(data);
+        }
+    }
+
+    private void UpdateCharacterList(int indexToRemove = -1)
+    {
+        if (indexToRemove > -1)
+        {
+            m_CharacterList.RemoveAt(indexToRemove);
+        }
+
+        for (int i = 0; i < m_CharacterSelectors.Length; i++)
+        {
+            m_CharacterSelectors[i].SetData(m_CharacterList);
         }
     }
 
