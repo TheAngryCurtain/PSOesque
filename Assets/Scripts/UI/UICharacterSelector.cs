@@ -1,11 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Rewired;
 
 public class UICharacterSelector : MonoBehaviour
 {
     [SerializeField] private Transform m_ScrollContent;
+    [SerializeField] private Text m_HeaderLabel;
     [SerializeField] private GameObject m_ScrollItemPrefab;
 
     public System.Action<int, int> OnCharacterSelected;
@@ -19,9 +21,10 @@ public class UICharacterSelector : MonoBehaviour
     private float m_ScrollDelay = 0.25f;
     private float m_CurrentTime = 0f;
 
-    public void Init()
+    public void Init(int playerID)
     {
         m_ListItems = new List<UIScrollViewItem>();
+        m_HeaderLabel.text = string.Format("P{0}", playerID + 1);
     }
 
     public void SetData(List<CharacterProgress> characterData)

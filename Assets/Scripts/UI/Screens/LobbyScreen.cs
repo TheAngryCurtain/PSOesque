@@ -42,7 +42,7 @@ public class LobbyScreen : UIBaseScreen
 
         for (int i = 0; i < m_CharacterSelectors.Length; i++)
         {
-            m_CharacterSelectors[i].Init();
+            m_CharacterSelectors[i].Init(i);
             m_CharacterSelectors[i].m_PlayerIndex = i;
             m_CharacterSelectors[i].SetData(m_CharacterList);
             m_CharacterSelectors[i].OnCharacterSelected += OnCharacterSelected;
@@ -110,6 +110,18 @@ public class LobbyScreen : UIBaseScreen
 
         switch (data.actionId)
         {
+            case RewiredConsts.Action.Y_Action:
+                if (data.GetButtonDown())
+                {
+                    string popupTitle = string.Format("P{0}", data.playerId + 1);
+                    string popupContent = "Would you like to create a new character?";
+                    ePopupType popupType = ePopupType.YesNo;
+                    PopupManager.Instance.ShowPopup(popupType, popupTitle, popupContent, OnCharacterCreationPopupClosed);
+
+                    handled = true;
+                }
+                break;
+
             case RewiredConsts.Action.Confirm:
                 if (data.GetButtonDown())
                 {
@@ -137,9 +149,6 @@ public class LobbyScreen : UIBaseScreen
                             {
                                 m_CharacterSelectors[data.playerId].SetIsActive(true);
                             }
-
-                            //int saveSlot = 0;
-                            //LobbyManager.Instance.RequestAddPlayer(playerId, saveSlot);
                         }
                     }
 
@@ -213,6 +222,16 @@ public class LobbyScreen : UIBaseScreen
             };
 
             UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
+        }
+
+        PopupManager.Instance.ClosePopup();
+    }
+
+    private void OnCharacterCreationPopupClosed(bool result)
+    {
+        if (result)
+        {
+            // will need to transition to a new scene and screen for character creation
         }
 
         PopupManager.Instance.ClosePopup();

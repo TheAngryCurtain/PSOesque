@@ -1,5 +1,5 @@
 /* Rewired Constants
-   This list was generated on 4/21/2018 7:02:17 PM
+   This list was generated on 4/28/2018 4:09:39 PM
    The list applies to only the Rewired Input Manager from which it was generated.
    If you use a different Rewired Input Manager, you will have to generate a new list.
    If you make changes to the exported items in the Rewired Input Manager, you will need to regenerate this list.
@@ -17,6 +17,8 @@ namespace RewiredConsts {
         public const int Confirm = 7;
         [Rewired.Dev.ActionIdFieldInfo(categoryName = "UI", friendlyName = "Cancel")]
         public const int Cancel = 8;
+        [Rewired.Dev.ActionIdFieldInfo(categoryName = "UI", friendlyName = "Y Action")]
+        public const int Y_Action = 10;
         // Gameplay
         [Rewired.Dev.ActionIdFieldInfo(categoryName = "Gameplay", friendlyName = "Move Horizontal")]
         public const int Move_Horizontal = 0;
