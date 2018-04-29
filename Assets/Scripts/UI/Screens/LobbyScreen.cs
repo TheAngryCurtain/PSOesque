@@ -23,6 +23,7 @@ public class LobbyScreen : UIBaseScreen
     [SerializeField] private UICharacterSelector[] m_CharacterSelectors;
 
     private List<UILobbyCharacterProgress> m_CharacterList;
+    private int m_CreatorPlayerID = -1;
 
     public override void Initialize(object[] screenParams)
     {
@@ -126,6 +127,9 @@ public class LobbyScreen : UIBaseScreen
                     string popupContent = "Would you like to create a new character?";
                     ePopupType popupType = ePopupType.YesNo;
                     PopupManager.Instance.ShowPopup(popupType, popupTitle, popupContent, OnCharacterCreationPopupClosed);
+
+                    // save which player opened it
+                    m_CreatorPlayerID = data.playerId;
 
                     handled = true;
                 }
@@ -290,7 +294,14 @@ public class LobbyScreen : UIBaseScreen
     {
         if (result)
         {
-            // will need to transition to a new scene and screen for character creation
+            object[] screenParams = new object[]
+            {
+                UI.Enums.ScreenId.CharacterCreator,
+                Enums.eScene.CharacterCreator,
+                m_CreatorPlayerID
+            };
+
+            UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
         }
 
         PopupManager.Instance.ClosePopup();
@@ -337,9 +348,4 @@ public class LobbyScreen : UIBaseScreen
                 break;
         }
     }
-
-    //private void ContinueFlow()
-    //{
-    //    UIManager.Instance.TransitionToScreen(ScreenId.Title);
-    //}
 }

@@ -10,6 +10,7 @@
             Title,
             Loading,
 			Lobby,
+            CharacterCreator,
             HUD,
             CollectionMiniGame
         }
