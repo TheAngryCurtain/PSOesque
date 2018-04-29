@@ -5,12 +5,24 @@ using UI;
 using UI.Enums;
 using Rewired;
 
+public class UILobbyCharacterProgress
+{
+    public CharacterProgress Progress;
+    public bool AssignedToPlayer = false;
+
+    public UILobbyCharacterProgress(CharacterProgress cP, bool assigned)
+    {
+        Progress = cP;
+        AssignedToPlayer = assigned;
+    }
+}
+
 public class LobbyScreen : UIBaseScreen
 {
     [SerializeField] private UILobbyPlayerLabel[] m_PlayerLabels;
     [SerializeField] private UICharacterSelector[] m_CharacterSelectors;
 
-    private List<CharacterProgress> m_CharacterList;
+    private List<UILobbyCharacterProgress> m_CharacterList;
 
     public override void Initialize(object[] screenParams)
     {
@@ -30,13 +42,14 @@ public class LobbyScreen : UIBaseScreen
 
         // populate character list
         int totalSlots = CharacterProgressData.MAX_CHARACTER_SLOTS;
-        m_CharacterList = new List<CharacterProgress>(totalSlots);
+        m_CharacterList = new List<UILobbyCharacterProgress>(totalSlots);
         for (int i = 0; i < totalSlots; i++)
         {
             CharacterProgress progress = CharacterManager.Instance.GetProgressForCharacterInSlot(i);
             if (progress != null)
             {
-                m_CharacterList.Add(progress);
+                UILobbyCharacterProgress lCP = new UILobbyCharacterProgress(progress, false);
+                m_CharacterList.Add(lCP);
             }
         }
 
@@ -55,10 +68,10 @@ public class LobbyScreen : UIBaseScreen
 
         if (selectedIndex > -1)
         {
-            LobbyManager.Instance.RequestAddPlayer(playerIndex, selectedIndex);
+            LobbyManager.Instance.RequestAddPlayer(playerIndex, m_CharacterList[selectedIndex].Progress);
 
-            // remove that character from the list
-            UpdateCharacterList(selectedIndex);
+            // hide that item in the list so other players can't pick it
+            HideCharacterInList(selectedIndex);
         }
     }
 
@@ -92,10 +105,6 @@ public class LobbyScreen : UIBaseScreen
     protected override void OnInputUpdate(InputActionEventData data)
     {
         if (ScreenInputLocked()) return; // can be controller by any player
-
-        // TODO
-        // if all are confirmed, update the callout to say advance?
-
         bool handled = false;
 
         // this is ugly
@@ -125,7 +134,7 @@ public class LobbyScreen : UIBaseScreen
             case RewiredConsts.Action.Confirm:
                 if (data.GetButtonDown())
                 {
-                    if (data.playerId == 0 && LobbyManager.Instance.AllPlayersReady) // TODO only server/host should be able to advance
+                    if (data.playerId == 0 && LobbyManager.Instance.AllPlayersReady && !AnyCharacterSelectorOpen()) // TODO only server/host should be able to advance
                     {
                         string popupTitle = "Continue";
                         string popupContent = "Are you ready?";
@@ -138,13 +147,16 @@ public class LobbyScreen : UIBaseScreen
                         PlayerLobbyData playerData = LobbyManager.Instance.GetLobbyDataForPlayer(playerId);
                         if (playerData != null)
                         {
-                            // player data exists, ready up
-                            LobbyManager.Instance.SetConfirmed(playerId, true);
-                            Debug.LogFormat("P{0} Ready", playerId + 1);
+                            if (!playerData.m_Confirmed)
+                            {
+                                // player data exists, ready up
+                                LobbyManager.Instance.SetConfirmed(playerId, true);
+                                Debug.LogFormat("P{0} Ready", playerId + 1);
+                            }
                         }
                         else
                         {
-                            // no player exists, request them
+                            // no player exists, open the character selector
                             if (!m_CharacterSelectors[data.playerId].m_IsActive)
                             {
                                 m_CharacterSelectors[data.playerId].SetIsActive(true);
@@ -182,6 +194,9 @@ public class LobbyScreen : UIBaseScreen
                             {
                                 // player wants to drop out
                                 LobbyManager.Instance.RequestRemovePlayer(playerId);
+
+                                // need to add back in the character data from any player who backed out
+                                ShowCharacterInList(m_CharacterList[playerId]);
                             }
                         }
                     }
@@ -198,13 +213,57 @@ public class LobbyScreen : UIBaseScreen
         }
     }
 
-    private void UpdateCharacterList(int indexToRemove = -1)
+    private bool AnyCharacterSelectorOpen()
     {
-        if (indexToRemove > -1)
+        for (int i = 0; i < m_CharacterSelectors.Length; i++)
         {
-            m_CharacterList.RemoveAt(indexToRemove);
+            if (m_CharacterSelectors[i].m_IsActive)
+            {
+                return true;
+            }
         }
 
+        return false;
+    }
+
+    private void HideCharacterInList(int index)
+    {
+        if (index > -1 && index < m_CharacterList.Count)
+        {
+            m_CharacterList[index].AssignedToPlayer = true;
+        }
+        else
+        {
+            Debug.LogWarningFormat("Tried to remove null from character list");
+        }
+
+        RefreshCharacterList();
+    }
+
+    private void ShowCharacterInList(UILobbyCharacterProgress prog)
+    {
+        if (prog != null)
+        {
+            int index = m_CharacterList.IndexOf(prog);
+            if (index > -1)
+            {
+                m_CharacterList[index].AssignedToPlayer = false;
+            }
+            else
+            {
+                Debug.LogWarningFormat("chracter progress not in character list");
+            }
+        }
+        else
+        {
+            Debug.LogWarningFormat("Tried to add null to character list");
+        }
+
+        RefreshCharacterList();
+    }
+
+    private void RefreshCharacterList()
+    {
         for (int i = 0; i < m_CharacterSelectors.Length; i++)
         {
             m_CharacterSelectors[i].SetData(m_CharacterList);

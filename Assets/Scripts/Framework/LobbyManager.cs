@@ -65,7 +65,7 @@ public class LobbyManager : Singleton<LobbyManager>
         m_ReadyPlayerCount += (confirmed ? 1 : -1);
     }
 
-    public void RequestAddPlayer(int playerId, int saveSlot)
+    public void RequestAddPlayer(int playerId, CharacterProgress progress)
     {
         // TODO
         // when the networking stuff goes in...
@@ -74,8 +74,8 @@ public class LobbyManager : Singleton<LobbyManager>
 
         // for local multiplayer, will need to load all existing player saves and allow them to pick one. That will get populated below.
 
-        CharacterProgress progress = CharacterManager.Instance.GetProgressForCharacterInSlot(saveSlot);
         string playerName = progress.m_Stats.PlayerName;
+        int saveSlot = progress.m_SaveSlot;
         PlayerLobbyData data = new PlayerLobbyData(playerId, saveSlot, playerName, m_TeleportTransforms[playerId], m_PlayerColors[playerId]);
         AddPlayer(data); // send me to everyone!
     }

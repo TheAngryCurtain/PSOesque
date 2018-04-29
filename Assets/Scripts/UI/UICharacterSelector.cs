@@ -27,17 +27,16 @@ public class UICharacterSelector : MonoBehaviour
         m_HeaderLabel.text = string.Format("P{0}", playerID + 1);
     }
 
-    public void SetData(List<CharacterProgress> characterData)
+    public void SetData(List<UILobbyCharacterProgress> characterData)
     {
-        m_ListItems.Clear();
-
+        EmptyList();
         for (int i = 0; i < characterData.Count; i++)
         {
             GameObject itemObj = (GameObject)Instantiate(m_ScrollItemPrefab, m_ScrollContent);
             UIScrollViewItem scrollItem = itemObj.GetComponent<UIScrollViewItem>();
             if (scrollItem != null)
             {
-                scrollItem.SetData(characterData[i].m_Stats.PlayerName, null); // eventually pass the icon sprite in here
+                scrollItem.SetData(characterData[i].Progress.m_Stats.PlayerName, null, characterData[i].AssignedToPlayer); // eventually pass the icon sprite in here
             }
             else
             {
@@ -47,15 +46,18 @@ public class UICharacterSelector : MonoBehaviour
             m_ListItems.Add(scrollItem);
         }
 
-        SetSelected(m_ActiveIndex);
-        ResizeContainer();
+        SetSelected();
     }
 
-    private void ResizeContainer()
+    private void EmptyList()
     {
-        float itemHeight = 40.5f - 10f; // this is lazy. Should just grab the value
-        RectTransform rTransform = m_ScrollContent.GetComponent<RectTransform>();
-        rTransform.sizeDelta = new Vector2(rTransform.sizeDelta.x, itemHeight * m_ListItems.Count);
+        m_ListItems.Clear();
+
+        int itemObjCount = m_ScrollContent.childCount;
+        for (int i = 0; i < itemObjCount; i++)
+        {
+            Destroy(m_ScrollContent.GetChild(i).gameObject);
+        }
     }
 
     public bool OnInputUpdate(InputActionEventData data)
@@ -82,7 +84,7 @@ public class UICharacterSelector : MonoBehaviour
                     }
 
                     m_CurrentTime = m_ScrollDelay;
-                    SetSelected(m_ActiveIndex);
+                    SetSelected();
 
                     // audio
                     //VSEventManager.Instance.TriggerEvent(new AudioEvents.RequestUIAudioEvent(true, AudioManager.eUIClip.Navigate));
@@ -95,7 +97,7 @@ public class UICharacterSelector : MonoBehaviour
             case RewiredConsts.Action.Confirm:
                 if (data.GetButtonDown())
                 {
-                    if (OnCharacterSelected != null)
+                    if (!m_ListItems[m_ActiveIndex].m_Disabled && OnCharacterSelected != null)
                     {
                         OnCharacterSelected(m_PlayerIndex, m_ActiveIndex);
                     }
@@ -124,16 +126,29 @@ public class UICharacterSelector : MonoBehaviour
     {
         m_IsActive = active;
         gameObject.SetActive(active);
+
+        // reset index to the top
+        if (m_IsActive)
+        {
+            m_ActiveIndex = 0;
+        }
     }
 
-    private void SetSelected(int index)
+    private void SetSelected()
     {
         if (m_CurrentlySelected != null)
         {
             m_CurrentlySelected.SetSelected(false);
         }
 
-        m_CurrentlySelected = m_ListItems[index];
+        // in the event that another player picks the character you have selected
+        // we need to put the index back in range when that character is removed
+        if (m_ActiveIndex >= m_ListItems.Count)
+        {
+            m_ActiveIndex = m_ListItems.Count - 1;
+        }
+
+        m_CurrentlySelected = m_ListItems[m_ActiveIndex];
         m_CurrentlySelected.SetSelected(true);
     }
 }
