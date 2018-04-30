@@ -28,6 +28,7 @@ public class CharacterProgressData
     [SerializeField] private List<CharacterProgress> m_ProgressData;
 
     public static int MAX_CHARACTER_SLOTS = 9;
+    public int SavedCharacterCount { get { return m_ProgressData.Count; } }
 
     public CharacterProgressData() { }
 
@@ -58,5 +59,11 @@ public class CharacterProgressData
         progress.m_SaveSlot = saveSlot;
 
         m_ProgressData.Add(progress);
+    }
+
+    // JUST FOR DEBUG
+    public void Clear()
+    {
+        m_ProgressData.Clear();
     }
 }

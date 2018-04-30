@@ -25,8 +25,10 @@ public class PlayerLobbyData
     }
 }
 
-public class LobbyManager : Singleton<LobbyManager>
+public class LobbyManager : MonoBehaviour
 {
+    public static LobbyManager Instance; // not making it a singleton because we want to destroy on new scene load
+
     public static int MAX_PLAYERS = 4;
     public bool AllPlayersReady { get { return  m_ConnectedPlayerCount > 0 &&  m_ReadyPlayerCount == m_ConnectedPlayerCount; } }
     public int ConnectedPlayerCount { get { return m_ConnectedPlayerCount; } }
@@ -36,7 +38,8 @@ public class LobbyManager : Singleton<LobbyManager>
     public System.Action<PlayerLobbyData> OnPlayerRemoved;
 
     [SerializeField] private Transform[] m_TeleportTransforms;
-    [SerializeField] private Material[] m_PlayerRings;
+    [SerializeField] private MeshRenderer[] m_PlayerRingMeshes;
+    [SerializeField] private Material m_PlayerRingMat;
     [SerializeField] private Color[] m_PlayerColors;
     [SerializeField] private Color m_DefaultColor;
 
@@ -44,17 +47,11 @@ public class LobbyManager : Singleton<LobbyManager>
     private int m_ConnectedPlayerCount = 0;
     private int m_ReadyPlayerCount = 0;
 
-    public override void Awake()
+    private void Awake()
     {
-        base.Awake();
+        Instance = this;
 
         m_PlayerData = new PlayerLobbyData[MAX_PLAYERS];
-    }
-
-    public void Init()
-    {
-        // TODO if you're the server, request yourself
-        //RequestAddPlayer(0);
     }
 
     public void SetConfirmed(int playerID, bool confirmed)
@@ -122,7 +119,7 @@ public class LobbyManager : Singleton<LobbyManager>
         data.m_PlayerModelObj = temp;
 
         // change pad color
-        m_PlayerRings[playerIndex].color = data.m_PlayerColor;
+        m_PlayerRingMeshes[playerIndex].material.color = data.m_PlayerColor;
         m_PlayerData[playerIndex] = data;
     }
 
@@ -137,7 +134,7 @@ public class LobbyManager : Singleton<LobbyManager>
         // for networking, will need to disconnect a player
         Destroy(data.m_PlayerModelObj);
 
-        m_PlayerRings[playerIndex].color = m_DefaultColor;
+        m_PlayerRingMeshes[playerIndex].material.color = m_DefaultColor;
         m_PlayerData[playerIndex] = null;
     }
 

@@ -48,11 +48,29 @@ public class TitleScreen : UIBaseScreen
         {
 			case eMenuOption.Offline:
 			case eMenuOption.Online:
-                object[] screenParams = new object[]
+                object[] screenParams = null;
+
+                // need to check if we currently have any characters created
+                // if not, we need to divert to the character creator
+                bool hasCreatedCharacter = (CharacterManager.Instance.SavedCharacterCount > 0);
+                if (hasCreatedCharacter)
                 {
-                    UI.Enums.ScreenId.Lobby,
-                    Enums.eScene.Lobby
-                };
+                    screenParams = new object[]
+                    {
+                        UI.Enums.ScreenId.Lobby,
+                        Enums.eScene.Lobby
+                    };
+                }
+                else
+                {
+                    screenParams = new object[]
+                    {
+                        UI.Enums.ScreenId.CharacterCreator,
+                        Enums.eScene.CharacterCreator,
+                        0, // controlling character index
+                        false // is it possible to abandon creation?
+                    };
+                }
 
                 UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
                 break;

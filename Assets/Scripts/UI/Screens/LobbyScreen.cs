@@ -32,15 +32,6 @@ public class LobbyScreen : UIBaseScreen
         LobbyManager.Instance.OnPlayerAdded += OnPlayerAdded;
         LobbyManager.Instance.OnPlayerRemoved += OnPlayerRemoved;
 
-        // TEST for now, create 4 temp players
-        for (int i = 0; i < LobbyManager.MAX_PLAYERS; i++)
-        {
-            CharacterProgress playerProgress = new CharacterProgress();
-            playerProgress.Init();
-
-            CharacterManager.Instance.AddCharacterProgressInSlot(playerProgress);
-        }
-
         // populate character list
         int totalSlots = CharacterProgressData.MAX_CHARACTER_SLOTS;
         m_CharacterList = new List<UILobbyCharacterProgress>(totalSlots);
@@ -63,6 +54,26 @@ public class LobbyScreen : UIBaseScreen
         }
     }
 
+    //private void CheckForPreviousLobbyState()
+    //{
+    //    for (int i = 0; i < LobbyManager.MAX_PLAYERS; i++)
+    //    {
+    //        PlayerLobbyData playerData = LobbyManager.Instance.GetLobbyDataForPlayer(i);
+    //        if (playerData != null)
+    //        {
+    //            // probably won't be able to rebuild lobby in multiplayer like this, but you can't create a player for online in the lobby anyway!
+    //            LobbyManager.Instance.RequestAddPlayer(i, CharacterManager.Instance.GetProgressForCharacterInSlot(i));
+
+    //            if (!playerData.m_Confirmed)
+    //            {
+    //                // player data exists, ready up
+    //                LobbyManager.Instance.SetConfirmed(i, true);
+    //                Debug.LogFormat("Previous Data >>> P{0} Ready", i + 1);
+    //            }
+    //        }
+    //    }
+    //}
+
     private void OnCharacterSelected(int playerIndex, int selectedIndex)
     {
         m_CharacterSelectors[playerIndex].SetIsActive(false);
@@ -84,6 +95,11 @@ public class LobbyScreen : UIBaseScreen
     public override void Shutdown()
     {
         base.Shutdown();
+
+        for (int i = 0; i < m_CharacterSelectors.Length; i++)
+        {
+            m_CharacterSelectors[i].OnCharacterSelected -= OnCharacterSelected;
+        }
     }
 
     private void OnPlayerAdded(PlayerLobbyData playerData)
@@ -298,7 +314,8 @@ public class LobbyScreen : UIBaseScreen
             {
                 UI.Enums.ScreenId.CharacterCreator,
                 Enums.eScene.CharacterCreator,
-                m_CreatorPlayerID
+                m_CreatorPlayerID,
+                true // possible to abandon creation?
             };
 
             UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
@@ -343,7 +360,7 @@ public class LobbyScreen : UIBaseScreen
             case UIScreenAnimEvent.End:
                 if (m_ActiveState == UIScreenAnimState.Intro)
                 {
-                    LobbyManager.Instance.Init();
+                    //CheckForPreviousLobbyState();
                 }
                 break;
         }

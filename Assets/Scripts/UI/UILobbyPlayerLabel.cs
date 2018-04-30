@@ -12,7 +12,7 @@ public class UILobbyPlayerLabel : MonoBehaviour
     {
         m_Label.text = data.m_PlayerName;
 
-        gameObject.SetActive(true);
+        this.gameObject.SetActive(true);
     }
 
     public void AnimateShow(bool transitionIn)

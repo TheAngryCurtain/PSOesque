@@ -7,11 +7,14 @@ using Rewired;
 
 public class CharacterCreatorScreen : UIBaseScreen
 {
+    [SerializeField] private UIPromptInfo m_AbandonPrompt;
+
     public int m_ActiveIndex = 0;
 
     private float m_ScrollDelay = 0.25f;
     private float m_CurrentTime = 0f;
     private int m_ControllingPlayerID = -1;
+    private bool m_CanAbandon = true;
 
     public override void Initialize(object[] screenParams)
     {
@@ -21,6 +24,12 @@ public class CharacterCreatorScreen : UIBaseScreen
         // Need to revist this screen when characters are more fleshed out
 
         m_ControllingPlayerID = (int)screenParams[2];
+        m_CanAbandon = (bool)screenParams[3];
+        if (m_CanAbandon)
+        {
+            m_PromptInfo.Add(m_AbandonPrompt);
+        }
+
         Debug.LogFormat("Controlling Player: {0}", m_ControllingPlayerID);
     }
 
@@ -74,6 +83,14 @@ public class CharacterCreatorScreen : UIBaseScreen
             case RewiredConsts.Action.Cancel:
                 if (data.GetButtonDown())
                 {
+                    if (m_CanAbandon)
+                    {
+                        string popupTitle = "Character";
+                        string popupContent = "Do you want to abandon this Character? All changes will be lost.";
+                        ePopupType popupType = ePopupType.YesNo;
+                        PopupManager.Instance.ShowPopup(popupType, popupTitle, popupContent, OnCreationAbandoned);
+                    }
+
                     handled = true;
                 }
                 break;
@@ -104,7 +121,28 @@ public class CharacterCreatorScreen : UIBaseScreen
         {
             // TODO
             // save the character
+            // for now, create a random one
+            CharacterProgress progress = new CharacterProgress();
+            progress.Init();
 
+            CharacterManager.Instance.AddCharacterProgress(progress);
+
+            object[] screenParams = new object[]
+            {
+                UI.Enums.ScreenId.Lobby,
+                Enums.eScene.Lobby
+            };
+
+            UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);
+        }
+
+        PopupManager.Instance.ClosePopup();
+    }
+
+    private void OnCreationAbandoned(bool result)
+    {
+        if (result)
+        {
             object[] screenParams = new object[]
             {
                 UI.Enums.ScreenId.Lobby,
@@ -130,7 +168,7 @@ public class CharacterCreatorScreen : UIBaseScreen
             case UIScreenAnimEvent.End:
                 if (m_ActiveState == UIScreenAnimState.Intro)
                 {
-                    LobbyManager.Instance.Init();
+                    //LobbyManager.Instance.Init();
                 }
                 break;
         }

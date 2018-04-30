@@ -10,7 +10,9 @@ public class CharacterManager : Singleton<CharacterManager>
     private List<Character> m_RegisteredCharacters;
 
     private CharacterProgressData m_CharacterData;
-    private List<CharacterProgress> m_ActivePlayerProgress;
+    public int SavedCharacterCount { get { return m_CharacterData.SavedCharacterCount; } }
+
+    //private List<CharacterProgress> m_ActivePlayerProgress;
 
     private Dictionary<int, CharacterClassStatsPreset> m_ClassPresets;
     private Dictionary<int, CharacterRaceStatsPreset> m_RacePresets;
@@ -33,7 +35,7 @@ public class CharacterManager : Singleton<CharacterManager>
     {
         base.Awake();
 
-        m_ActivePlayerProgress = new List<CharacterProgress>(LobbyManager.MAX_PLAYERS);
+        //m_ActivePlayerProgress = new List<CharacterProgress>(LobbyManager.MAX_PLAYERS);
         m_RegisteredCharacters = new List<Character>();
 
         LoadClassPresets();
@@ -128,9 +130,16 @@ public class CharacterManager : Singleton<CharacterManager>
     }
 
     // also for testing local multiplayer
-    public void AddCharacterProgressInSlot(CharacterProgress progress)
+    public void AddCharacterProgress(CharacterProgress progress)
     {
         m_CharacterData.AddCharacterProgress(progress);
+        SaveCharacterProgress();
+    }
+
+    // JUST FOR TESTING LOBBY STUFF
+    public void ClearProgress()
+    {
+        m_CharacterData.Clear();
     }
 
     #region Test Names
