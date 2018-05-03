@@ -5,6 +5,7 @@ using UnityEngine;
 public class CharacterFactory : MonoBehaviour
 {
     [SerializeField] private GameObject m_CameraPrefab; // temp
+    [SerializeField] private GameObject m_CanvasPrefab; // temp
     [SerializeField] private GameObject m_PlayerPrefab;
     [SerializeField] private GameObject m_CompanionPrefab; // temp
 
@@ -40,14 +41,25 @@ public class CharacterFactory : MonoBehaviour
             {
                 GameObject playerObj = (GameObject)Instantiate(m_PlayerPrefab, e.StartPosition, e.StartRotation);
                 GameObject playerCam = (GameObject)Instantiate(m_CameraPrefab, CameraManager.Instance.MainCamera.transform);
+                GameObject hudCanvasObj = (GameObject)Instantiate(m_CanvasPrefab, null);
 
+                // set each player camera to show the hud
+                Camera camera = playerCam.GetComponent<Camera>();
+                Canvas playerHudCanvas = hudCanvasObj.GetComponent<Canvas>();
+                if (playerHudCanvas != null)
+                {
+                    playerHudCanvas.worldCamera = camera;
+                    playerHudCanvas.planeDistance = 1;
+                }
+
+                // init camera controller for each player
                 CameraController camController = playerCam.GetComponent<CameraController>();
                 if (camController != null)
                 {
                     camController.SetPlayerInfo(i, playerObj.transform);
+
                     if (connectedPlayerCount > 1)
                     {
-                        Camera camera = playerCam.GetComponent<Camera>();
                         if (camera != null)
                         {
                             PlayerCameraData camData = CameraManager.Instance.GetCameraDataForPlayer(i, connectedPlayerCount - 1);
