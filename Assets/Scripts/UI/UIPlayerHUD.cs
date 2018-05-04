@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UIPlayerHUD : MonoBehaviour
 {
+    [SerializeField] private int m_PlayerID;
     [SerializeField] private Text m_NameLabel;
     [SerializeField] private Text m_LevelLabel;
 
@@ -12,49 +13,45 @@ public class UIPlayerHUD : MonoBehaviour
     [SerializeField] private Image m_MPRadialImage;
     [SerializeField] private Image m_XPRadialImage;
 
-    private float m_MaxRadialValue = 0.8f;
+    [SerializeField] private float m_HPRadialMax = 1.0f;
+    [SerializeField] private float m_MPRadialMax = 0.33f;
+    [SerializeField] private float m_XPRadialMax = 0.33f;
 
-    public void SetPlayerData()
+    private void Awake()
     {
-        // TODO
-        // should probably pass in Character Stats to populate this? or make a custom class for this
 
-        // testing
-        SetPlayerName("Test Name");
-        SetPlayerLevel(114);
-
-        SetHP(100f, 100f);
-        SetMP(100f, 100f);
-        SetXP(100f, 100f);
     }
 
-    private void SetPlayerName(string name)
+    public void SetPlayerName(string name)
     {
         m_NameLabel.text = name;
     }
 
-    private void SetPlayerLevel(int level)
+    public void SetPlayerLevel(int level)
     {
         m_LevelLabel.text = level.ToString();
     }
 
-    private void SetHP(float current, float max)
+    public void SetHP(int current, int max)
     {
-        SetDialFill(m_HPRadialImage, current, max);
+        SetDialFill(m_HPRadialImage, current, max, m_HPRadialMax);
     }
 
-    private void SetMP(float current, float max)
+    public void SetMP(int current, int max)
     {
-        SetDialFill(m_MPRadialImage, current, max);
+        SetDialFill(m_MPRadialImage, current, max, m_MPRadialMax);
     }
 
-    private void SetXP(float current, float max)
+    public void SetXP(int current, int max)
     {
-        SetDialFill(m_XPRadialImage, current, max);
+        SetDialFill(m_XPRadialImage, current, max, m_XPRadialMax);
     }
 
-    private void SetDialFill(Image dial, float current, float max)
+    private void SetDialFill(Image dial, int current, int max, float radialMax)
     {
-        dial.fillAmount = (current / max) * m_MaxRadialValue;
+        dial.fillAmount = ((float)current / (float)max) * radialMax;
+
+        // TODO
+        // cool delayed slow bar motion effect thing
     }
 }

@@ -7,13 +7,5 @@ using Rewired;
 
 public class HUDScreen : UIBaseScreen
 {
-    [SerializeField] private UIPlayerHUD m_PlayerHUD;
-
-    public override void Initialize(object[] screenParams)
-    {
-        base.Initialize(screenParams);
-
-        // test
-        m_PlayerHUD.SetPlayerData();
-    }
+    // empty, because the player HUD is on it's own prefab
 }

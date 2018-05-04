@@ -5,6 +5,11 @@ using UnityEngine;
 [System.Serializable]
 public class CharacterStats
 {
+    public System.Action<int> OnLevelChanged;
+    public System.Action<int, int> OnEXPAdded;
+    public System.Action<int, int> OnHPModified;
+    public System.Action<int, int> OnMPModified;
+
     [SerializeField] private string m_PlayerName;
     [SerializeField] private Enums.eGender m_Gender;
     [SerializeField] private Enums.eClassType m_Class;
@@ -16,12 +21,14 @@ public class CharacterStats
     [SerializeField] private int[] m_MaxStats;
     [SerializeField] private int[] m_CurrentStats;
 
-    // Other
-    [SerializeField] private int m_TotalEXP = 0;
+    private int m_TotalEXP = 0;
+    private int m_CurrentEXP = 0;
+    private int m_Level = 1;
 
 #if UNITY_EDITOR
     // debug UI access
     public string PlayerName { get { return m_PlayerName; } }
+    public int Level { get { return m_Level; } }
     public string Gender { get { return m_Gender == Enums.eGender.Male ? "♂" : "♀"; } }
     public string Race { get { return m_Race.ToString(); } }
     public string Class { get { return m_Class.ToString(); } }
@@ -45,6 +52,9 @@ public class CharacterStats
 
     public void Init()
     {
+        // TODO EXP gameplay event. fire when killing things to test.
+        //VSEventManager.Instance.AddListener<>();
+
         GenerateRandom();
         SetMaxStats();
         InitCurrentStats();
@@ -119,17 +129,54 @@ public class CharacterStats
         {
             m_CurrentStats[statIndex] += amount;
         }
+
+        // ew
+        if (stat == Enums.eStatType.HP && OnHPModified != null)
+        {
+            OnHPModified(m_CurrentStats[statIndex], m_MaxStats[statIndex]);
+        }
+        else if (stat == Enums.eStatType.MP && OnMPModified != null)
+        {
+            OnMPModified(m_CurrentStats[statIndex], m_MaxStats[statIndex]);
+        }
     }
 
-    public int GetLevel()
+    public int GetEXPToNextLevel()
     {
-        // TODO some fancy formula here
-        return 1;
+        int nextLevel = m_Level + 1;
+        return ((m_Level + nextLevel) * 50) - ((int)(nextLevel / 5) * 50) + ((int)(nextLevel / 15) * 98);
+    }
+
+    // just for testing!
+    public void AddEXP(int amount)
+    {
+        OnEXPEarned(amount);
     }
 
     // TODO this should be a listener for some xp added event
-    private void OnXPEarned()
+    private void OnEXPEarned(int amount)
     {
+        int EXPToNextLevel = GetEXPToNextLevel();
 
+        m_TotalEXP += amount;
+        m_CurrentEXP += amount;
+        if (m_CurrentEXP > EXPToNextLevel)
+        {
+            int delta = m_CurrentEXP - EXPToNextLevel;
+            m_Level += 1;
+
+            if (OnLevelChanged != null)
+            {
+                OnLevelChanged(m_Level);
+            }
+
+            m_CurrentEXP = delta;
+            EXPToNextLevel = GetEXPToNextLevel();
+        }
+
+        if (OnEXPAdded != null)
+        {
+            OnEXPAdded(m_CurrentEXP, EXPToNextLevel);
+        }
     }
 }

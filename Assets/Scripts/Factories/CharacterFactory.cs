@@ -43,8 +43,16 @@ public class CharacterFactory : MonoBehaviour
                 GameObject playerCam = (GameObject)Instantiate(m_CameraPrefab, CameraManager.Instance.MainCamera.transform);
                 GameObject hudCanvasObj = (GameObject)Instantiate(m_CanvasPrefab, null);
 
+                int playerSaveSlot = LobbyManager.Instance.GetLobbyDataForPlayer(i).m_SaveSlot;
+
                 // set each player camera to show the hud
                 Camera camera = playerCam.GetComponent<Camera>();
+
+                // hacky hack
+                // Unity doesn't support multiple AudioListeners, which is a problem for splitscreen! You downloaded a unity package has been downloaded for it, but for now, disable on player cameras
+                AudioListener listener = camera.GetComponent<AudioListener>();
+                listener.enabled = false;
+
                 Canvas playerHudCanvas = hudCanvasObj.GetComponent<Canvas>();
                 if (playerHudCanvas != null)
                 {
@@ -52,12 +60,33 @@ public class CharacterFactory : MonoBehaviour
                     playerHudCanvas.planeDistance = 1;
                 }
 
+                // there is a better way to do this (put a script on the canvas, get it, and it stores this info), but this is faster and it's late
+                Transform hudObj = hudCanvasObj.transform.GetChild(0).GetChild(i);
+                UIPlayerHUD currentPlayerHUD = hudObj.GetComponent<UIPlayerHUD>();
+                if (currentPlayerHUD != null)
+                {
+                    CharacterProgress currentProgress = CharacterManager.Instance.GetProgressForCharacterInSlot(playerSaveSlot);
+                    CharacterStats currentStats = currentProgress.m_Stats;
+
+                    currentPlayerHUD.SetPlayerName(currentStats.PlayerName);
+                    currentPlayerHUD.SetPlayerLevel(currentStats.Level);
+
+                    currentStats.OnLevelChanged += currentPlayerHUD.SetPlayerLevel;
+                    currentStats.OnEXPAdded += currentPlayerHUD.SetXP;
+                    currentStats.OnHPModified += currentPlayerHUD.SetHP;
+                    currentStats.OnMPModified += currentPlayerHUD.SetMP;
+
+                    // trigger a restore to fire the events
+                    currentStats.Restore(Enums.eStatType.HP);
+                    currentStats.Restore(Enums.eStatType.MP);
+                    currentStats.AddEXP(0);
+                }
+
                 // init camera controller for each player
                 CameraController camController = playerCam.GetComponent<CameraController>();
                 if (camController != null)
                 {
                     camController.SetPlayerInfo(i, playerObj.transform);
-
                     if (connectedPlayerCount > 1)
                     {
                         if (camera != null)
@@ -71,7 +100,7 @@ public class CharacterFactory : MonoBehaviour
                 Player p = playerObj.GetComponent<Player>();
                 if (p != null)
                 {
-                    p.Init(i, LobbyManager.Instance.GetLobbyDataForPlayer(i).m_SaveSlot);
+                    p.Init(i, playerSaveSlot);
                     p.AssignCamera(playerCam.transform);
                 }
             }
