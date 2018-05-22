@@ -5,6 +5,7 @@ using UnityEngine;
 public class Player : PlayableCharacter
 {
     public int SaveSlot { get { return m_SaveSlot; } }
+	public int PlayerID { get { return m_PlayerId; } }
 
     protected override void Awake()
     {

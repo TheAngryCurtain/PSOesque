@@ -154,6 +154,8 @@ public class CharacterStats
     }
 
     // TODO this should be a listener for some xp added event
+	// UGH. This EXP stuff needs to be refactored already. The enemy fires an event for dying which is picked up in the character manager,
+	// which then calls AddEXP() which calls this, which fires an event in the UI. REFACTOR REFACTOR.
     private void OnEXPEarned(int amount)
     {
         int EXPToNextLevel = GetEXPToNextLevel();

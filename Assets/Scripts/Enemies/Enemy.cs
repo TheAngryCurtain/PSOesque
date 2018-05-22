@@ -10,6 +10,9 @@ public class Enemy : NonPlayableCharacter
     private int m_HomeRoomID;
     private Vector3 m_SpawnPos;
 
+	private float m_WaitToReturnTime;
+	private float m_CurrentWaitTime = 0f;
+
     protected override void Awake()
     {
         base.Awake();
@@ -23,6 +26,7 @@ public class Enemy : NonPlayableCharacter
 
         if (e.RoomID == m_HomeRoomID)
         {
+			m_CurrentWaitTime = 0f;
             m_Target = e.Player;
         }
     }
@@ -33,6 +37,7 @@ public class Enemy : NonPlayableCharacter
 
         if (e.RoomID == m_HomeRoomID)
         {
+			m_WaitToReturnTime = UnityEngine.Random.Range(1f, 3f);
             m_Target = null;
         }
     }
@@ -46,15 +51,35 @@ public class Enemy : NonPlayableCharacter
     {
         if (!m_Dead)
         {
-            FollowTarget();
-
-            // TODO make them go back to their spawn position when the player leaves the room
+			if (m_Target != null)
+			{
+            	FollowTarget();
+			}
+			else
+			{
+				// no target, return to start position
+				if (m_CurrentWaitTime < m_WaitToReturnTime)
+				{
+					m_CurrentWaitTime += Time.deltaTime;
+				}
+				else
+				{
+					if (m_Destination == Vector3.zero)
+					{
+						SetDestination(m_SpawnPos);
+					}
+					else
+					{
+						MoveToPosition();
+					}
+				}
+			}
 
             Debug.DrawLine(m_Transform.position, m_Transform.position + m_Transform.forward * m_AttackRange, Color.red);
         }
     }
 
-    protected virtual void Kill()
+	protected virtual void Kill(int killingPlayerID)
     {
         if (m_Dead) return;
 
@@ -78,6 +103,14 @@ public class Enemy : NonPlayableCharacter
 
         VSEventManager.Instance.TriggerEvent(new GameEvents.EnemyDefeatedEvent(m_HomeRoomID));
         VSEventManager.Instance.TriggerEvent(new GameEvents.RequestItemSpawnEvent(m_Transform.position, Enums.eItemSource.Enemy, m_Type, (Enums.eCrateType)(-1)));
+
+		// reward EXP
+		if (killingPlayerID != -1)
+		{
+			// TODO need to look up the amount of EXP awarded based on species, difficulty, type, etc
+			int rewardAmount = 10;
+			VSEventManager.Instance.TriggerEvent(new GameEvents.UpdatePlayerEXPEvent(killingPlayerID, rewardAmount));
+		}
     }
 
     // TODO
@@ -89,8 +122,14 @@ public class Enemy : NonPlayableCharacter
         if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
             // TODO maybe roll for a miss? or roll for a block depending on a stat
+			int playerID = -1;
+			Player killingPlayer = collision.gameObject.GetComponent<Player>();
+			if (killingPlayer != null)
+			{
+				playerID = killingPlayer.PlayerID;
+			}
 
-            Kill();
+			Kill(playerID);
         }
     }
 }

@@ -12,9 +12,11 @@ public class Character : MonoBehaviour
 
     [SerializeField] protected Transform[] m_EquipTransforms = new Transform[6];
 
+	protected float m_ModifiableMoveSpeed = 0f;
+
     protected virtual void Awake()
     {
-       
+		m_ModifiableMoveSpeed = m_MoveSpeed;
     }
 
     protected virtual void OnDestroy()
@@ -38,9 +40,16 @@ public class Character : MonoBehaviour
     //    m_Agent.isStopped = true;
     //}
 
-    protected virtual void Move(Vector3 direction)
+	protected virtual void Move(Vector3 direction, float distanceFromObjective = 0f, float maxDistance = 0f)
     {
-        m_Rigidbody.MovePosition(m_Transform.position + direction * m_MoveSpeed * Time.fixedDeltaTime);
+		if (maxDistance > 0f)
+		{
+			// adjust speed based on distance to target (e.g. full speed when far away, slow down to a stop as you reach dest)
+			float distRatio = distanceFromObjective / maxDistance;
+			m_ModifiableMoveSpeed = Mathf.Clamp(distRatio, 0.1f, m_MoveSpeed);
+		}
+
+		m_Rigidbody.MovePosition(m_Transform.position + direction * m_ModifiableMoveSpeed * Time.fixedDeltaTime);
 
         if (direction != Vector3.zero)
         {

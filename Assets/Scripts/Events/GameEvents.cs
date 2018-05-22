@@ -167,4 +167,16 @@ public class GameEvents
             AddedCallback = callback;
         }
     }
+
+	public class UpdatePlayerEXPEvent: VSGameEvent
+	{
+		public int PlayerID;
+		public int Amount;
+
+		public UpdatePlayerEXPEvent(int id, int amount)
+		{
+			PlayerID = id;
+			Amount = amount;
+		}
+	}
 }

@@ -17,9 +17,9 @@ public class UIPlayerHUD : MonoBehaviour
     [SerializeField] private float m_MPRadialMax = 0.33f;
     [SerializeField] private float m_XPRadialMax = 0.33f;
 
-    private void Awake()
+    private void Start()
     {
-
+		//VSEventManager.Instance.AddListener<GameEvents.UpdatePlayerEXPEvent>(OnEXPUpdated);
     }
 
     public void SetPlayerName(string name)

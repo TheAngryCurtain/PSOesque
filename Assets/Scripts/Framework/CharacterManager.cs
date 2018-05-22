@@ -43,6 +43,8 @@ public class CharacterManager : Singleton<CharacterManager>
 
         SaveLoad.Init();
         LoadCharacterProgress();
+
+		VSEventManager.Instance.AddListener<GameEvents.UpdatePlayerEXPEvent>(OnPlayerEXPUpdated);
     }
 
     private void LoadClassPresets()
@@ -141,6 +143,14 @@ public class CharacterManager : Singleton<CharacterManager>
     {
         m_CharacterData.Clear();
     }
+
+	private void OnPlayerEXPUpdated(GameEvents.UpdatePlayerEXPEvent e)
+	{
+		// UGH. shouldn't be using lobby manager in here...
+		int playerSaveSlot = LobbyManager.Instance.GetLobbyDataForPlayer(e.PlayerID).m_SaveSlot;
+		CharacterStats stats = m_CharacterData.GetCharacterProgressInSlot(playerSaveSlot).m_Stats;
+		stats.AddEXP(e.Amount);
+	}
 
     #region Test Names
     [HideInInspector]

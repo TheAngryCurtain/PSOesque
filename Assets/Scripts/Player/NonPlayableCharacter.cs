@@ -31,12 +31,14 @@ public class NonPlayableCharacter : Character
     [SerializeField] protected float m_AttackCooldownDelay = 1f;
     [SerializeField] protected float m_MaxAttackAngle = 45f;
     [SerializeField] protected float m_StoppingDistance = 1f;
+	[SerializeField] protected float m_MaxSpeedDistance = 5f;
 
     protected Transform m_Target;
     protected Vector3 m_Destination;
 
     protected float m_AttackRangeSqr;
     protected float m_StoppedDistSqr;
+	protected float m_MaxSpeedDistSqr;
     protected float m_CurrentAttackTime = 0;
     protected bool m_Dead = false;
 
@@ -49,6 +51,7 @@ public class NonPlayableCharacter : Character
 
         m_AttackRangeSqr = m_AttackRange * m_AttackRange;
         m_StoppedDistSqr = m_StoppingDistance * m_StoppingDistance;
+		m_MaxSpeedDistSqr = m_MaxSpeedDistance * m_MaxSpeedDistance;
     }
 
     protected virtual void OnPlayerEnteredRoom(GameEvents.PlayerEnteredRoomEvent e)
@@ -78,16 +81,13 @@ public class NonPlayableCharacter : Character
             Vector3 toDest = m_Destination - m_Transform.position;
             float sqrDistToDest = toDest.sqrMagnitude;
 
-            // TODO
-            // adjust speed based on distance to target (e.g. full speed when far away, slow down to a stop as you reach dest)
-
             if (sqrDistToDest < m_StoppedDistSqr)
             {
                 // in range, stop
                 return;
             }
 
-            Move(toDest.normalized);
+			Move(toDest.normalized, sqrDistToDest, m_MaxSpeedDistSqr);
         }
     }
 
@@ -108,7 +108,7 @@ public class NonPlayableCharacter : Character
                     return;
                 }
 
-                Move(toTarget.normalized);
+				Move(toTarget.normalized);
             }
         }
     }
