@@ -108,7 +108,7 @@ public class Enemy : NonPlayableCharacter
 		if (killingPlayerID != -1)
 		{
 			// TODO need to look up the amount of EXP awarded based on species, difficulty, type, etc
-			int rewardAmount = 10;
+			int rewardAmount = (10 * (int)m_Type) + 5;
 			VSEventManager.Instance.TriggerEvent(new GameEvents.UpdatePlayerEXPEvent(killingPlayerID, rewardAmount));
 		}
     }

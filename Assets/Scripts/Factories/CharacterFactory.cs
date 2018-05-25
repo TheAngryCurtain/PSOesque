@@ -47,6 +47,7 @@ public class CharacterFactory : MonoBehaviour
 
                 // set each player camera to show the hud
                 Camera camera = playerCam.GetComponent<Camera>();
+                CameraManager.Instance.RegisterPlayerCamera(i, camera);
 
                 // hacky hack
                 // Unity doesn't support multiple AudioListeners, which is a problem for splitscreen! You downloaded a unity package has been downloaded for it, but for now, disable on player cameras

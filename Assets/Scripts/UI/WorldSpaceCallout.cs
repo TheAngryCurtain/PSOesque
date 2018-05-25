@@ -14,7 +14,6 @@ public class WorldSpaceCallout : MonoBehaviour
 
     private void Awake()
     {
-        m_CameraTransform = Camera.main.transform;
         Show(false);
     }
 
@@ -22,6 +21,11 @@ public class WorldSpaceCallout : MonoBehaviour
     {
         m_CalloutIcon.sprite = icon;
         m_TextLabel.text = text;
+    }
+
+    public void AssignCamera(Transform cam)
+    {
+        m_CameraTransform = cam;
     }
 
     public void Show(bool show)

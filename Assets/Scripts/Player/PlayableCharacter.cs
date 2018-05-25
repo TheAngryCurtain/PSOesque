@@ -26,6 +26,7 @@ public class PlayableCharacter : Character
     public void AssignCamera(Transform cam)
     {
         m_CamTransform = cam;
+        m_Callout.AssignCamera(cam);
     }
 
     public void SetPlayerActive(bool active)
