@@ -5,7 +5,9 @@ using System;
 
 public class TimeKeeper : MonoBehaviour
 {
-	private Light m_Light;
+    [SerializeField] private float m_TimeMultiplier = 1f;
+
+    private Light m_Light;
     private TimeSpan m_Time;
 
 	private float m_CurrentTime = 0.25f;
@@ -14,7 +16,6 @@ public class TimeKeeper : MonoBehaviour
     private float m_LightIntensity = 1f;
     private float m_AmbientIntensity = 1f;
     private Enums.eTimeOfDay m_TimeOfDay = Enums.eTimeOfDay.Sunrise;
-    //private float m_TimeMultiplier = 1f;
 
     private static TimeKeeper Instance;
     public static float CurrentTime { get { return Instance.m_CurrentTime; } }
@@ -50,7 +51,7 @@ public class TimeKeeper : MonoBehaviour
 #if UNITY_EDITOR
     private void OnGUI()
     {
-        GUI.Label(new Rect(10, 10, 200, 200), "Current Time: " + m_Time.ToString());
+        GUI.Label(new Rect(10, 10, 200, 200), "Current Time: " + m_CurrentTime.ToString());
     }
 #endif
 
@@ -64,14 +65,16 @@ public class TimeKeeper : MonoBehaviour
     {
         // currentTime is in the range [0,1], so 0.25f increments represent 6 hours
         // 0 (0am) is midnight, 0.25 (6am) is sunrise, 0.5(12pm) is noon, 0.87(9pm) is sunset
-        m_Time = DateTime.Now.TimeOfDay;
+        //m_Time = DateTime.Now.TimeOfDay;
 
-        float totalSeconds = (m_Time.Seconds + (m_Time.Minutes * 60f) + (m_Time.Hours * 60f * 60f));
-        m_CurrentTime = (totalSeconds / m_SecondsInDay);// * m_TimeMultiplier;
+        //float totalSeconds = (m_Time.Seconds + (m_Time.Minutes * 60f) + (m_Time.Hours * 60f * 60f));
+        //m_CurrentTime = (totalSeconds / m_SecondsInDay);// * m_TimeMultiplier;
+        m_CurrentTime += (Time.deltaTime / m_SecondsInDay) * m_TimeMultiplier;
 
         Enums.eTimeOfDay current = m_TimeOfDay;
         if (m_CurrentTime <= PreSunrise || m_CurrentTime >= Sunset)
         {
+
             // if the current time is sunset here, night has fallen!
 
             m_LightIntensity = 0;
