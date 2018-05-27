@@ -10,15 +10,12 @@ public class TimeKeeper : MonoBehaviour
     private Light m_Light;
     private TimeSpan m_Time;
 
-	private float m_CurrentTime = 0.25f;
+	private float m_CurrentTime = 0f;
 	private float m_InitialLightIntensity;
 	private float m_SecondsInDay = 86400f;
     private float m_LightIntensity = 1f;
     private float m_AmbientIntensity = 1f;
     private Enums.eTimeOfDay m_TimeOfDay = Enums.eTimeOfDay.Sunrise;
-
-    private static TimeKeeper Instance;
-    public static float CurrentTime { get { return Instance.m_CurrentTime; } }
 
     public static float Midnight = 0f;
     public static float PreSunrise = 0.23f;
@@ -27,10 +24,10 @@ public class TimeKeeper : MonoBehaviour
     public static float PreSunset = 0.85f;
     public static float Sunset = 0.87f;
 
+    private Material m_SkyboxMaterial;
+
 	private void Awake()
 	{
-        Instance = this;
-
 		m_Light = GameObject.FindObjectOfType<Light>();
 		if (m_Light != null)
 		{
@@ -40,9 +37,15 @@ public class TimeKeeper : MonoBehaviour
 		{
 			Debug.LogError("No Light object found in scene");
 		}
-	}
 
-	private void Update()
+        m_SkyboxMaterial = RenderSettings.skybox;
+
+        // init
+        m_SkyboxMaterial.SetFloat("_Blend2", 1f);
+        m_SkyboxMaterial.SetFloat("_Blend3", 1f);
+    }
+
+    private void Update()
 	{
 		UpdateLight();
         UpdateTime();
@@ -65,10 +68,6 @@ public class TimeKeeper : MonoBehaviour
     {
         // currentTime is in the range [0,1], so 0.25f increments represent 6 hours
         // 0 (0am) is midnight, 0.25 (6am) is sunrise, 0.5(12pm) is noon, 0.87(9pm) is sunset
-        //m_Time = DateTime.Now.TimeOfDay;
-
-        //float totalSeconds = (m_Time.Seconds + (m_Time.Minutes * 60f) + (m_Time.Hours * 60f * 60f));
-        //m_CurrentTime = (totalSeconds / m_SecondsInDay);// * m_TimeMultiplier;
         m_CurrentTime += (Time.deltaTime / m_SecondsInDay) * m_TimeMultiplier;
 
         Enums.eTimeOfDay current = m_TimeOfDay;
@@ -83,18 +82,25 @@ public class TimeKeeper : MonoBehaviour
         {
             // if the current is night at this point, morning has come!
 
-            m_LightIntensity = Mathf.Clamp01((m_CurrentTime - PreSunrise) * (1 / 0.02f));
+            float increment = Mathf.Clamp01((m_CurrentTime - PreSunrise) * (1 / 0.02f));
+            m_LightIntensity = increment;
             current = Enums.eTimeOfDay.Sunrise;
+
+            m_SkyboxMaterial.SetFloat("_Blend2", 1f - increment);
+            m_SkyboxMaterial.SetFloat("_Blend3", 1f - increment);
         }
         else if (m_CurrentTime >= PreSunset)
         {
-            m_LightIntensity = Mathf.Clamp01(1 - ((m_CurrentTime - PreSunset) * (1 / 0.02f)));
+            float increment = Mathf.Clamp01(1 - ((m_CurrentTime - PreSunset) * (1 / 0.02f)));
+            m_LightIntensity = increment;
             current = Enums.eTimeOfDay.Sunset;
+
+            m_SkyboxMaterial.SetFloat("_Blend2", 1f - increment);
+            m_SkyboxMaterial.SetFloat("_Blend3", 1f - increment);
         }
 
         m_AmbientIntensity = m_LightIntensity;
         RenderSettings.ambientIntensity = m_AmbientIntensity;
-        // TODO change environment ambient light setting here
 
         // notify if it's changed
         if (current != m_TimeOfDay)
