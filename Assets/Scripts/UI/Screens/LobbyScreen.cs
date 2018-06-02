@@ -297,7 +297,8 @@ public class LobbyScreen : UIBaseScreen
             object[] screenParams = new object[]
             {
                 UI.Enums.ScreenId.HUD,
-                Enums.eScene.Game
+                //Enums.eScene.Game
+                Enums.eScene.Hub
             };
 
             UIManager.Instance.TransitionToScreen(ScreenId.Loading, screenParams);

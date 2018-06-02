@@ -4,10 +4,11 @@ using UnityEngine;
 
 public class UserActivatedDoor : RoomObject
 {
-    private enum eDoorState { Closed, Opening, Open };
+    private enum eDoorState { Locked, Closed, Opening, Open };
 
     [SerializeField] private Transform[] m_DoorParts;
     [SerializeField] private float m_DoorOpenSpeed = 5f;
+    [SerializeField] private GameObject m_LockObj;
 
     private eDoorState m_State;
 

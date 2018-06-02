@@ -23,6 +23,10 @@ public class GameManager : Singleton<GameManager>
     {
         switch (e.LoadedScene)
         {
+            case Enums.eScene.Hub:
+                // TODO emit event for loading hub data
+                break;
+
             case Enums.eScene.Game:
                 for (int i = 0; i < m_FactoryPrefabs.Length; i++)
                 {

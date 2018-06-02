@@ -34,5 +34,5 @@ namespace Enums
     public enum eConsumableStatType { HP, MP };
 
     // Scene Loading
-    public enum eScene { Boot = 0, Main, Lobby, CharacterCreator, Game };
+    public enum eScene { Boot = 0, Main, Lobby, CharacterCreator, Hub, Game };
 }
