@@ -39,6 +39,7 @@ public class LoadingScreen : UIBaseScreen
     {
         if (e.Progress >= 0.9f)
         {
+            // this seems super duper hacky
             m_TotalLoadTime = Time.time - m_LoadStartTime;
             if (m_TotalLoadTime < m_MinLoadTime)
             {
@@ -55,8 +56,6 @@ public class LoadingScreen : UIBaseScreen
     public override void Shutdown()
     {
         base.Shutdown();
-
-        VSEventManager.Instance.RemoveListener<UIEvents.AsyncSceneLoadProgressEvent>(OnLoadProgress);
     }
 
     protected override void OnInputUpdate(InputActionEventData data)
@@ -93,6 +92,8 @@ public class LoadingScreen : UIBaseScreen
 
     private void Advance()
     {
+        VSEventManager.Instance.RemoveListener<UIEvents.AsyncSceneLoadProgressEvent>(OnLoadProgress);
+
         if (m_PostLoadScreenId != UI.Enums.ScreenId.None)
         {
             UIManager.Instance.TransitionToScreen(m_PostLoadScreenId);

@@ -24,11 +24,13 @@ public class GameManager : Singleton<GameManager>
         switch (e.LoadedScene)
         {
             case Enums.eScene.Hub:
-                // TODO emit event for loading hub data
+                // only spawn the character factory
+                Instantiate(m_FactoryPrefabs[0], null);
                 break;
 
             case Enums.eScene.Game:
-                for (int i = 0; i < m_FactoryPrefabs.Length; i++)
+                // spawn everything else
+                for (int i = 1; i < m_FactoryPrefabs.Length; i++)
                 {
                     Instantiate(m_FactoryPrefabs[i], null);
                 }

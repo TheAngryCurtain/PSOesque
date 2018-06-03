@@ -10,4 +10,13 @@ public class GameProgress
     // store things like available themes/levels/depths/etc?
     // store completed quests?
     // store any companion/party/npc stats here?
+
+    public HubProgress m_HubProgress;
+
+    public GameProgress() { }
+
+    public void Init()
+    {
+        m_HubProgress = new HubProgress();
+    }
 }
