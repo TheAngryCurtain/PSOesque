@@ -12,7 +12,7 @@ public class HubProgress
         m_HubRooms = new Enums.eHubRoom[]
         {
             Enums.eHubRoom.Trophy,
-            Enums.eHubRoom.None,
+            Enums.eHubRoom.Contractor,
             Enums.eHubRoom.None,
             Enums.eHubRoom.None,
             Enums.eHubRoom.None,

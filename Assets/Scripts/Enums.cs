@@ -32,7 +32,7 @@ namespace Enums
     public enum eRaceType { Human, All };
     public enum eGender { Male, Female };
     public enum eConsumableStatType { HP, MP };
-    public enum eHubRoom { None = -1, Shop, Teleporter, QuestKiosk, Home, Bank, Hospital, Trophy };
+    public enum eHubRoom { None = -1, Shop, Teleporter, QuestKiosk, Home, Bank, Hospital, Trophy, Contractor };
 
     // Scene Loading
     public enum eScene { Boot = 0, Main, Lobby, CharacterCreator, Hub, Game };
