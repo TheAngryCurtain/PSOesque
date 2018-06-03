@@ -49,6 +49,7 @@ public class UserActivatedDoor : RoomObject
         }
     }
 
+    // animating is for the birds; coroutine the door open and closed!
     private IEnumerator MoveDoorParts(bool open)
     {
         float targetYScale = (open ? 0f : 1f);
